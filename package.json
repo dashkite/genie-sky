@@ -41,6 +41,6 @@
   "dependencies": {
     "@dashkite/dolores": "file:../dolores",
     "@dashkite/masonry": "^0.12.2",
-    "panda-confidential": "^3.1.0"
+    "panda-confidential": "^3.1.1"
   }
 }
