@@ -3,7 +3,9 @@ import FS from "fs/promises"
 import {
   getSecretARN
 } from "@dashkite/dolores/secrets"
+
 import {
+  getLambda
   publishLambda
   versionLambda
 } from "@dashkite/dolores/lambda"
@@ -29,16 +31,17 @@ buildSecretsPolicy = (secrets) ->
     for secret in secrets
       await getSecretARN secret.name
 
-export default (genie, options) ->
+export default (genie, { namespace, lambda, secrets }) ->
 
-  genie.define "publish", [ "build", "zip" ], (environment) ->
+  # TODO add delete / teardown
+
+  genie.define "update", [ "build", "zip" ], (environment) ->
 
     data = await FS.readFile "build/lambda.zip"
 
-    name = "#{options.name}-#{environment}"
+    name = "#{namespace}-#{environment}-lambda"
 
-    { secrets } = genie.get "sky"
-
+    # TODO possibly explore how to split out role building
     # TODO determine other policies dynamically...
     role = await createRole "#{name}-role", [
       ( buildCloudWatchPolicy name )
@@ -46,11 +49,9 @@ export default (genie, options) ->
     ]
 
     await publishLambda name, data, {
-      options.lambda...
+      lambda...
       role
     }
     
     # TODO add versioning, but we need to garbage collect...
     # await versionLambda "#{prefix}-origin-request"
-
-

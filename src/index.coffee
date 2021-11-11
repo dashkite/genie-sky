@@ -1,9 +1,11 @@
 import zip from "./zip"
 import secrets from "./secrets"
-import publish from "./publish"
+import lambda from "./lambda"
+import alb from "./alb"
 
 export default (genie) ->
-  if (presets = genie.get "sky")?
-    zip genie, presets.zip
-    secrets genie, presets.secrets
-    publish genie, presets.publish
+  if (options = genie.get "sky")?
+    zip genie, options
+    secrets genie, options
+    lambda genie, options
+    alb genie, options

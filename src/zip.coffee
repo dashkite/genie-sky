@@ -21,8 +21,6 @@ exec = (command) ->
 
 export default (genie) ->
 
-  console.log "hello from sky-presets! :)"
-
   genie.define "zip", [ "build" ], ->
     await FS.mkdir "build/lambda/src", recursive: true
     await FS.cp "build/node/src", "build/lambda/src", recursive: true

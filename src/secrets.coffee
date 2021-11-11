@@ -3,6 +3,7 @@ import { confidential } from "panda-confidential"
 Confidential = confidential()
 
 import {
+  getSecret
   hasSecret
   setSecret
 } from "@dashkite/dolores/secrets"
@@ -10,7 +11,7 @@ import {
 generate = (type, name) ->
   switch type
     when "random-16"
-      Confidential.convert from: "bytes", to: "base64",
+      Confidential.convert from: "bytes", to: "base36",
         await Confidential.randomBytes 16
     when "encryption-keypair"
       (await Confidential.EncryptionKeyPair.create())
@@ -24,7 +25,7 @@ generate = (type, name) ->
       else
         throw new Error "Secret [#{name}] environment variable not set"
 
-export default (genie, secrets) ->
+export default (genie, { secrets }) ->
   
   # verify that all secrets in config exist
   genie.define "secrets:check", ->
@@ -59,6 +60,12 @@ export default (genie, secrets) ->
       return
     throw new Error "secret:put failed, [#{name}] not configured"
 
+  # TODO maybe remove this later?
+  genie.define "secret:get", (name) ->
+    console.log await getSecret name
+
+  # TODO temporary key rotation task to update key in WAF
+  # See: https://github.com/dashkite/sky-alb/issues/1
 
 
 
