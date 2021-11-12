@@ -1,52 +1,25 @@
 import FS from "fs/promises"
 
 import {
-  getSecretARN
-} from "@dashkite/dolores/secrets"
-
-import {
-  getLambda
   publishLambda
-  versionLambda
+  # versionLambda
 } from "@dashkite/dolores/lambda"
 
 import { 
-  createRole
+  getRoleARN
 } from "@dashkite/dolores/roles"
 
-buildCloudWatchPolicy = (name) ->
-  Effect: "Allow"
-  Action: [
-    "logs:CreateLogGroup"
-    "logs:CreateLogStream"
-    "logs:PutLogEvents"
-  ]
-  Resource: [ "arn:aws:logs:*:*:log-group:/aws/lambda/#{name}:*" ]
-
-buildSecretsPolicy = (secrets) ->
-
-  Effect: "Allow"
-  Action: [ "secretsmanager:GetSecretValue" ]
-  Resource: await do ->
-    for secret in secrets
-      await getSecretARN secret.name
-
-export default (genie, { namespace, lambda, secrets }) ->
+export default (genie, { namespace, lambda }) ->
 
   # TODO add delete / teardown
-
-  genie.define "update", [ "build", "zip" ], (environment) ->
+  
+  genie.define "sky:update", [ "build", "zip", "role:build:*&" ], (environment) ->
 
     data = await FS.readFile "build/lambda.zip"
 
     name = "#{namespace}-#{environment}-lambda"
 
-    # TODO possibly explore how to split out role building
-    # TODO determine other policies dynamically...
-    role = await createRole "#{name}-role", [
-      ( buildCloudWatchPolicy name )
-      ( await buildSecretsPolicy secrets )
-    ]
+    role = await getRoleARN "#{name}-role" 
 
     await publishLambda name, data, {
       lambda...
