@@ -3,6 +3,7 @@ import secrets from "./secrets"
 import role from "./role"
 import lambda from "./lambda"
 import alb from "./alb"
+import edge from "./edge"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -11,3 +12,4 @@ export default (genie) ->
     role genie, options
     lambda genie, options
     alb genie, options
+    edge genie, options

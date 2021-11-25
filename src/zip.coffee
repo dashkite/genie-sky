@@ -1,34 +1,53 @@
 import FS from "fs/promises"
+import Path from "path"
 import * as m from "@dashkite/masonry"
 import { confidential } from "panda-confidential"
-import ChildProcess from "child_process"
-
-Confidential = confidential()
-
-hash = (text) ->
-  message = Confidential.Message.from "utf8", text
-  Confidential
-    .hash message
-    .to "base36"
-
-exec = (command) ->
-  new Promise (resolve, reject) ->
-    ChildProcess.exec command, (error, stdout, stderr) ->
-      if error?
-        reject error
-      else
-        resolve stdout
+import Webpack from "webpack"
 
 export default (genie) ->
+  genie.define "zip", (environment) ->
+    await do ->
+      new Promise (resolve, reject) ->
+        Webpack 
+          mode: environment
+          devtool: "inline-source-map"
+          optimization:
+            nodeEnv: environment
+          target: "node"
+          node:
+            global: true
+          entry:
+            "index": Path.resolve "src/index.coffee"
+          output:
+            path: Path.resolve "build/lambda"
+            filename: "[name].js"
+            library: 
+              type: "commonjs2"
+          module:
+            rules: [
+              test: /\.coffee$/
+              use: [ require.resolve "coffee-loader" ]
+            ,
+              test: /.yaml$/
+              type: "json"
+              loader: require.resolve "yaml-loader"
+            ]
+          resolve:
+            extensions: [ ".js", ".json", ".yaml", ".coffee" ]
+            modules: [ "node_modules" ]
+          (error, result) ->
+            if error? || result.hasErrors()
+              console.error result.toString colors: true
+              reject error
+            else
+              resolve result
 
-  genie.define "zip", [ "build" ], ->
-    await FS.mkdir "build/lambda/src", recursive: true
-    await FS.cp "build/node/src", "build/lambda/src", recursive: true
-    await FS.cp "package.json", "build/lambda/package.json"
-    cwd = process.cwd()
-    process.chdir "build/lambda"
-    await do m.exec "npm", [ "install", "--production" ]
-    process.chdir cwd
-    await do m.exec "zip", [ "-qr", "build/lambda.zip", "build/lambda" ]
+      # TODO apparently webpack returns before it's finished writing the file?
+      loop
+        try
+          await FS.readFile "build/lambda/index.js"
+          break
+
+      await do m.exec "zip", [ "-qr", "-9", "build/lambda.zip", "build/lambda" ]
     
 
