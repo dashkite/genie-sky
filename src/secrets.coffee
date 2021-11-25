@@ -47,8 +47,12 @@ export default (genie, { secrets }) ->
         missing.push secret
     if missing.length > 0
       for secret in missing
-        await setSecret secret.name,
-          await generate secret.type, secret.name
+        try
+          await setSecret secret.name,
+            await generate secret.type, secret.name
+        catch error
+          # we're okay if one of these fails
+          console.error error.message
 
   # update a specific secret, creating the secret
   # if it doesn't exist already
