@@ -41,7 +41,7 @@
   "dependencies": {
     "@dashkite/dolores": "^0.0.1",
     "@dashkite/masonry": "^0.12.2",
-    "@dashkite/sky-alb": "^0.0.1",
+    "@dashkite/sky-alb": "^0.0.2",
     "@dashkite/template": "^0.0.1",
     "coffee-loader": "^3.0.0",
     "js-yaml": "^4.1.0",
