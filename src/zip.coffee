@@ -6,6 +6,8 @@ import Webpack from "webpack"
 
 export default (genie) ->
   genie.define "zip", (environment) ->
+    environment = "development" if environment != "production"
+
     await do ->
       new Promise (resolve, reject) ->
         Webpack 
@@ -37,7 +39,7 @@ export default (genie) ->
             modules: [ "node_modules" ]
           (error, result) ->
             if error? || result.hasErrors()
-              console.error result.toString colors: true
+              console.error result?.toString colors: true
               reject error
             else
               resolve result
