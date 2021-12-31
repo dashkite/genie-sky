@@ -80,6 +80,7 @@ buildMixinPolicy = (mixin, base) ->
 export default (genie, { namespace, mixins, secrets }) ->
 
   # TODO add delete / teardown
+  # TODO add support for multiple lambdas
   
   genie.define "role:build", (environment) ->
 

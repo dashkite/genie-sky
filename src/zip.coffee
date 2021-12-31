@@ -31,6 +31,15 @@ export default (genie) ->
               test: /.yaml$/
               type: "json"
               loader: require.resolve "yaml-loader"
+            ,
+              test: /.pug$/
+              use: [ require.resolve "pug-loader" ]
+            ,
+              test: /.styl$/
+              use: [
+                require.resolve "raw-loader"
+                require.resolve "stylus-loader"
+              ]
             ]
           resolve:
             extensions: [ ".js", ".json", ".yaml", ".coffee" ]

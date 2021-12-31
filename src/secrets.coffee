@@ -1,4 +1,5 @@
 import { confidential } from "panda-confidential"
+import prompts from "prompts"
 
 Confidential = confidential()
 
@@ -24,6 +25,12 @@ generate = (type, name) ->
         value
       else
         throw new Error "Secret [#{name}] environment variable not set"
+    when "prompt"
+      { value } = await prompts
+        type: "password"
+        name: "value"
+        message: "Enter secret [ #{name} ]:"
+      valuegen
 
 export default (genie, { secrets }) ->
   

@@ -8,15 +8,15 @@ import {
   deleteStack
 } from "@dashkite/dolores/stack"
 
-export default (genie, { namespace, alb, mixins }) ->
+export default (genie, { namespace, alb, lambda, mixins }) ->
 
   # TODO add delete / teardown
 
   # genie.define "publish", [ "update" ], (environment) ->
-  genie.define "publish", [ "role:build:*", "sky:update:*" ], (environment) ->
-    
+  genie.define "sky:alb:publish", [ "role:build:*", "sky:lambda:update:*" ], (environment) ->
+    { name } = lambda.handlers[0]
     await deployALB {
-      arn: ( await getLambda "#{namespace}-#{environment}-lambda" ).arn
+      arn: ( await getLambda "#{namespace}-#{environment}-#{name}-lambda" ).arn
       namespace
       base: "#{namespace}-#{environment}"
       name: "#{namespace}-#{environment}-alb"

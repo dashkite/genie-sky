@@ -4,7 +4,7 @@ import Templates from "@dashkite/template"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getCertificateARN } from "@dashkite/dolores/acm"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
-import { deployStack } from "@dashkite/dolores/stack"
+import { deployStack, deleteStack } from "@dashkite/dolores/stack"
 
 tld = (domain) -> It.join ".", ( Text.split ".", domain )[-2..]
 
@@ -36,3 +36,5 @@ export default (genie, { namespace, lambda, edge }) ->
     console.log {template}
     deployStack "#{namespace}-edge-#{environment}", template      
       
+  genie.define "sky:edge:delete", (environment) ->
+    deleteStack "#{namespace}-#{environment}-alb"
