@@ -10,7 +10,7 @@ import {
   getRoleARN
 } from "@dashkite/dolores/roles"
 
-export default (genie, { namespace, lambda }) ->
+export default (genie, { namespace, lambda, variables }) ->
   
   genie.define "sky:update", [ "clean", "zip:*" ], (environment) ->
 
@@ -22,6 +22,7 @@ export default (genie, { namespace, lambda }) ->
 
     await publishLambda name, data, {
       lambda...
+      environment: { environment, variables... }
       role
     }
     
@@ -37,6 +38,7 @@ export default (genie, { namespace, lambda }) ->
 
       await publishLambda name, data, {
         handler.configuration...
+        environment: { environment, variables... }
         role
       }
   
