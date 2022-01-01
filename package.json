@@ -36,11 +36,11 @@
   "homepage": "https://github.com/dashkite/sky-presets#readme",
   "devDependencies": {
     "@dashkite/genie": "^0.5.6",
-    "@dashkite/genie-presets": "^0.5.4"
+    "@dashkite/genie-presets": "^0.5.6"
   },
   "dependencies": {
-    "@dashkite/dolores": "file:../dolores",
-    "@dashkite/masonry": "^0.12.2",
+    "@dashkite/dolores": "^0.0.2",
+    "@dashkite/masonry": "^0.12.3",
     "@dashkite/sky-alb": "^0.0.2",
     "@dashkite/template": "^0.0.1",
     "coffee-loader": "^3.0.0",
@@ -51,7 +51,7 @@
     "pug-loader": "^2.4.0",
     "raw-loader": "^4.0.2",
     "stylus-loader": "^6.2.0",
-    "webpack": "^5.64.4",
+    "webpack": "^5.65.0",
     "yaml-loader": "^0.6.0"
   }
 }
