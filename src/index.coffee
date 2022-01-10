@@ -4,6 +4,7 @@ import role from "./role"
 import lambda from "./lambda"
 import alb from "./alb"
 import edge from "./edge"
+import bridge from "./bridge"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -13,3 +14,4 @@ export default (genie) ->
     lambda genie, options
     alb genie, options
     edge genie, options
+    bridge genie, options

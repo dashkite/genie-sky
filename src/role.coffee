@@ -16,11 +16,13 @@ buildCloudWatchPolicy = (name) ->
   Resource: [ "arn:aws:logs:*:*:log-group:/aws/lambda/#{name}:*" ]
 
 buildSecretsPolicy = (secrets) ->
+  console.log "*** build secrets policy ***"
 
   Effect: "Allow"
   Action: [ "secretsmanager:GetSecretValue" ]
   Resource: await do ->
     for secret in secrets
+      console.log "authorize secret access for: #{secret.name}"
       await getSecretARN secret.name
 
 mixinPolicyBuilders =
@@ -77,7 +79,7 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, { namespace, mixins, secrets }) ->
+export default (genie, { namespace, lambda, mixins, secrets }) ->
 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
@@ -85,17 +87,21 @@ export default (genie, { namespace, mixins, secrets }) ->
   genie.define "role:build", (environment) ->
 
     base = "#{namespace}-#{environment}"
-    lambda = "#{base}-lambda"
-    role = "#{lambda}-role"
 
-    # TODO possibly explore how to split out role building
-    policies = [ buildCloudWatchPolicy lambda ]
+    for handler in lambda.handlers
 
-    if secrets? && secrets.length > 0
-      policies.push await buildSecretsPolicy secrets
+      lambda = "#{base}-#{handler.name}-lambda"
+      role = "#{lambda}-role"
 
-    if mixins?
-      for mixin in mixins
-        policies.push ( await buildMixinPolicy mixin, base )...
+      # TODO possibly explore how to split out role building
+      # TODO allow for different policies for different handlers
+      policies = [ buildCloudWatchPolicy lambda ]
 
-    await createRole role, policies
+      if secrets? && secrets.length > 0
+        policies.push await buildSecretsPolicy secrets
+
+      if mixins?
+        for mixin in mixins
+          policies.push ( await buildMixinPolicy mixin, base )...
+
+      await createRole role, policies

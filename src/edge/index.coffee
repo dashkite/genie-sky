@@ -10,6 +10,7 @@ tld = (domain) -> It.join ".", ( Text.split ".", domain )[-2..]
 
 export default (genie, { namespace, lambda, edge }) ->
 
+  # TODO add lambda versioning
   genie.define "sky:edge:publish", [ "role:build:*", "sky:lambda:update:*" ], (environment) ->
     domain = tld edge.aliases[0].domain
     templates = Templates.create "#{__dirname}"

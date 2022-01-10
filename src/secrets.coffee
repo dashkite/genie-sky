@@ -30,7 +30,7 @@ generate = (type, name) ->
         type: "password"
         name: "value"
         message: "Enter secret [ #{name} ]:"
-      valuegen
+      value
 
 export default (genie, { secrets }) ->
   
