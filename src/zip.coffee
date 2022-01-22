@@ -5,7 +5,7 @@ import { confidential } from "panda-confidential"
 import Webpack from "webpack"
 
 export default (genie) ->
-  genie.define "zip", (environment) ->
+  genie.define "sky:zip", (environment) ->
     environment = "development" if environment != "production"
 
     await do ->

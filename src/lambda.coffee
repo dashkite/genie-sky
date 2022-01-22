@@ -12,7 +12,7 @@ import {
 
 export default (genie, { namespace, lambda, variables }) ->
   
-  genie.define "sky:update", [ "clean", "zip:*" ], (environment) ->
+  genie.define "sky:update", [ "clean", "sky:zip:*" ], (environment) ->
 
     data = await FS.readFile "build/lambda.zip"
 
@@ -26,7 +26,7 @@ export default (genie, { namespace, lambda, variables }) ->
       role
     }
     
-  genie.define "sky:lambda:update", [ "clean", "zip:*" ], (environment) ->
+  genie.define "sky:lambda:update", [ "clean", "sky:zip:*" ], (environment) ->
 
     for handler in lambda.handlers
 

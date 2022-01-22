@@ -84,7 +84,7 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
   
-  genie.define "role:build", (environment) ->
+  genie.define "sky:roles:publish", (environment) ->
 
     base = "#{namespace}-#{environment}"
 
@@ -105,3 +105,11 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
           policies.push ( await buildMixinPolicy mixin, base )...
 
       await createRole role, policies
+
+  genie.define "sky:roles:delete", (environment) ->
+    base = "#{namespace}-#{environment}"
+
+    for handler in lambda.handlers
+      lambda = "#{base}-#{handler.name}-lambda"
+      role = "#{lambda}-role"
+      deleteRole role
