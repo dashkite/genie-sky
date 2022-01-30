@@ -5,6 +5,7 @@ import lambda from "./lambda"
 import alb from "./alb"
 import edge from "./edge"
 import bridge from "./bridge"
+import stepFunction from "./step-function"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -15,3 +16,4 @@ export default (genie) ->
     alb genie, options
     edge genie, options
     bridge genie, options
+    stepFunction genie, options

@@ -12,40 +12,30 @@ import {
 
 export default (genie, { namespace, lambda, variables }) ->
   
-  genie.define "sky:update", [ "clean", "sky:zip:*" ], (environment) ->
+  genie.define "sky:lambda:update",
+    [ 
+      "clean"
+      "sky:role:publish:*"
+      "sky:zip:*" 
+    ], (environment) ->
 
-    data = await FS.readFile "build/lambda.zip"
+      for handler in lambda.handlers
 
-    name = "#{namespace}-#{environment}-lambda"
+        data = await FS.readFile "build/lambda/#{ handler.name }.zip"
 
-    role = await getRoleARN "#{name}-role" 
+        name = "#{namespace}-#{environment}-#{handler.name}"
 
-    await publishLambda name, data, {
-      lambda...
-      environment: { environment, variables... }
-      role
-    }
-    
-  genie.define "sky:lambda:update", [ "clean", "sky:zip:*" ], (environment) ->
+        role = await getRoleARN name
 
-    for handler in lambda.handlers
-
-      data = await FS.readFile "build/lambda.zip"
-
-      name = "#{namespace}-#{environment}-#{handler.name}-lambda"
-
-      role = await getRoleARN "#{name}-role"
-
-      await publishLambda name, data, {
-        handler.configuration...
-        environment: { environment, variables... }
-        role
-      }
+        await publishLambda name, data, {
+          handler: "build/lambda/#{ handler.name }/index.handler"
+          handler.configuration...
+          environment: { environment, variables... }
+          role
+        }
   
   genie.define "sky:lambda:version", (environment, name) ->
-    versionLambda "#{namespace}-#{environment}-#{name}-lambda"
+    versionLambda "#{namespace}-#{environment}-#{name}"
 
-  genie.define "sky:lambda:delete", (environment) ->
-    name = "#{namespace}-#{environment}-lambda"
-
-    deleteLambda name
+  genie.define "sky:lambda:delete", (environment, name) ->
+    deleteLambda "#{namespace}-#{environment}-#{name}"
