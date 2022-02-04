@@ -20,18 +20,22 @@ export default (genie, { namespace, lambda, variables }) ->
     ], (environment) ->
 
       for handler in lambda.handlers
+        
+        try
+          # if there's no zip file, the file hasn't changed
+          data = await FS.readFile "build/lambda/#{ handler.name }.zip"
+        
+        if data?
 
-        data = await FS.readFile "build/lambda/#{ handler.name }.zip"
+          name = "#{namespace}-#{environment}-#{handler.name}"
 
-        name = "#{namespace}-#{environment}-#{handler.name}"
+          role = await getRoleARN name
 
-        role = await getRoleARN name
-
-        await publishLambda name, data, {
-          handler: "build/lambda/#{ handler.name }/index.handler"
-          handler.configuration...
-          environment: { environment, variables... }
-          role
+          await publishLambda name, data, {
+            handler: "build/lambda/#{ handler.name }/index.handler"
+            handler.configuration...
+            environment: { environment, variables... }
+            role
         }
   
   genie.define "sky:lambda:version", (environment, name) ->

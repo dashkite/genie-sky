@@ -1,5 +1,6 @@
 import FS from "fs/promises"
 import Path from "path"
+import YAML from "js-yaml"
 import * as m from "@dashkite/masonry"
 import { confidential } from "panda-confidential"
 import Webpack from "webpack"
@@ -52,23 +53,36 @@ bundle = ( { environment, name, path } ) ->
 export default (genie, { lambda }) ->
   genie.define "sky:zip", (environment) ->
     environment = "development" if environment != "production"
+    oldHashes = await do ->
+      try
+        YAML.load await FS.readFile ".sky/hashes"
+      catch
+        {}
+    newHashes = {}
+
     for handler in lambda.handlers
+
       result = await bundle { environment, handler... }
+      newHashes[ handler.name ] = result.hash
 
-      # TODO compare to saved hashes and skip zip/upload when they're the same
+      # compare to saved hashes and skip zip/upload when they're the same
+      if oldHashes[ handler.name ] != result.hash
 
-      
-      # TODO apparently webpack returns before it's finished writing the file?
-      loop
-        try
-          await FS.readFile "build/lambda/#{ handler.name }/index.js"
-          break
+        # TODO apparently webpack returns before it's finished writing the file?
+        loop
+          try
+            await FS.readFile "build/lambda/#{ handler.name }/index.js"
+            break
 
-      await do m.exec "zip", [
-        "-qr"
-        "-9"
-        "build/lambda/#{ handler.name }.zip"
-        "build/lambda/#{ handler.name }"
-      ]
-  
+        await do m.exec "zip", [
+          "-qr"
+          "-9"
+          "build/lambda/#{ handler.name }.zip"
+          "build/lambda/#{ handler.name }"
+        ]
+      else
+        console.log "No updates for Lambda [ #{ handler.name } ]"
+
+    await FS.mkdir ".sky", recursive: true # recursive implies force
+    await FS.writeFile ".sky/hashes", YAML.dump newHashes
 

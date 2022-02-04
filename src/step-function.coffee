@@ -8,11 +8,8 @@ import {
 } from "@dashkite/dolores/lambda"
 
 import {
-  deleteStack
-} from "@dashkite/dolores/stack"
-
-import {
   createStepFunction
+  deleteStepFunction
   startStepFunction
   haltStepFunction
 } from "@dashkite/dolores/step-function"
@@ -50,4 +47,4 @@ export default ( genie, options ) ->
     haltStepFunction "#{namespace}-#{environment}-#{name}"
     
   genie.define "sky:step-function:delete", (environment) ->
-    deleteStack "#{namespace}-#{environment}-#{name}"
+    deleteStepFunction "#{namespace}-#{environment}-#{name}"
