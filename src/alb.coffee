@@ -16,7 +16,7 @@ export default (genie, { namespace, alb, lambda, mixins }) ->
   genie.define "sky:alb:publish", [ "sky:roles:publish:*", "sky:lambda:update:*" ], (environment) ->
     { name } = lambda.handlers[0]
     await deployALB {
-      arn: ( await getLambda "#{namespace}-#{environment}-#{name}-lambda" ).arn
+      arn: ( await getLambda "#{namespace}-#{environment}-#{name}" ).arn
       namespace
       base: "#{namespace}-#{environment}"
       name: "#{namespace}-#{environment}-alb"

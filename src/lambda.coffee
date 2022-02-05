@@ -29,7 +29,7 @@ export default (genie, { namespace, lambda, variables }) ->
 
           name = "#{namespace}-#{environment}-#{handler.name}"
 
-          role = await getRoleARN name
+          role = await getRoleARN "#{name}-role"
 
           await publishLambda name, data, {
             handler: "build/lambda/#{ handler.name }/index.handler"

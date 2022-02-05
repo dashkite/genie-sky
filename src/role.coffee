@@ -91,7 +91,7 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
     for handler in lambda.handlers
 
       lambda = "#{base}-#{handler.name}"
-      role = lambda
+      role = "#{lambda}-role"
 
       # TODO possibly explore how to split out role building
       # TODO allow for different policies for different handlers
