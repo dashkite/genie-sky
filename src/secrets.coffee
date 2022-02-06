@@ -4,6 +4,7 @@ import prompts from "prompts"
 Confidential = confidential()
 
 import {
+  parseSecretName
   getSecret
   hasSecret
   setSecret
@@ -43,18 +44,13 @@ generate = ({ type, name, bundle }) ->
 
 export default (genie, { secrets }) ->
 
-  findConfig = (name) -> secrets.find (secret) -> secret.name == name 
-
-  findSubConfig = (name, subName) ->
-    config = findConfig name
-    if (!config? || 
-    ( config.type != "bundle" ) || 
-    ( !config.bundle? ) || 
-    ( !Array.isArray config.bundle ))
-      return null
-
-    config.bundle.find (config) -> config.name == subName
-
+  findConfig = (_name) -> 
+    [ name, subName ] = parseSecretName _name
+    if subName?
+      config = secrets.find (secret) -> secret.name == name
+      config.bundle.find (secret) -> secret.name == subName
+    else
+      secrets.find (secret) -> secret.name == name 
 
   # verify that all secrets in config exist
   genie.define "sky:secrets:check", ->
@@ -89,7 +85,7 @@ export default (genie, { secrets }) ->
   genie.define "sky:secret:put", (name) ->
     if ( config = findConfig name )?
       await setSecret name, await generate config
-      console.log "updated secret [#{config.name}]"
+      console.log "updated secret [#{name}]"
     else
       throw new Error "sky:secret:put failed, [#{name}] not configured"
 
@@ -99,26 +95,7 @@ export default (genie, { secrets }) ->
 
   genie.define "sky:secret:delete", (name) ->
     await deleteSecret name
-    console.log "deleted secret [#{name}]"
-
-  # updates a specific sub-secret of a bundle, creating if null. useful for rotation.
-  genie.define "sky:secret:bundle:put", (name, subName) ->
-    if ( subConfig = findSubConfig name, subName )?
-      value = JSON.parse await getSecret name
-      value[ subName ] = await generate subConfig
-      value = JSON.stringify value
-      await setSecret name, value
-      console.log "updated sub-secret [#{name}:#{subName}]"
-    else
-      throw new Error "sky:secret:bundle:put failed, [#{name}:#{subName}] not configured"
-
-  # deletes a specific sub-secret of a bundle.
-  genie.define "sky:secret:bundle:delete", (name, subName) ->
-    value = JSON.parse await getSecret name
-    delete value[ subName ]
-    value = JSON.stringify value
-    await setSecret name, value
-    console.log "deleted sub-secret [#{name}:#{subName}]"      
+    console.log "deleted secret [#{name}]" 
 
   # TODO temporary key rotation task to update key in WAF
   # See: https://github.com/dashkite/sky-alb/issues/1
