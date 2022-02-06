@@ -7,9 +7,10 @@ import {
   getSecret
   hasSecret
   setSecret
+  deleteSecret
 } from "@dashkite/dolores/secrets"
 
-generate = (type, name) ->
+generate = ({ type, name, bundle }) ->
   switch type
     when "random-16"
       Confidential.convert from: "bytes", to: "base36",
@@ -31,11 +32,32 @@ generate = (type, name) ->
         name: "value"
         message: "Enter secret [ #{name} ]:"
       value
+    when "bundle"
+      result = {}
+      for config in bundle
+        result[ config.name ] = await generate config
+      JSON.stringify result
+    else
+      throw new Error "unknown secret type"
+
 
 export default (genie, { secrets }) ->
-  
+
+  findConfig = (name) -> secrets.find (secret) -> secret.name == name 
+
+  findSubConfig = (name, subName) ->
+    config = findConfig name
+    if (!config? || 
+    ( config.type != "bundle" ) || 
+    ( !config.bundle? ) || 
+    ( !Array.isArray config.bundle ))
+      return null
+
+    config.bundle.find (config) -> config.name == subName
+
+
   # verify that all secrets in config exist
-  genie.define "secrets:check", ->
+  genie.define "sky:secrets:check", ->
     missing = []
     for secret in secrets
       if !await hasSecret secret.name
@@ -45,18 +67,18 @@ export default (genie, { secrets }) ->
         console.warn "Secret [#{name}] does not exist"
       throw new Error "secrets:check failed"
 
-  # ensures all secrets in config exist,
-  # generating values if they don't
-  genie.define "secrets:put", ->
+  # ensures all secrets in config exist, generating missing secrets.
+  genie.define "sky:secrets:put", ->
     missing = []
-    for secret in secrets
-      if !await hasSecret secret.name
-        missing.push secret
+    for config in secrets
+      if !( await hasSecret config.name )
+        missing.push config 
+    
     if missing.length > 0
-      for secret in missing
+      for config in missing
         try
-          await setSecret secret.name,
-            await generate secret.type, secret.name
+          await setSecret config.name, await generate config
+          console.log "updated secret [#{config.name}]"
         catch error
           # we're okay if one of these fails
           console.error error.message
@@ -64,16 +86,39 @@ export default (genie, { secrets }) ->
   # update a specific secret, creating the secret
   # if it doesn't exist already
   # useful for rotation
-  genie.define "secret:put", (name) ->
-    for secret in secrets when secret.name == name
-      await setSecret secret.name,
-        await generate secret.type, secret.name
-      return
-    throw new Error "secret:put failed, [#{name}] not configured"
+  genie.define "sky:secret:put", (name) ->
+    if ( config = findConfig name )?
+      await setSecret name, await generate config
+      console.log "updated secret [#{config.name}]"
+    else
+      throw new Error "sky:secret:put failed, [#{name}] not configured"
 
   # TODO maybe remove this later?
-  genie.define "secret:get", (name) ->
+  genie.define "sky:secret:get", (name) ->
     console.log await getSecret name
+
+  genie.define "sky:secret:delete", (name) ->
+    await deleteSecret name
+    console.log "deleted secret [#{name}]"
+
+  # updates a specific sub-secret of a bundle, creating if null. useful for rotation.
+  genie.define "sky:secret:bundle:put", (name, subName) ->
+    if ( subConfig = findSubConfig name, subName )?
+      value = JSON.parse await getSecret name
+      value[ subName ] = await generate subConfig
+      value = JSON.stringify value
+      await setSecret name, value
+      console.log "updated sub-secret [#{name}:#{subName}]"
+    else
+      throw new Error "sky:secret:bundle:put failed, [#{name}:#{subName}] not configured"
+
+  # deletes a specific sub-secret of a bundle.
+  genie.define "sky:secret:bundle:delete", (name, subName) ->
+    value = JSON.parse await getSecret name
+    delete value[ subName ]
+    value = JSON.stringify value
+    await setSecret name, value
+    console.log "deleted sub-secret [#{name}:#{subName}]"      
 
   # TODO temporary key rotation task to update key in WAF
   # See: https://github.com/dashkite/sky-alb/issues/1
