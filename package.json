@@ -39,7 +39,7 @@
     "@dashkite/genie-presets": "^0.5.6"
   },
   "dependencies": {
-    "@dashkite/dolores": "^0.0.7",
+    "@dashkite/dolores": "^0.0.8",
     "@dashkite/masonry": "^0.12.3",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/template": "^0.0.1",
