@@ -18,8 +18,8 @@ bundle = ( { environment, name, path } ) ->
       entry:
         index: Path.resolve path
       output:
-        path: Path.resolve "build/lambda/#{ name }"
-        filename: "[name].js"
+        path: Path.resolve "build/lambda"
+        filename: "#{name}.js"
         library: 
           type: "commonjs2"
       module:
@@ -71,14 +71,14 @@ export default (genie, { lambda }) ->
         # TODO apparently webpack returns before it's finished writing the file?
         loop
           try
-            await FS.readFile "build/lambda/#{ handler.name }/index.js"
+            await FS.readFile "build/lambda/#{ handler.name }.js"
             break
 
         await do m.exec "zip", [
-          "-qr"
+          "-qj"
           "-9"
           "build/lambda/#{ handler.name }.zip"
-          "build/lambda/#{ handler.name }"
+          "build/lambda/#{ handler.name }.js"
         ]
       else
         console.log "No updates for Lambda [ #{ handler.name } ]"

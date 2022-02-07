@@ -32,7 +32,7 @@ export default (genie, { namespace, lambda, variables }) ->
           role = await getRoleARN "#{name}-role"
 
           await publishLambda name, data, {
-            handler: "build/lambda/#{ handler.name }/index.handler"
+            handler: "#{ handler.name }.handler"
             handler.configuration...
             environment: { environment, variables... }
             role
