@@ -1,5 +1,6 @@
 import {
   getSecretARN
+  getWildcardARN
 } from "@dashkite/dolores/secrets"
 
 import { 
@@ -22,8 +23,12 @@ buildSecretsPolicy = (secrets) ->
   Action: [ "secretsmanager:GetSecretValue" ]
   Resource: await do ->
     for secret in secrets
-      console.log "authorize secret access for: #{secret.name}"
-      await getSecretARN secret.name
+      if secret.type == "wildcard"
+        console.log "authorize secret access for wildcard scope: #{secret.name}"
+        await getWildcardARN secret.name
+      else
+        console.log "authorize secret access for: #{secret.name}"
+        await getSecretARN secret.name
 
 mixinPolicyBuilders =
 

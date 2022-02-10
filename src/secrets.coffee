@@ -38,6 +38,8 @@ generate = ({ type, name, bundle }) ->
       for config in bundle
         result[ config.name ] = await generate config
       JSON.stringify result
+    when "wildcard"
+      throw new Error "Wildcard secrets define permission scope. Nothing to generate."
     else
       throw new Error "unknown secret type"
 
@@ -55,7 +57,7 @@ export default (genie, { secrets }) ->
   # verify that all secrets in config exist
   genie.define "sky:secrets:check", ->
     missing = []
-    for secret in secrets
+    for secret in secrets when secret.type != "wildcard"
       if !await hasSecret secret.name
         missing.push secret.name
     if missing.length > 0
@@ -66,7 +68,7 @@ export default (genie, { secrets }) ->
   # ensures all secrets in config exist, generating missing secrets.
   genie.define "sky:secrets:put", ->
     missing = []
-    for config in secrets
+    for config in secrets when config.type != "wildcard"
       if !( await hasSecret config.name )
         missing.push config 
     
