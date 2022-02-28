@@ -19,7 +19,7 @@ export default (genie, { namespace, lambda, variables }) ->
       "sky:zip:*" 
     ], (environment) ->
 
-      for handler in lambda.handlers
+      for handler in lambda?.handlers ? []
         
         try
           # if there's no zip file, the file hasn't changed

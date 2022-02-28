@@ -12,6 +12,7 @@ import {
   deleteStepFunction
   startStepFunction
   haltStepFunction
+  getStepFunctionARN
 } from "@dashkite/dolores/step-function"
 
 buildTarget = (name) ->
@@ -28,17 +29,39 @@ export default ( genie, options ) ->
       [
         "sky:lambda:update:*"
       ], (environment) ->
-        dictionary = await do ->
-          result = {}
-          for handler in lambda.handlers
-            result[ handler.name ] = await buildTarget "#{namespace}-#{environment}-#{handler.name}"
-          for _name in imports
-            result[ _name ] = await buildTarget _name
-          result
+        dictionary = {}
+        resources = lambdas: [], stepFunctions: []
 
-        createStepFunction "#{namespace}-#{environment}-#{name}",
-          dictionary,
-          YAML.load await FS.readFile path
+        for handler in ( lambda?.handlers ? [] )
+          arn = await buildTarget "#{namespace}-#{environment}-#{handler.name}"
+          dictionary[ handler.name ] = arn
+          resources.lambdas.push arn
+        for value in imports
+          if Type.isString value
+            arn = await buildTarget value
+            dictionary[ value ] = arn
+            resources.lambdas.push arn
+          else if Type.isObject value
+            _name = value.alias ? value.name
+            arn = await do ->
+              switch value.type
+                when "lambda" then buildTarget value.name
+                when "step-function" then getStepFunctionARN value.name
+                else throw new Error "unknown import type #{value.type}"
+            if !arn?
+              throw new Error "arn not found for #{JSON.stringify value}"
+            dictionary[_name] = arn
+            type = if value.type == "lambda" then "lambdas" else "stepFunctions"
+            resources[ type ].push arn
+          else
+            throw new Error "unprocessible import format\n #{JSON.stringify value}"
+
+        createStepFunction {
+          name: "#{namespace}-#{environment}-#{name}"
+          description: YAML.load await FS.readFile path
+          dictionary
+          resources
+        }
 
 
     genie.define "sky:step-function:start", (environment) ->

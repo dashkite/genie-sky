@@ -93,7 +93,7 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
 
     base = "#{namespace}-#{environment}"
 
-    for handler in lambda.handlers
+    for handler in ( lambda?.handlers ? [] )
 
       lambda = "#{base}-#{handler.name}"
       role = "#{lambda}-role"
@@ -114,7 +114,7 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
   genie.define "sky:roles:delete", (environment) ->
     base = "#{namespace}-#{environment}"
 
-    for handler in lambda.handlers
+    for handler in ( lambda?.handlers ? [] )
       lambda = "#{base}-#{handler.name}"
       role = lambda
       deleteRole role
