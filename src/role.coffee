@@ -7,6 +7,14 @@ import {
   createRole
 } from "@dashkite/dolores/roles"
 
+import {
+  getLambdaARN
+} from "@dashkite/dolores/lambda"
+
+import {
+  getStepFunctionARN
+} from "@dashkite/dolores/step-function"
+
 buildCloudWatchPolicy = (name) ->
   Effect: "Allow"
   Action: [
@@ -77,6 +85,57 @@ mixinPolicyBuilders =
       Resource: ["*"]
 
     ]
+
+  lambda: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "lambda:InvokeFunction"
+      ]
+      Resource: [
+        await getLambdaARN mixin.name
+      ]
+
+    ]
+
+  "step-function": do (self = false, managed = null) ->
+    managed = [
+        Effect: "Allow"
+        Action:[
+          "events:PutTargets"
+          "events:PutRule"
+          "events:DescribeRule"
+        ]
+        Resource: [
+          "arn:aws:events:us-east-1:618441030511:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+        ]
+      ,
+        Effect: "Allow"
+        Action:[
+          "states:DescribeExecution"
+          "states:StopExecution"
+          "states:ListStateMachines"
+        ]
+        Resource: '*'
+    ]
+
+    (mixin) ->
+      policies = [
+        Effect: "Allow"
+        Action: [ 
+          "states:startExecution" 
+        ]
+        Resource: [ await getStepFunctionARN mixin.name ]      
+      ]
+
+      if self == false
+        policies.push managed...
+        self = true
+
+      policies
+
+  
 
 buildMixinPolicy = (mixin, base) ->
   if ( builder = mixinPolicyBuilders[ mixin.type ])?
