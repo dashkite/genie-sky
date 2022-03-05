@@ -6,6 +6,7 @@ import alb from "./alb"
 import edge from "./edge"
 import bridge from "./bridge"
 import stepFunction from "./step-function"
+import buckets from "./s3"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -17,3 +18,4 @@ export default (genie) ->
     edge genie, options
     bridge genie, options
     stepFunction genie, options
+    buckets genie, options

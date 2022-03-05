@@ -15,6 +15,10 @@ import {
   getStepFunctionARN
 } from "@dashkite/dolores/step-function"
 
+import {
+  getBucketARN
+} from "@dashkite/dolores/bucket"
+
 buildCloudWatchPolicy = (name) ->
   Effect: "Allow"
   Action: [
@@ -135,6 +139,19 @@ mixinPolicyBuilders =
 
       policies
 
+  bucket: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "s3:GetObject"
+        "s3:PutObject"
+        "s3:DeleteObject"
+      ]
+      Resource: "#{ getBucketARN mixin.name }/*"
+
+    ]
+
   
 
 buildMixinPolicy = (mixin, base) ->
@@ -143,7 +160,7 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, { namespace, lambda, mixins, secrets }) ->
+export default (genie, { namespace, lambda, mixins, secrets, buckets }) ->
 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
@@ -163,6 +180,10 @@ export default (genie, { namespace, lambda, mixins, secrets }) ->
 
       if secrets? && secrets.length > 0
         policies.push await buildSecretsPolicy secrets
+
+      if buckets? && buckets.length > 0
+        for bucket in buckets
+          policies.push ( await buildMixinPolicy "bucket", bucket )...
 
       if mixins?
         for mixin in mixins
