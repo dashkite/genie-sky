@@ -1,7 +1,3 @@
-import FS from "fs/promises"
-import YAML from "js-yaml"
-
-
 import {
   hasBucket
   putBucket

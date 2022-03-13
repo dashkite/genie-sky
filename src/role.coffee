@@ -19,6 +19,10 @@ import {
   getBucketARN
 } from "@dashkite/dolores/bucket"
 
+import {
+  getQueueARN
+} from "@dashkite/dolores/queue"
+
 buildCloudWatchPolicy = (name) ->
   Effect: "Allow"
   Action: [
@@ -152,6 +156,21 @@ mixinPolicyBuilders =
 
     ]
 
+  queue: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "sqs:GetQueueUrl"
+        "sqs:DeleteMessage"
+        "sqs:ReceiveMessage"
+        "sqs:SendMessage"
+      ]
+      Resource: await getQueueARN mixin.name
+
+    ]
+    
+
   
 
 buildMixinPolicy = (mixin, base) ->
@@ -160,7 +179,7 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, { namespace, lambda, mixins, secrets, buckets }) ->
+export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) ->
 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
@@ -183,7 +202,13 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets }) ->
 
       if buckets? && buckets.length > 0
         for bucket in buckets
-          policies.push ( await buildMixinPolicy "bucket", bucket )...
+          _bucket = { bucket..., type: "bucket" }
+          policies.push ( await buildMixinPolicy _bucket, base )...
+
+      if queues? && queues.length > 0
+        for queue in queues
+          _queue = { queue..., type: "queue" }
+          policies.push ( await buildMixinPolicy _queue, base )...
 
       if mixins?
         for mixin in mixins
