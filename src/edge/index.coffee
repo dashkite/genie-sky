@@ -28,14 +28,14 @@ export default (genie, { namespace, lambda, edge }) ->
           max: 0
           default: 0
         certificate: await getCertificateARN domain
-      domain: edge.domain
+      domain: domain
       origin: edge.origin
       handlers: await do ->
         for handler in lambda.handlers
           event: handler.event
-          arn: await getLatestLambdaARN "#{namespace}-#{environment}-#{handler.name}-lambda"
+          arn: await getLatestLambdaARN "#{namespace}-#{environment}-#{handler.name}"
     console.log {template}
-    deployStack "#{namespace}-edge-#{environment}", template      
+    deployStack "#{namespace}-#{environment}", template      
       
   genie.define "sky:edge:delete", (environment) ->
-    deleteStack "#{namespace}-#{environment}-alb"
+    deleteStack "#{namespace}-#{environment}"

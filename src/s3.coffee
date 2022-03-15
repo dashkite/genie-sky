@@ -5,6 +5,7 @@ import {
   emptyBucket
   getBucketLifecycle
   putBucketLifecycle
+  deleteBucketLifecycle
 } from "@dashkite/dolores/bucket"
 
 export default ( genie, options ) ->
