@@ -27,7 +27,7 @@ export default ( genie, options ) ->
 
     genie.define "sky:step-function:publish",
       [
-        "sky:lambda:update:*"
+        "sky:lambda:publish:*"
       ], (environment) ->
         dictionary = {}
         resources = lambdas: [], stepFunctions: []
