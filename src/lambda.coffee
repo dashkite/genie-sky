@@ -12,12 +12,14 @@ import {
 
 export default (genie, { namespace, lambda, variables }) ->
   
-  genie.define "sky:lambda:update",
+  genie.define "sky:lambda:publish",
     [ 
       "clean"
       "sky:role:publish:*"
       "sky:zip:*" 
     ], (environment) ->
+      if !environment?
+        throw new Error "sky:lambda:publish environment is undefined"
 
       for handler in lambda?.handlers ? []
         
@@ -39,7 +41,13 @@ export default (genie, { namespace, lambda, variables }) ->
         }
   
   genie.define "sky:lambda:version", (environment, name) ->
+    if !environment? || !name?
+      throw new Error "sky:lambda:version environment and name must be defined"
+
     versionLambda "#{namespace}-#{environment}-#{name}"
 
   genie.define "sky:lambda:delete", (environment, name) ->
+    if !environment? || !name?
+      throw new Error "sky:lambda:delete environment and name must be defined"
+
     deleteLambda "#{namespace}-#{environment}-#{name}"
