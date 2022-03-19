@@ -18,7 +18,7 @@ export default (genie, { namespace, bridge, lambda }) ->
 
   # TODO add delete / teardown
 
-  genie.define "sky:bridge:publish", [ "sky:roles:publish:*", "sky:lambda:update:*" ], (environment) ->
+  genie.define "sky:bridge:publish", [ "sky:roles:publish:*", "sky:lambda:publish:*" ], (environment) ->
     { name } = lambda.handlers[0] 
     await createRule {
       name: "#{namespace}-#{environment}-#{bridge.name}-bridge"

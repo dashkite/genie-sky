@@ -36,7 +36,7 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
 
 export default (genie, { namespace, lambda, variables }) ->
   
-  genie.define "sky:lambda:update",
+  genie.define "sky:lambda:publish",
     [ 
       "clean"
       "sky:role:publish:*"
@@ -50,7 +50,7 @@ export default (genie, { namespace, lambda, variables }) ->
         variables
         version: false 
       }
-  
+
   genie.define "sky:lambda:publish",
     [ 
       "clean"
@@ -67,7 +67,12 @@ export default (genie, { namespace, lambda, variables }) ->
       }
 
   genie.define "sky:lambda:version", (environment, name) ->
-    versionLamba "#{namespace}-#{environment}-#{name}"
+    versionLambda "#{namespace}-#{environment}-#{name}"
+    if !environment? || !name?
+      throw new Error "sky:lambda:version environment and name must be defined"
 
   genie.define "sky:lambda:delete", (environment, name) ->
+    if !environment? || !name?
+      throw new Error "sky:lambda:delete environment and name must be defined"
+
     deleteLambda "#{namespace}-#{environment}-#{name}"
