@@ -2,6 +2,7 @@ import FS from "fs/promises"
 import YAML from "js-yaml"
 
 import * as Type from "@dashkite/joy/type"
+import { guard } from "./helpers"
 
 import {
   getLambdaARN
@@ -28,7 +29,7 @@ export default ( genie, options ) ->
     genie.define "sky:step-function:publish",
       [
         "sky:lambda:publish:*"
-      ], (environment) ->
+      ], guard (environment) ->
         dictionary = {}
         resources = lambdas: [], stepFunctions: []
 
@@ -64,11 +65,11 @@ export default ( genie, options ) ->
         }
 
 
-    genie.define "sky:step-function:start", (environment) ->
+    genie.define "sky:step-function:start", guard (environment) ->
       startStepFunction "#{namespace}-#{environment}-#{name}"
 
-    genie.define "sky:step-function:halt", (environment) ->
+    genie.define "sky:step-function:halt", guard (environment) ->
       haltStepFunction "#{namespace}-#{environment}-#{name}"
       
-    genie.define "sky:step-function:delete", (environment) ->
+    genie.define "sky:step-function:delete", guard (environment) ->
       deleteStepFunction "#{namespace}-#{environment}-#{name}"

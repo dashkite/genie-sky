@@ -1,3 +1,5 @@
+import { guard } from "./helpers"
+
 import {
   getSecretARN
   getWildcardARN
@@ -184,7 +186,7 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
   
-  genie.define "sky:role:publish", (environment) ->
+  genie.define "sky:role:publish", guard (environment) ->
 
     base = "#{namespace}-#{environment}"
 
@@ -216,7 +218,7 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) 
 
       await createRole role, policies
 
-  genie.define "sky:roles:delete", (environment) ->
+  genie.define "sky:roles:delete", guard (environment) ->
     base = "#{namespace}-#{environment}"
 
     for handler in ( lambda?.handlers ? [] )

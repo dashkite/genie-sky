@@ -1,4 +1,5 @@
 import FS from "fs/promises"
+import { guard } from "./helpers"
 
 import {
   publishLambda
@@ -36,13 +37,13 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
 
 export default (genie, { namespace, lambda, variables }) ->
   
-  genie.define "sky:lambda:publish",
+  genie.define "sky:lambda:update",
     [ 
       "clean"
       "sky:role:publish:*"
       "sky:zip:*" 
     ],
-    (environment) ->
+    guard (environment) ->
       updateLambdas {
         namespace
         environment
@@ -57,7 +58,7 @@ export default (genie, { namespace, lambda, variables }) ->
       "sky:role:publish:*"
       "sky:zip:*" 
     ],
-    (environment) ->
+    guard (environment) ->
       updateLambdas {
         namespace
         environment
@@ -66,13 +67,8 @@ export default (genie, { namespace, lambda, variables }) ->
         version: true
       }
 
-  genie.define "sky:lambda:version", (environment, name) ->
+  genie.define "sky:lambda:version", guard (environment, name) ->
     versionLambda "#{namespace}-#{environment}-#{name}"
-    if !environment? || !name?
-      throw new Error "sky:lambda:version environment and name must be defined"
 
-  genie.define "sky:lambda:delete", (environment, name) ->
-    if !environment? || !name?
-      throw new Error "sky:lambda:delete environment and name must be defined"
-
+  genie.define "sky:lambda:delete", guard (environment, name) ->
     deleteLambda "#{namespace}-#{environment}-#{name}"

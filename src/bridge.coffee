@@ -1,3 +1,5 @@
+import { guard } from "./helpers"
+
 import {
   getLambdaARN
 } from "@dashkite/dolores/lambda"
@@ -18,13 +20,18 @@ export default (genie, { namespace, bridge, lambda }) ->
 
   # TODO add delete / teardown
 
-  genie.define "sky:bridge:publish", [ "sky:roles:publish:*", "sky:lambda:publish:*" ], (environment) ->
-    { name } = lambda.handlers[0] 
-    await createRule {
-      name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
-      target: await buildTarget "#{namespace}-#{environment}-#{name}-lambda"
-      schedule: bridge.schedule
-    }    
+  genie.define "sky:bridge:publish", 
+    [ 
+      "sky:roles:publish:*"
+      "sky:lambda:publish:*" 
+    ], 
+    guard (environment) ->
+      { name } = lambda.handlers[0] 
+      await createRule {
+        name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
+        target: await buildTarget "#{namespace}-#{environment}-#{name}-lambda"
+        schedule: bridge.schedule
+      }    
     
-  genie.define "sky:bridge:delete", (environment) ->
+  genie.define "sky:bridge:delete", guard (environment) ->
     deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"
