@@ -92,10 +92,10 @@ export default ( genie, options ) ->
     # TODO we should do a delta here, not a straight put
     genie.define "sky:bucket:publish", (name) ->
 
-      bucket = buckets.find ( bucket ) -> name == bucket.name
+      { publish } = buckets.find ( bucket ) -> name == bucket.name
 
       do m.start [
-        m.glob ( bucket.glob ? "**/*" ), ( bucket.root ? "." )
+        m.glob ( publish.glob ? "**/*" ), ( publish.root ? "." )
         m.read
         It.map Fn.flow [
           K.read "input"
