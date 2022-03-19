@@ -1,3 +1,5 @@
+import { guard } from "./helpers"
+
 import {
   getQueueURL
   putQueue
@@ -25,13 +27,13 @@ export default ( genie, options ) ->
       for queue in queues
         await putQueue queue.name
 
-    genie.define "sky:queue:empty", (name) ->
+    genie.define "sky:queue:empty", guard (name) ->
       if await getQueueURL name
         await emptyQueue name
       else
         throw new Error "queue [#{name}] does not exist"
 
-    genie.define "sky:queue:delete", (name) ->
+    genie.define "sky:queue:delete", guard (name) ->
       if await getQueueURL name
         await emptyQueue name
         await deleteQueue name

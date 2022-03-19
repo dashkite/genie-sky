@@ -4,6 +4,7 @@ import YAML from "js-yaml"
 import * as m from "@dashkite/masonry"
 import { confidential } from "panda-confidential"
 import Webpack from "webpack"
+import { guard } from "./helpers"
 
 bundle = ( { environment, name, path } ) ->
   new Promise (resolve, reject) ->
@@ -51,7 +52,7 @@ bundle = ( { environment, name, path } ) ->
           resolve result
 
 export default (genie, { lambda }) ->
-  genie.define "sky:zip", (environment) ->
+  genie.define "sky:zip", guard (environment) ->
     environment = "development" if environment != "production"
     oldHashes = await do ->
       try
