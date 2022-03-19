@@ -11,10 +11,11 @@ tld = (domain) -> It.join ".", ( Text.split ".", domain )[-2..]
 export default (genie, { namespace, lambda, edge }) ->
 
   # TODO add lambda versioning
-  genie.define "sky:edge:publish", [ "sky:roles:publish:*", "sky:lambda:update:*" ], (environment) ->
+  genie.define "sky:edge:publish", [ "sky:roles:publish:*", "sky:lambda:publish:*" ], (environment) ->
     domain = tld edge.aliases[0].domain
     templates = Templates.create "#{__dirname}"
     template = await templates.render "template.yaml",
+      name: edge.name ? namespace
       namespace: namespace
       environment: environment
       description: edge.description ?
@@ -32,7 +33,7 @@ export default (genie, { namespace, lambda, edge }) ->
       origin: edge.origin
       handlers: await do ->
         for handler in lambda.handlers
-          event: handler.event
+          event: handler.event ? handler.name
           arn: await getLatestLambdaARN "#{namespace}-#{environment}-#{handler.name}"
     console.log {template}
     deployStack "#{namespace}-#{environment}", template      
