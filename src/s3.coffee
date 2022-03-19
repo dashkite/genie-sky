@@ -1,3 +1,8 @@
+import * as m from "@dashkite/masonry"
+import * as Fn from "@dashkite/joy/function"
+import * as It from "@dashkite/joy/iterable"
+import * as K from "@dashkite/katana/sync"
+
 import {
   hasBucket
   putBucket
@@ -7,6 +12,7 @@ import {
   putBucketLifecycle
   deleteBucketLifecycle
   getObject
+  putObject
 } from "@dashkite/dolores/bucket"
 
 import prompts from "prompts"
@@ -82,3 +88,22 @@ export default ( genie, options ) ->
         name: "value"
         message: "Key for bucket [ #{name} ]:"
       console.log await getObject name, value
+
+    # TODO we should do a delta here, not a straight put
+    genie.define "sky:bucket:publish", (name) ->
+
+      bucket = buckets.find ( bucket ) -> name == bucket.name
+
+      do m.start [
+        m.glob ( bucket.glob ? "**/*" ), ( bucket.root ? "." )
+        m.read
+        It.map Fn.flow [
+          K.read "input"
+          K.read "source"
+          K.push ( source, input ) ->
+            Bucket: "vega.dashkite.run"
+            Key: source.path
+            Body: input
+          K.peek putObject
+        ]
+      ]
