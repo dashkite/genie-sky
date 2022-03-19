@@ -6,7 +6,10 @@ import {
   getBucketLifecycle
   putBucketLifecycle
   deleteBucketLifecycle
+  getObject
 } from "@dashkite/dolores/bucket"
+
+import prompts from "prompts"
 
 export default ( genie, options ) ->
   if options.buckets?
@@ -72,3 +75,10 @@ export default ( genie, options ) ->
         await deleteBucket name
       else
         throw new Error "bucket [#{name}] does not exist"
+
+    genie.define "sky:bucket:get", (name) ->
+      { value } = await prompts
+        type: "text"
+        name: "value"
+        message: "Key for bucket [ #{name} ]:"
+      console.log await getObject name, value
