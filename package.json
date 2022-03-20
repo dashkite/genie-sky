@@ -46,6 +46,7 @@
     "coffee-loader": "^3.0.0",
     "css-loader": "^6.6.0",
     "js-yaml": "^4.1.0",
+    "mime-types": "^2.1.35",
     "panda-confidential": "^3.1.2",
     "prompts": "^2.4.2",
     "pug-loader": "^2.4.0",

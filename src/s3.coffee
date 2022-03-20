@@ -1,7 +1,10 @@
+import Path from "node:path"
+
 import * as m from "@dashkite/masonry"
 import * as Fn from "@dashkite/joy/function"
 import * as It from "@dashkite/joy/iterable"
 import * as K from "@dashkite/katana/sync"
+import Mime from "mime-types"
 
 import {
   hasBucket
@@ -95,15 +98,21 @@ export default ( genie, options ) ->
       { publish } = buckets.find ( bucket ) -> name == bucket.name
 
       do m.start [
-        m.glob ( publish.glob ? "**/*" ), ( publish.root ? "." )
+        m.glob ( publish?.glob ? "**/*" ), ( publish?.root ? "." )
         m.read
         It.map Fn.flow [
           K.read "input"
           K.read "source"
           K.push ( source, input ) ->
-            Bucket: "vega.dashkite.run"
-            Key: source.path
+            console.log "publishing [ #{source.path} ] ..."
+            Bucket: name
+            Key: do ->
+              if publish?.target?
+                Path.join publish.target, source.path
+              else 
+                source.path
             Body: input
+            ContentType: ( Mime.lookup source.path  ) ? "application/octet-stream"
           K.peek putObject
         ]
       ]
