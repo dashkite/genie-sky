@@ -40,7 +40,7 @@ export default (genie, { namespace, lambda, variables }) ->
   genie.define "sky:lambda:update",
     [ 
       "clean"
-      "sky:role:publish:*"
+      "sky:roles:publish:*"
       "sky:zip:*" 
     ],
     guard (environment) ->
@@ -55,7 +55,7 @@ export default (genie, { namespace, lambda, variables }) ->
   genie.define "sky:lambda:publish",
     [ 
       "clean"
-      "sky:role:publish:*"
+      "sky:roles:publish:*"
       "sky:zip:*" 
     ],
     guard (environment) ->

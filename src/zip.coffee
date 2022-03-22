@@ -6,7 +6,7 @@ import { confidential } from "panda-confidential"
 import Webpack from "webpack"
 import { guard } from "./helpers"
 
-bundle = ( { environment, name, path } ) ->
+bundle = ( { environment, name, path, aliases } ) ->
   new Promise (resolve, reject) ->
     Webpack 
       mode: environment
@@ -44,6 +44,7 @@ bundle = ( { environment, name, path } ) ->
       resolve:
         extensions: [ ".js", ".json", ".yaml", ".coffee" ]
         modules: [ "node_modules" ]
+        alias: aliases
       (error, result) ->
         if error? || result.hasErrors()
           console.error result?.toString colors: true
@@ -62,6 +63,9 @@ export default (genie, { lambda }) ->
     newHashes = {}
 
     for handler in lambda.handlers
+      handler.aliases ?= {}
+      for alias, path of handler.aliases
+        handler.aliases[ alias ] = Path.resolve path
 
       result = await bundle { environment, handler... }
       newHashes[ handler.name ] = result.hash

@@ -25,14 +25,19 @@ import {
   getQueueARN
 } from "@dashkite/dolores/queue"
 
-buildCloudWatchPolicy = (name) ->
+buildCloudWatchPolicy = (name, handler) ->
+  region = handler.region ? "us-east-1"
+
   Effect: "Allow"
   Action: [
     "logs:CreateLogGroup"
     "logs:CreateLogStream"
     "logs:PutLogEvents"
   ]
-  Resource: [ "arn:aws:logs:*:*:log-group:/aws/lambda/#{name}:*" ]
+  Resource: [ 
+    "arn:aws:logs:*:*:log-group:/aws/lambda/#{name}:*" 
+    "arn:aws:logs:*:*:log-group:/aws/lambda/#{region}.#{name}:*" 
+  ]
 
 buildSecretsPolicy = (secrets) ->
   console.log "*** build secrets policy ***"
@@ -186,7 +191,7 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
   
-  genie.define "sky:role:publish", guard (environment) ->
+  genie.define "sky:roles:publish", guard (environment) ->
 
     base = "#{namespace}-#{environment}"
 
@@ -197,7 +202,7 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) 
 
       # TODO possibly explore how to split out role building
       # TODO allow for different policies for different handlers
-      policies = [ buildCloudWatchPolicy lambda ]
+      policies = [ ( buildCloudWatchPolicy lambda, handler ) ]
 
       if secrets? && secrets.length > 0
         policies.push await buildSecretsPolicy secrets
