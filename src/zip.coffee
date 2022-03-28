@@ -7,6 +7,15 @@ import Webpack from "webpack"
 import { guard } from "./helpers"
 
 bundle = ( { environment, name, path, aliases } ) ->
+
+  aliases ?= await do ->
+    pkg = JSON.parse await FS.readFile "./package.json", encoding: "utf8"
+    pkg.sky?.imports
+
+  if aliases?
+    for alias, _path of aliases
+      aliases[ alias ] = Path.resolve _path
+
   new Promise (resolve, reject) ->
     Webpack 
       mode: environment
@@ -63,9 +72,6 @@ export default (genie, { lambda }) ->
     newHashes = {}
 
     for handler in lambda.handlers
-      handler.aliases ?= {}
-      for alias, path of handler.aliases
-        handler.aliases[ alias ] = Path.resolve path
 
       result = await bundle { environment, handler... }
       newHashes[ handler.name ] = result.hash
