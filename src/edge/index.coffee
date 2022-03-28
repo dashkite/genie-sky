@@ -36,7 +36,7 @@ export default (genie, { namespace, lambda, edge }) ->
             default: 0
           certificate: await getCertificateARN domain
         domain: domain
-        origin: edge.origin
+        origins: if edge.origins? then edge.origins else [ edge.origin ]
         handlers: await do ->
           for handler in lambda.handlers
             event: handler.event ? handler.name

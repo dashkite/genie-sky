@@ -31,7 +31,7 @@ Resources:
             QueryString: true
             QueryStringCacheKeys: ["*"]
           SmoothStreaming: false
-          TargetOriginId: origin
+          TargetOriginId: {{{origins.[0]}}}
           ViewerProtocolPolicy: redirect-to-https
           LambdaFunctionAssociations:
             {{#each handlers}}
@@ -44,14 +44,16 @@ Resources:
         HttpVersion: http2
         IPV6Enabled: false
         Origins:
-          - Id: origin
-            DomainName: {{{origin}}}
+          {{#each origins}}
+          - Id: {{{.}}}
+            DomainName: {{{.}}}
             CustomOriginConfig:
               HTTPSPort: 443
               OriginKeepaliveTimeout: 60
               OriginProtocolPolicy: "https-only"
               OriginReadTimeout: 60
               OriginSSLProtocols: [ "TLSv1.2" ]
+          {{/each}}
         PriceClass: PriceClass_{{cache.[price-class]}}
         ViewerCertificate:
           AcmCertificateArn: {{cache.certificate}}
