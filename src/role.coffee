@@ -22,6 +22,10 @@ import {
 } from "@dashkite/dolores/bucket"
 
 import {
+  getTableARN
+} from "@dashkite/dolores/dynamodb"
+
+import {
   getQueueARN
 } from "@dashkite/dolores/queue"
 
@@ -163,6 +167,18 @@ mixinPolicyBuilders =
 
     ]
 
+  table: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [ "dynamodb:*" ]
+      Resource: [
+        getTableARN mixin.name
+        "#{getTableARN mixin.name}/*"
+      ] 
+
+    ]
+
   queue: (mixin) ->
     [
 
@@ -186,7 +202,7 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) ->
+export default (genie, { namespace, lambda, mixins, secrets, buckets, tables, queues }) ->
 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
@@ -211,6 +227,11 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, queues }) 
         for bucket in buckets
           _bucket = { bucket..., type: "bucket" }
           policies.push ( await buildMixinPolicy _bucket, base )...
+
+      if tables? && tables.length > 0
+        for table in tables
+          _table = { table..., type: "table" }
+          policies.push ( await buildMixinPolicy _table, base )...
 
       if queues? && queues.length > 0
         for queue in queues

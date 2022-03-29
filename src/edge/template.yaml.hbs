@@ -36,6 +36,7 @@ Resources:
           LambdaFunctionAssociations:
             {{#each handlers}}
             - EventType: {{event}}
+              IncludeBody: {{includesBody}}
               LambdaFunctionARN: {{arn}}
             {{/each}}
 

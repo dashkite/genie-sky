@@ -40,6 +40,7 @@ export default (genie, { namespace, lambda, edge }) ->
         handlers: await do ->
           for handler in lambda.handlers
             event: handler.event ? handler.name
+            includesBody: handler.includesBody ? false
             arn: await getLatestLambdaARN "#{namespace}-#{environment}-#{handler.name}"
       console.log {template}
       deployStack "#{namespace}-#{environment}", template      

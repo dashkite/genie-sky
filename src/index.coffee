@@ -7,6 +7,7 @@ import edge from "./edge"
 import bridge from "./bridge"
 import stepFunction from "./step-function"
 import buckets from "./s3"
+import tables from "./dynamodb"
 import queues from "./queue"
 
 export default (genie) ->
@@ -20,4 +21,5 @@ export default (genie) ->
     bridge genie, options
     stepFunction genie, options
     buckets genie, options
+    tables genie, options
     queues genie, options
