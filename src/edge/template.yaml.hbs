@@ -8,7 +8,7 @@ Resources:
       DistributionConfig:
         Aliases:
         {{#each aliases}}
-          - {{{domain}}}
+          - '{{{domain}}}'
         {{/each}}
         Comment: {{description}}
         DefaultCacheBehavior:
@@ -73,7 +73,7 @@ Resources:
       HostedZoneId: {{this.[hosted-zone]}}
       RecordSets:
         {{#each aliases}}
-        - Name: {{{domain}}}.
+        - Name: '{{{domain}}}.'
           Type: A
           AliasTarget:
             DNSName: !GetAtt [ CustomDomainCF, "DomainName" ]
