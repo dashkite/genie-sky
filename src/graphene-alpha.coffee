@@ -6,8 +6,10 @@ import * as K from "@dashkite/katana/sync"
 import { guard as _guard } from "./helpers"
 import { 
   createDatabase
+  deleteDatabase
   getCollection
   publishCollection
+  deleteCollection
   putItem 
 } from "@dashkite/dolores/graphene-alpha"
 
