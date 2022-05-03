@@ -9,6 +9,7 @@ import stepFunction from "./step-function"
 import buckets from "./s3"
 import tables from "./dynamodb"
 import graphene from "./graphene"
+import grapheneAlpha from "./graphene-alpha"
 import queues from "./queue"
 
 export default (genie) ->
@@ -24,4 +25,5 @@ export default (genie) ->
     buckets genie, options
     tables genie, options
     graphene genie, options
+    grapheneAlpha genie, options
     queues genie, options

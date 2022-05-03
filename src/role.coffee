@@ -59,6 +59,12 @@ buildSecretsPolicy = (secrets) ->
 
 mixinPolicyBuilders =
 
+  managedPolicies: (mixin) ->
+    [
+      managedPolicies:
+          - "arn:aws:iam::618441030511:policy/WayboxManagerRole"
+    ]
+
   graphite: (mixin, base) ->
     
     region = mixin.region ? "us-east-1"
@@ -202,7 +208,8 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, { namespace, lambda, mixins, secrets, buckets, tables, queues }) ->
+export default (genie, options) ->
+  { namespace, lambda, mixins, secrets, buckets, tables, queues } = options
 
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
@@ -242,7 +249,7 @@ export default (genie, { namespace, lambda, mixins, secrets, buckets, tables, qu
         for mixin in mixins
           policies.push ( await buildMixinPolicy mixin, base )...
 
-      await createRole role, policies
+      await createRole role, policies, options[ "managed-policies" ]
 
   genie.define "sky:roles:delete", guard (environment) ->
     base = "#{namespace}-#{environment}"
