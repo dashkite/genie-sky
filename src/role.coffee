@@ -59,12 +59,6 @@ buildSecretsPolicy = (secrets) ->
 
 mixinPolicyBuilders =
 
-  managedPolicies: (mixin) ->
-    [
-      managedPolicies:
-          - "arn:aws:iam::618441030511:policy/WayboxManagerRole"
-    ]
-
   graphite: (mixin, base) ->
     
     region = mixin.region ? "us-east-1"
@@ -208,6 +202,17 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
+buildManagedPolicies = (options, handler) ->
+  managed = undefined
+  if options[ "managed-policies" ]?
+    managed ?= []
+    managed.push options[ "managed-policies" ]...
+  if handler.sources?
+    managed ?= []
+    managed.push "arn:aws:iam::aws:policy/service-role/AWSLambdaKinesisExecutionRole"
+  managed
+
+
 export default (genie, options) ->
   { namespace, lambda, mixins, secrets, buckets, tables, queues } = options
 
@@ -249,7 +254,9 @@ export default (genie, options) ->
         for mixin in mixins
           policies.push ( await buildMixinPolicy mixin, base )...
 
-      await createRole role, policies, options[ "managed-policies" ]
+      managed = await buildManagedPolicies options, handler
+
+      await createRole role, policies, managed
 
   genie.define "sky:roles:delete", guard (environment) ->
     base = "#{namespace}-#{environment}"

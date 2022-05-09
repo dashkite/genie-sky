@@ -5,11 +5,23 @@ import {
   publishLambda
   versionLambda
   deleteLambda
+  putSources
 } from "@dashkite/dolores/lambda"
+
+import {
+  getStream
+} from "@dashkite/dolores/kinesis"
 
 import { 
   getRoleARN
 } from "@dashkite/dolores/roles"
+
+nameLambda = ({ namespace, environment, name }) ->
+  if !namespace? || !environment? || !name?
+    throw new Error "unable to form lambda function name with parameters 
+      #{namespace} #{environment} #{name}"  
+  
+  "#{namespace}-#{environment}-#{name}"
 
 updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
 
@@ -21,7 +33,7 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
     
     if data?
 
-      name = "#{namespace}-#{environment}-#{handler.name}"
+      name = nameLambda { namespace, environment, name: handler.name }
 
       role = await getRoleARN "#{name}-role"
 
@@ -35,40 +47,92 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
       if version
         await versionLambda name
 
-export default (genie, { namespace, lambda, variables }) ->
+export default (genie, options) ->
+
+  if options.lambda?
+    { namespace, lambda, variables } = options
   
-  genie.define "sky:lambda:update",
-    [ 
-      "clean"
-      "sky:roles:publish:*"
-      "sky:zip:*" 
-    ],
-    guard (environment) ->
-      updateLambdas {
-        namespace
-        environment
-        lambda
-        variables
-        version: false 
-      }
+    genie.define "sky:lambda:update",
+      [ 
+        "clean"
+        "sky:roles:publish:*"
+        "sky:zip:*" 
+      ],
+      guard (environment) ->
+        updateLambdas {
+          namespace
+          environment
+          lambda
+          variables
+          version: false 
+        }
 
-  genie.define "sky:lambda:publish",
-    [ 
-      "clean"
-      "sky:roles:publish:*"
-      "sky:zip:*" 
-    ],
-    guard (environment) ->
-      updateLambdas {
-        namespace
-        environment
-        lambda
-        variables
-        version: true
-      }
+    genie.define "sky:lambda:publish",
+      [ 
+        "clean"
+        "sky:roles:publish:*"
+        "sky:zip:*" 
+      ],
+      guard (environment) ->
+        updateLambdas {
+          namespace
+          environment
+          lambda
+          variables
+          version: true
+        }
 
-  genie.define "sky:lambda:version", guard (environment, name) ->
-    versionLambda "#{namespace}-#{environment}-#{name}"
+    genie.define "sky:lambda:version", guard (environment, name) ->
+      versionLambda nameLambda { namespace, environment, name }
 
-  genie.define "sky:lambda:delete", guard (environment, name) ->
-    deleteLambda "#{namespace}-#{environment}-#{name}"
+    genie.define "sky:lambda:delete", guard (environment, name) ->
+      deleteLambda nameLambda { namespace, environment, name }
+
+    genie.define "sky:lambda:sources:put", guard (environment, name) ->
+      handler = lambda.handlers.find (h) -> h.name == name
+
+      if !handler?
+        throw new Error "configuration is not available for handler [#{name}]"
+      if !handler.sources?
+        throw new Error "sources are not configured for handler [#{name}]"
+
+      sources = []
+      for source in handler.sources
+        switch source.type
+          when "kinesis"
+            stream = await getStream source.name
+            if !stream?
+              throw new Error "stream #{source.name} is not available"
+            sources.push
+              BatchSize: source.batchSize ? 1
+              Enabled: true
+              EventSourceArn: stream.arn
+              FunctionName: nameLambda { namespace, environment, name }
+              StartingPosition: "TRIM_HORIZON"
+          
+          else
+            throw new Error ""
+      
+      await putSources "#{namespace}-#{environment}-#{handler.name}", sources
+
+
+# createSourceEvents configuration shape
+#  
+# BatchSize
+# BisectBatchOnFunctionError
+# DestinationConfig
+# Enabled
+# EventSourceArn
+# FunctionName
+# FunctionResponseTypes
+# MaximumBatchingWindowInSeconds
+# MaximumRecordAgeInSeconds
+# MaximumRetryAttempts
+# ParallelizationFactor
+# Queues
+# SelfManagedEventSource
+# SourceAccessConfigurations
+# StartingPosition
+# StartingPositionTimestamp
+# Topics
+# TumblingWindowInSeconds
