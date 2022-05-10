@@ -29,6 +29,10 @@ import {
   getQueueARN
 } from "@dashkite/dolores/queue"
 
+import {
+  getStreamARN
+} from "@dashkite/dolores/kinesis"
+
 buildCloudWatchPolicy = (name, handler) ->
   region = handler.region ? "us-east-1"
 
@@ -190,6 +194,18 @@ mixinPolicyBuilders =
         "sqs:SendMessage"
       ]
       Resource: await getQueueARN mixin.name
+
+    ]
+
+  "kinesis-stream": (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "kinesis:PutRecord"
+        "kinesis:PutRecords"
+      ]
+      Resource: await getStreamARN mixin.name
 
     ]
     
