@@ -115,6 +115,7 @@ export default (genie, options) ->
       
       await putSources "#{namespace}-#{environment}-#{handler.name}", sources
 
+export { nameLambda }
 
 # createSourceEvents configuration shape
 #  

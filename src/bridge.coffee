@@ -9,6 +9,10 @@ import {
   deleteRule
 } from "@dashkite/dolores/events"
 
+import {
+  nameLambda
+} from "./lambda"
+
 
 buildTarget = (name) ->
   arn = await getLambdaARN name
@@ -17,21 +21,19 @@ buildTarget = (name) ->
   Id: name
 
 export default (genie, { namespace, bridge, lambda }) ->
-
-  # TODO add delete / teardown
-
-  genie.define "sky:bridge:publish", 
-    [ 
-      "sky:roles:publish:*"
-      "sky:lambda:publish:*" 
-    ], 
-    guard (environment) ->
-      { name } = lambda.handlers[0] 
-      await createRule {
-        name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
-        target: await buildTarget "#{namespace}-#{environment}-#{name}-lambda"
-        schedule: bridge.schedule
-      }    
-    
-  genie.define "sky:bridge:delete", guard (environment) ->
-    deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"
+  if bridge?
+    genie.define "sky:bridge:publish", 
+      [ 
+        "sky:roles:publish:*"
+        "sky:lambda:publish:*" 
+      ], 
+      guard (environment) ->
+        { name } = bridge.lambda
+        await createRule {
+          name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
+          target: await buildTarget nameLambda { namespace, environment, name }
+          schedule: bridge.schedule
+        }    
+      
+    genie.define "sky:bridge:delete", guard (environment) ->
+      deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"
