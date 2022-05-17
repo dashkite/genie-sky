@@ -6,6 +6,7 @@ import {
   versionLambda
   deleteLambda
   putSources
+  deleteSources
 } from "@dashkite/dolores/lambda"
 
 import {
@@ -47,11 +48,33 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
       if version
         await versionLambda name
 
+updateSources = ({ namespace, environment, handler }) ->
+  name = nameLambda { namespace, environment, name: handler.name }
+  sources = []
+  for source in handler.sources
+    switch source.type
+      when "kinesis"
+        stream = await getStream source.name
+        if !stream?
+          throw new Error "stream #{source.name} is not available"
+        sources.push
+          BatchSize: source.batchSize ? 1
+          Enabled: true
+          EventSourceArn: stream.arn
+          FunctionName: name
+          StartingPosition: "TRIM_HORIZON"
+      
+      else
+        throw new Error "unknown stream type"
+
+  await putSources name, sources
+
+
 export default (genie, options) ->
 
   if options.lambda?
     { namespace, lambda, variables } = options
-  
+
     genie.define "sky:lambda:update",
       [ 
         "clean"
@@ -96,24 +119,21 @@ export default (genie, options) ->
       if !handler.sources?
         throw new Error "sources are not configured for handler [#{name}]"
 
-      sources = []
-      for source in handler.sources
-        switch source.type
-          when "kinesis"
-            stream = await getStream source.name
-            if !stream?
-              throw new Error "stream #{source.name} is not available"
-            sources.push
-              BatchSize: source.batchSize ? 1
-              Enabled: true
-              EventSourceArn: stream.arn
-              FunctionName: nameLambda { namespace, environment, name }
-              StartingPosition: "TRIM_HORIZON"
-          
-          else
-            throw new Error ""
-      
-      await putSources "#{namespace}-#{environment}-#{handler.name}", sources
+      await updateSources { namespace, environment, handler }
+
+    genie.define "sky:lambda:sources:all:put", guard (environment) ->
+      for handler in lambda.handlers
+        await updateSources { namespace, environment, handler }
+
+    genie.define "sky:lambda:sources:delete", guard (environment, name) ->
+      await deleteSources nameLambda { namespace, environment, name }
+
+    genie.define "sky:lambda:sources:all:delete", guard (environment) ->
+      names = lambda.handlers.map (h) -> h.name == name
+
+      for name in names
+        await deleteSources nameLambda { namespace, environment, name }
+     
 
 export { nameLambda }
 

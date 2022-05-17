@@ -1,7 +1,7 @@
 import { guard } from "./helpers"
 
 import {
-  getLambdaARN
+  getLambdaUnqualifiedARN
 } from "@dashkite/dolores/lambda"
 
 import {
@@ -13,27 +13,36 @@ import {
   nameLambda
 } from "./lambda"
 
+nameBridge = ({ namespace, environment, name }) ->
+  if !namespace? || !environment? || !name?
+    throw new Error "unable to form bridge name with parameters 
+      #{namespace} #{environment} #{name}"  
+  
+  "#{namespace}-#{environment}-#{name}-bridge"
 
-buildTarget = (name) ->
-  arn = await getLambdaARN name
-  parts = arn.split ":"
-  Arn: parts[0..-2].join ":"
-  Id: name
 
-export default (genie, { namespace, bridge, lambda }) ->
-  if bridge?
+export default (genie, options) ->
+  if options.bridge?
+    { namespace } = options
+
     genie.define "sky:bridge:publish", 
       [ 
         "sky:roles:publish:*"
-        "sky:lambda:publish:*" 
+        "sky:lambda:update:*" 
       ], 
       guard (environment) ->
-        { name } = bridge.lambda
-        await createRule {
-          name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
-          target: await buildTarget nameLambda { namespace, environment, name }
-          schedule: bridge.schedule
-        }    
+        for event in options.bridge
+          bridge = nameBridge { namespace, environment, name: event.name }
+
+          # Assume lambda for now, but we can introduce types in the future.
+          name = nameLambda { namespace, environment, name: event.target }
+          target = await getLambdaUnqualifiedARN name
+
+          await createRule {
+            name: bridge
+            target: target
+            schedule: event.schedule
+          }    
       
     genie.define "sky:bridge:delete", guard (environment) ->
       deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"
