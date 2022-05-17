@@ -36,7 +36,10 @@ export default (genie, options) ->
 
           # Assume lambda for now, but we can introduce types in the future.
           name = nameLambda { namespace, environment, name: event.target }
-          target = await getLambdaUnqualifiedARN name
+          # TODO: come up with a non-hacky way to generate IDs to name rules.
+          target = 
+            Arn: await getLambdaUnqualifiedARN name
+            Id: bridge.slice 0, 64
 
           await createRule {
             name: bridge
