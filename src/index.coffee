@@ -11,6 +11,7 @@ import tables from "./dynamodb"
 import graphene from "./graphene"
 import grapheneAlpha from "./graphene-alpha"
 import queues from "./queue"
+import ses from "./ses"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -27,3 +28,4 @@ export default (genie) ->
     graphene genie, options
     grapheneAlpha genie, options
     queues genie, options
+    ses genie, options

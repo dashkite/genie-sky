@@ -35,12 +35,12 @@
   },
   "homepage": "https://github.com/dashkite/sky-presets#readme",
   "devDependencies": {
-    "@dashkite/genie": "^0.5.6",
-    "@dashkite/genie-presets": "^0.5.6"
+    "@dashkite/genie": "^0.5.11",
+    "@dashkite/genie-presets": "^0.5.7"
   },
   "dependencies": {
     "@dashkite/dolores": "file:../dolores",
-    "@dashkite/masonry": "^0.12.3",
+    "@dashkite/masonry": "^0.12.4",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/template": "^0.0.1",
     "coffee-loader": "^3.0.0",
