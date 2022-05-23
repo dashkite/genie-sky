@@ -22,7 +22,7 @@ export default ( genie, options ) ->
     { buckets } = options
 
     buildLifecycleRules = (bucket) ->
-      switch bucket.type
+      switch bucket.type ? "vanilla"
         when "vanilla"
           # Default bucket. Private, no expiry, no special modes.
           null
@@ -101,7 +101,7 @@ export default ( genie, options ) ->
           K.read "input"
           K.read "source"
           K.push ( source, input ) ->
-            Bucket: "vega.dashkite.run"
+            Bucket: name
             Key: source.path
             Body: input
           K.peek putObject

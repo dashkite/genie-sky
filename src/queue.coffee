@@ -5,6 +5,7 @@ import {
   putQueue
   emptyQueue
   deleteQueue
+  pushMessage
 } from "@dashkite/dolores/queue"
 
 export default ( genie, options ) ->
@@ -40,3 +41,9 @@ export default ( genie, options ) ->
         console.log "Expect this operation to take another 60 seconds to complete."
       else
         throw new Error "queue [#{name}] does not exist"
+
+    genie.define "sky:queue:send", guard (name, message) ->
+      queue = queues.find (queue) -> queue.name = name
+      # TODO support path-based messages as well
+      #      where we'd read queue.messages[ name ].path
+      pushMessage queue.name, queue.messages[ message ].content
