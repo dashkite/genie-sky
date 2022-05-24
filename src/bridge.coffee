@@ -48,4 +48,5 @@ export default (genie, options) ->
           }    
       
     genie.define "sky:bridge:delete", guard (environment) ->
-      deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"
+      name = options.bridge.name
+      deleteRule "#{namespace}-#{environment}-#{name}-bridge"
