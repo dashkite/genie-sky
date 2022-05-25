@@ -100,6 +100,8 @@ export default ( genie, options ) ->
         It.map Fn.flow [
           K.read "input"
           K.read "source"
+          K.peek (source) ->
+            console.log source.path
           K.push ( source, input ) ->
             Bucket: name
             Key: source.path
