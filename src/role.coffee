@@ -124,6 +124,19 @@ mixinPolicyBuilders =
 
     ]
 
+  ses: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "ses:SendTemplatedEmail"
+      ]
+      Resource: [
+        "arn:aws:ses:us-west-2:618441030511:identity/dashkite.com"
+      ]
+
+    ]
+
   "step-function": do (self = false, managed = null) ->
     managed = [
         Effect: "Allow"
