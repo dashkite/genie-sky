@@ -34,7 +34,7 @@ export default ( genie, { graphene } ) ->
       _guard f
 
     find = (byname) ->
-      if ( config = graphene.collections.find (c) -> c.byname == byname )?
+      if !( config = graphene.collections.find (c) -> c.byname == byname )?
         throw new Error "sky:graphene collection #{byname} is not specified"
       else
         config
@@ -81,6 +81,7 @@ export default ( genie, { graphene } ) ->
 
     genie.define "sky:graphene:items:publish", guard (byname) ->
       { publish } = find byname
+      console.log "publishing to collection [ #{byname} ]"
 
       do m.start [
         m.glob ( publish?.glob ? "**/*" ), ( publish?.root ? "." )
@@ -89,7 +90,6 @@ export default ( genie, { graphene } ) ->
           K.read "input"
           K.read "source"
           K.push ( source, input ) ->
-            console.log "publishing [ #{source.path} ] ..."
             collection: byname
             key: do ->
               if publish?.target?
@@ -98,6 +98,7 @@ export default ( genie, { graphene } ) ->
                 source.path
             content: input
           K.peek ({ collection, key, content }) ->
+            console.log "... [ #{key} ]"
             putItem { database, collection, key, content }
         ]
       ]

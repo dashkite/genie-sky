@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "{{name}} ({{environment}})"
 Resources:
-
   CustomDomainCF:
     Type: "AWS::CloudFront::Distribution"
     Properties:
@@ -31,7 +30,7 @@ Resources:
             QueryString: true
             QueryStringCacheKeys: ["*"]
           SmoothStreaming: false
-          TargetOriginId: origin
+          TargetOriginId: {{{origins.[0]}}}
           ViewerProtocolPolicy: redirect-to-https
           LambdaFunctionAssociations:
             {{#each handlers}}
@@ -45,14 +44,16 @@ Resources:
         HttpVersion: http2
         IPV6Enabled: false
         Origins:
-          - Id: origin
-            DomainName: {{{origin}}}
+          {{#each origins}}
+          - Id: {{{.}}}
+            DomainName: {{{.}}}
             CustomOriginConfig:
               HTTPSPort: 443
               OriginKeepaliveTimeout: 60
               OriginProtocolPolicy: "https-only"
               OriginReadTimeout: 60
               OriginSSLProtocols: [ "TLSv1.2" ]
+          {{/each}}
         PriceClass: PriceClass_{{cache.[price-class]}}
         ViewerCertificate:
           AcmCertificateArn: {{cache.certificate}}
@@ -64,22 +65,26 @@ Resources:
         - Key: environment
           Value: {{environment}}
 
-  CustomDomainDNS:
+  {{#if dns}}
+  {{#each dns}}
+  RecordSet{{name}}:
     Type: "AWS::Route53::RecordSetGroup"
     DependsOn:
       - "CustomDomainCF"
     Properties:
-      Comment: {{titleCase namespace}} ({{titleCase environment}})
-      HostedZoneId: {{this.[hosted-zone]}}
+      Comment: "{{name}} alias for {{this.name}} ({{this.environment}})"
+      HostedZoneId: {{{zone}}}
       RecordSets:
         {{#each aliases}}
-        - Name: '{{{domain}}}.'
+        - Name: '{{{.}}}.'
           Type: A
           AliasTarget:
             DNSName: !GetAtt [ CustomDomainCF, "DomainName" ]
             EvaluateTargetHealth: false
             HostedZoneId: Z2FDTNDATAQYW2
         {{/each}}
+  {{/each}}
+  {{/if}}
 
 Outputs:
   CloudFrontDistributions:
