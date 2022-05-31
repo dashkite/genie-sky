@@ -9,7 +9,15 @@ import {
   getCollection
   publishCollection
   putItem 
+  deleteItem
+  scan
 } from "@dashkite/dolores/graphene-alpha"
+import { confidential } from "panda-confidential"
+
+Confidential = confidential()
+
+hash = (content) ->
+  ( Confidential.hash Confidential.Message.from "utf8", content ).to "base64"
 
 export default ( genie, { graphene } ) ->
   database = null
@@ -79,26 +87,48 @@ export default ( genie, { graphene } ) ->
       console.log "deleted collection [#{byname}]" 
       
 
-    genie.define "sky:graphene:items:publish", guard (byname) ->
-      { publish } = find byname
-      console.log "publishing to collection [ #{byname} ]"
+    genie.define "sky:graphene:items:publish", guard (collection) ->
+      { publish } = find collection
+      console.log "publishing to collection [ #{collection} ]"
 
-      do m.start [
+      # TODO check return token to see if we need paginate
+      published = ( await scan { database, collection } )
+        .list
+        .map ({ _ }) -> 
+          { 
+            _...
+            hashed: hash _.content 
+          }
+        .reduce (( result, item ) -> result[ item.key ] = item.hashed ; result ), {}
+
+      await do m.start [
         m.glob ( publish?.glob ? "**/*" ), ( publish?.root ? "." )
         m.read
         It.map Fn.flow [
           K.read "input"
           K.read "source"
           K.push ( source, input ) ->
-            collection: byname
             key: do ->
               if publish?.target?
                 Path.join publish.target, source.path
               else 
                 source.path
             content: input
-          K.peek ({ collection, key, content }) ->
-            console.log "... [ #{key} ]"
-            putItem { database, collection, key, content }
+            hashed: hash input
+          K.peek ({ key, content, hashed }) ->
+            _hashed = published[ key ]
+            if !_hashed?
+              console.log "... adding [ #{ key } ]"
+              await putItem { database, collection, key, content }
+            else if _hashed != hashed
+              console.log "... updating [ #{ key } ]"
+              await putItem { database, collection, key, content }
+              delete published[ key ]
+            else
+              delete published[ key ]
         ]
       ]
+
+      for key, _ of published
+        console.log "... deleting [ #{ key } ]"
+        deleteItem { database, collection, key }
