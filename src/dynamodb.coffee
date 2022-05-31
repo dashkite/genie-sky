@@ -5,14 +5,21 @@ import {
   hasTable
   createTable
   deleteTable
+  setTableTTL
 } from "@dashkite/dolores/dynamodb"
 
 export default (genie, { namespace, tables }) ->
 
   putTable = (table) ->
-    if !( await hasTable table.name )
-      configuration = YAML.load await FS.readFile table.path
-      await createTable configuration.main
+    { main, expiration } = YAML.load await FS.readFile table.path
+    main.TableName = table.name
+
+    if !( await hasTable table.name )  
+      await createTable main
+
+    if expiration?
+      expiration.TableName = table.name
+      await setTableTTL expiration
 
   genie.define "sky:tables:check", ->
     missing = []
