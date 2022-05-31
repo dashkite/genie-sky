@@ -9,7 +9,7 @@ import { confidential } from "panda-confidential"
 Confidential = confidential()
 
 hash = (content) ->
-  ( Confidential.hash Confidential.Message.from "bytes", content ).to "base64"
+  ( Confidential.hash Confidential.Message.from "utf8", content ).to "base64"
 
 diff = (publish, operations) ->
 
@@ -30,16 +30,15 @@ diff = (publish, operations) ->
       K.read "input"
       K.read "source"
       K.push ( source, input ) ->
-        content = Uint8Array.from input
         key: do ->
           if publish?.target?
             Path.join publish.target, source.path
           else 
             source.path
-        content: content
+        content: input
         # TODO if we use MD5 we can probably avoid hashing
         #      if hooks provide hashed value, ex: from S3
-        hashed: hash content
+        hashed: hash input
       # compare each item to the published version if any
       K.peek ({ key, content, hashed }) ->
         _hashed = published[ key ]
