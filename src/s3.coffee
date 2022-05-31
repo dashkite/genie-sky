@@ -1,7 +1,5 @@
-import * as m from "@dashkite/masonry"
 import * as Fn from "@dashkite/joy/function"
 import * as It from "@dashkite/joy/iterable"
-import * as K from "@dashkite/katana/sync"
 
 import {
   hasBucket
@@ -13,7 +11,11 @@ import {
   deleteBucketLifecycle
   getObject
   putObject
+  deleteObject
+  listObjects
 } from "@dashkite/dolores/bucket"
+
+import { diff } from "./diff"
 
 import prompts from "prompts"
 
@@ -94,18 +96,20 @@ export default ( genie, options ) ->
 
       { publish } = buckets.find ( bucket ) -> name == bucket.name
 
-      do m.start [
-        m.glob ( publish.glob ? "**/*" ), ( publish.root ? "." )
-        m.read
-        It.map Fn.flow [
-          K.read "input"
-          K.read "source"
-          K.peek (source) ->
-            console.log source.path
-          K.push ( source, input ) ->
-            Bucket: name
-            Key: source.path
-            Body: input
-          K.peek putObject
-        ]
-      ]
+      console.log "publishing to collection [ #{name} ]"
+
+      diff publish,
+        list: Fn.flow [
+            -> listObjects name
+            It.resolve It.map ({ Key }) -> getObject name, Key
+            It.collect
+          ]
+        add: (key, content) -> 
+          console.log "... add [ #{ key } ]"
+          putObject name, key, content
+        update: (key, content) ->
+          console.log "... update [ #{ key } ]"
+          putObject name, key, content
+        delete: (key) ->
+          console.log "... delete [ #{ key } ]"
+          deleteObject name, key
