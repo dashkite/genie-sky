@@ -3,53 +3,35 @@ import * as m from "@dashkite/masonry"
 import * as Fn from "@dashkite/joy/function"
 import * as It from "@dashkite/joy/iterable"
 import * as K from "@dashkite/katana/sync"
-
-import { confidential } from "panda-confidential"
-
-Confidential = confidential()
-
-hash = (content) ->
-  ( Confidential.hash Confidential.Message.from "utf8", content ).to "base64"
+import { convert } from "@dashkite/bake"
 
 diff = (publish, operations) ->
 
   # first, get the list of published items
   published = ( await operations.list() )
-    .map (item) -> 
-      { 
-        item...
-        hashed: hash item.content
-      }
-    .reduce (( result, item ) -> result[ item.key ] = item.hashed ; result ), {}
+    .reduce (( result, item ) -> 
+      result[ item.key ] = item ; result ), {}
 
   # next, iterate thru the filesystem
   await do m.start [
     m.glob ( publish?.glob ? "**/*" ), ( publish?.root ? "." )
-    m.read
-    It.map Fn.flow [
-      K.read "input"
-      K.read "source"
-      K.push ( source, input ) ->
-        key: do ->
-          if publish?.target?
-            Path.join publish.target, source.path
-          else 
-            source.path
-        content: input
-        # TODO if we use MD5 we can probably avoid hashing
-        #      if hooks provide hashed value, ex: from S3
-        hashed: hash input
-      # compare each item to the published version if any
-      K.peek ({ key, content, hashed }) ->
-        _hashed = published[ key ]
-        if !_hashed?
-          await operations.add key, content
-        else if _hashed != hashed
-          await operations.update key, content
-          delete published[ key ]
-        else
-          delete published[ key ]
-    ]
+    m.readBinary
+    m.hash
+    It.map ({ source, input, hash }) ->
+      key = do ->
+        if publish?.target?
+          Path.join publish.target, source.path
+        else 
+          source.path
+      content = convert from: "bytes", to: publish.encoding, input
+      remote = published[ key ]
+      if !remote?
+        await operations.add key, content
+      else if hash != ( remote.hash ? m.computeHash remote.content )
+        await operations.update key, content
+        delete published[ key ]
+      else
+        delete published[ key ]
   ]
 
   # anything left in published has no local counterpart,

@@ -96,6 +96,8 @@ export default ( genie, options ) ->
 
       { publish } = buckets.find ( bucket ) -> name == bucket.name
 
+      publish.encoding ?= "bytes"
+
       console.log "publishing to collection [ #{name} ]"
 
       diff publish,

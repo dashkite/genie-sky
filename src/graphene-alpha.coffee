@@ -80,6 +80,7 @@ export default ( genie, { graphene } ) ->
 
     genie.define "sky:graphene:items:publish", guard (collection) ->
       { publish } = find collection
+      publish.encoding ?= "utf8"
       console.log "publishing to collection [ #{collection} ]"
       diff publish,
         list: -> 
