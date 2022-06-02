@@ -38,7 +38,7 @@ diff = (publish, operations) ->
   # so delete it
   for key, _ of published
     console.log "... deleting [ #{ key } ]"
-    operations.delete { key }
+    operations.delete key 
 
 
 export { diff }
