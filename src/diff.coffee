@@ -8,9 +8,14 @@ import { convert } from "@dashkite/bake"
 diff = (publish, operations) ->
 
   # first, get the list of published items
-  published = ( await operations.list() )
-    .reduce (( result, item ) -> 
-      result[ item.key ] = item ; result ), {}
+  published = await do Fn.flow [
+    operations.list
+    # filter out items that are not in scope
+    # so we don't remove them...
+    It.select ( item ) -> 
+      !publish.target? || item.key.startsWith publish.target
+    It.reduce ( Fn.tee (( result, item ) -> result[ item.key ] = item ) ), {}
+  ]
 
   # next, iterate thru the filesystem
   await do m.start [

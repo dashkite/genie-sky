@@ -1,3 +1,6 @@
+import FS from "fs/promises"
+import sort from "sort-package-json"
+
 guard = (f) ->
   (args...) ->
     if f.length > 0
@@ -8,4 +11,9 @@ guard = (f) ->
     
     f args...
 
-export { guard }
+
+getPackage = do (cache = null) -> ->
+  cache ?= JSON.parse await FS.readFile "./package.json", "utf8"
+
+
+export { guard, getPackage }
