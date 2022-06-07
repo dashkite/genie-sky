@@ -1,3 +1,4 @@
+import * as Time from "@dashkite/joy/time"
 import FS from "fs/promises"
 import { guard } from "./helpers"
 
@@ -62,7 +63,11 @@ updateSources = ({ namespace, environment, handler }) ->
           Enabled: true
           EventSourceArn: stream.arn
           FunctionName: name
-          StartingPosition: "TRIM_HORIZON"
+          StartingPosition: "LATEST"
+
+          # "TRIM_HORIZON" - Send everything that's available, which can be thousands
+          # "AT_TIMESTAMP" - From a timestamp specified in another field
+          # "LATEST" - Start listening now
       
       else
         throw new Error "unknown stream type"
