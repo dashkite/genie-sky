@@ -4,11 +4,12 @@ import * as m from "@dashkite/masonry"
 import { guard } from "./helpers"
 import { publishSES } from "@dashkite/dolores/ses"
 
-publishTemplate = ({ namespace, environment, ses }) ->
+publishTemplates = ({ namespace, environment, ses }) ->
   for template in ses?.templates ? []
     name = "#{namespace}-#{environment}-#{template.name}"
     html = await FS.readFile Path.resolve "build", "node", "email", "#{template.name}.html"
     text = await FS.readFile Path.resolve "build", "email", "#{template.name}.md"
+    console.log name
     await publishSES {template..., name, html, text}
 
 
@@ -22,12 +23,12 @@ export default (genie, { namespace, ses }) ->
   
   genie.after "build", "markdown"
   
-  genie.define "sky:ses:template:publish",
+  genie.define "sky:ses:templates:publish",
     [
       "build"
     ],
     guard (environment) ->
-      publishTemplate {
+      publishTemplates {
         namespace
         environment
         ses

@@ -3,6 +3,7 @@ import {
   createDatabase
   getCollection
   publishCollection
+  deleteCollection
   putItem 
   deleteItem
   scan
