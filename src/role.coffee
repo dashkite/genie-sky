@@ -1,4 +1,8 @@
-import { guard } from "./helpers"
+import { 
+  guard
+  nameLambda
+  nameRole 
+} from "./helpers"
 
 import {
   getSecretARN
@@ -241,8 +245,8 @@ export default (genie, options) ->
 
     for handler in ( lambda?.handlers ? [] )
 
-      lambda = "#{base}-#{handler.name}"
-      role = "#{lambda}-role"
+      lambda = nameLambda { namespace, environment, name: handler.name }
+      role = nameRole { namespace, environment, name: handler.name }
 
       # TODO possibly explore how to split out role building
       # TODO allow for different policies for different handlers

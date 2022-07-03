@@ -1,4 +1,7 @@
-import { guard } from "./helpers"
+import { 
+  guard 
+  nameLambda
+} from "./helpers"
 
 import {
   getLambdaUnqualifiedARN
@@ -8,10 +11,6 @@ import {
   createRule
   deleteRule
 } from "@dashkite/dolores/events"
-
-import {
-  nameLambda
-} from "./lambda"
 
 nameBridge = ({ namespace, environment, name }) ->
   if !namespace? || !environment? || !name?

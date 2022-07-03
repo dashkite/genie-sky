@@ -1,6 +1,11 @@
 import * as Time from "@dashkite/joy/time"
 import FS from "fs/promises"
-import { guard } from "./helpers"
+
+import { 
+  guard
+  nameLambda
+  nameRole
+} from "./helpers"
 
 import {
   publishLambda
@@ -16,14 +21,9 @@ import {
 
 import { 
   getRoleARN
+  deleteRole
 } from "@dashkite/dolores/roles"
 
-nameLambda = ({ namespace, environment, name }) ->
-  if !namespace? || !environment? || !name?
-    throw new Error "unable to form lambda function name with parameters 
-      #{namespace} #{environment} #{name}"  
-  
-  "#{namespace}-#{environment}-#{name}"
 
 updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
 
@@ -114,7 +114,8 @@ export default (genie, options) ->
       versionLambda nameLambda { namespace, environment, name }
 
     genie.define "sky:lambda:delete", guard (environment, name) ->
-      deleteLambda nameLambda { namespace, environment, name }
+      await deleteLambda nameLambda { namespace, environment, name }
+      await deleteRole nameRole { namespace, environment, name }
 
     genie.define "sky:lambda:sources:put", guard (environment, name) ->
       handler = lambda.handlers.find (h) -> h.name == name
@@ -126,8 +127,9 @@ export default (genie, options) ->
 
       await updateSources { namespace, environment, handler }
 
-    genie.define "sky:lambda:sources:all:put", guard (environment) ->
-      for handler in lambda.handlers
+    genie.define "sky:lambda:sources:all:put", guard ( environment ) ->
+      for handler, index in lambda.handlers
+        console.log "#{index + 1}: processing #{handler.name}"
         await updateSources { namespace, environment, handler }
 
     genie.define "sky:lambda:sources:delete", guard (environment, name) ->
@@ -138,9 +140,7 @@ export default (genie, options) ->
 
       for name in names
         await deleteSources nameLambda { namespace, environment, name }
-     
 
-export { nameLambda }
 
 # createSourceEvents configuration shape
 #  

@@ -8,4 +8,23 @@ guard = (f) ->
     
     f args...
 
-export { guard }
+nameLambda = ({ namespace, environment, name }) ->
+  if !namespace? || !environment? || !name?
+    throw new Error "unable to form lambda function name with parameters 
+      #{namespace} #{environment} #{name}"  
+  
+  "#{namespace}-#{environment}-#{name}"
+
+nameRole = ({ namespace, environment, name }) ->
+  if !namespace? || !environment? || !name?
+    throw new Error "unable to form role name with parameters 
+      #{namespace} #{environment} #{name}"  
+  
+  "#{namespace}-#{environment}-#{name}-role"
+  
+
+export { 
+  guard
+  nameLambda
+  nameRole
+}

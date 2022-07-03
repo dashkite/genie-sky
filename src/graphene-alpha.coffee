@@ -76,9 +76,14 @@ export default ( genie, { graphene } ) ->
     genie.define "sky:graphene:collection:get", guard (byname) ->
       console.log await getCollection { database, byname }
 
-    genie.define "sky:graphene:collection:delete", guard (byname) ->
+    genie.define "sky:graphene:collection:delete", guard ( byname ) ->
       await deleteCollection { database, byname }
-      console.log "deleted collection [#{byname}]" 
+      console.log "deleted collection [#{ byname }]"
+
+    genie.define "sky:graphene:collections:delete", ->
+      for { byname } in graphene.collections
+        await deleteCollection { database, byname }
+        console.log "deleted collection [#{ byname }]" 
       
 
     genie.define "sky:graphene:items:publish", guard (byname) ->
