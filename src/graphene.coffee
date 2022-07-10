@@ -1,35 +1,89 @@
-import Path from "node:path"
-import * as m from "@dashkite/masonry"
-import * as Fn from "@dashkite/joy/function"
-import * as It from "@dashkite/joy/iterable"
-import * as K from "@dashkite/katana/sync"
-import { putResource } from "@dashkite/dolores/graphene"
-import fetch from "node-fetch"
+import { inspect } from "node:util"
+import * as Graphene from "@dashkite/graphene-lambda-client"
+import { guard, log, warn, fatal } from "./helpers"
+import { diff } from "./diff"
 
-export default ( genie, options ) ->
+export default ( genie, { graphene } ) ->
+  
+  client = Graphene.Client.create "graphene-beta-development-api"
 
-  { collections } = options
+  findDB = ( name ) ->
+    graphene.find ( description ) -> description.name == name
 
-  genie.define "sky:graphene:publish", (name) ->
+  guardDB = (f) ->
+    guard ( name ) ->
+      if ( description = findDB name )?
+        f description
+      else
+        fatal "graphene db > missing configuration", { name }
 
-    { publish } = collections.find ( collection ) -> name == collection.name
+  findMissing = ({ db, collections }) ->
+    db = await client.db.get db 
+    missing = []
 
-    do m.start [
-      m.glob ( publish?.glob ? "**/*" ), ( publish?.root ? "." )
-      m.read
-      It.map Fn.flow [
-        K.read "input"
-        K.read "source"
-        K.push ( source, input ) ->
-          console.log "publishing [ #{source.path} ] ..."
-          collection: name
-          key: do ->
-            if publish?.target?
-              Path.join publish.target, source.path
-            else 
-              source.path
-          value: input
-        K.peek ({collection, key, value}) ->
-          putResource collection, key, value
-      ]
-    ]
+    for description in collections
+      if !( collection = await db.collections.get description.byname )?
+        missing.push description
+    
+    { db, missing }
+
+  findCollection = ( cname, byname ) ->
+    { db, collections } = findDB cname
+    if ( description = collections.find ( collection ) -> collection.byname == byname )?
+      { db, description... }
+    else
+      warn "graphene collection > missing configuration", { byname }
+
+  guardCollection = (f) ->
+    guard ( cname, byname ) ->
+      if ( description = await findCollection cname, byname )?
+        f description
+
+
+  genie.define "sky:graphene:db:create", guard ( name ) ->
+    { address } = await client.db.create { name }
+    log "graphene db > create successful", { name, address }
+
+  # genie.define "sky:graphene:database:delete", guard ( name ) ->
+
+  genie.define "sky:graphene:collections:check", guardDB ( description ) ->
+    { missing } = await findMissing description
+    for { byname } in missing
+      warn "graphene collection > does not exist", { byname  }
+
+  genie.define "sky:graphene:collections:put", guardDB ( description ) ->
+    { db, missing } = await findMissing description 
+    for { name, byname } in missing
+      await db.collections.create byname, { name }
+      log "graphene collection > create successful", { byname }
+
+  genie.define "sky:graphene:collection:put", guardCollection ({ db, byname, name }) ->
+    name ?= byname
+    db = await client.db.get db 
+    await db.collections.create byname, { name }
+    log "graphene collection > create successful", { byname }
+
+  genie.define "sky:graphene:collection:put", guardCollection ({ db, byname }) ->
+    db = await client.db.get db 
+    console.log inspect await db.collections.get byname
+
+  # genie.define "sky:graphene:collection:delete", guardCollection ({ byname }) ->
+    
+  genie.define "sky:graphene:collection:publish", guardCollection ({ db, byname, publish }) ->
+    db = await client.db.get db 
+    collection = await db.collections.get byname
+    publish.encoding ?= "utf8"
+    log "graphene collection > publish", { byname }
+    diff publish,
+      list: -> 
+        ( await collection.entries.list() )
+          .map ({ _ }) -> _            
+      add: (key, content) -> 
+        log "graphene entry > add", { key }
+        collection.entries.put key, content
+      update: (key, content) ->
+        log "graphene entry > update", { key }
+        collection.entries.put key, content
+      delete: (key) ->
+        log "graphene entry > delete", { key }
+        collection.entries.delete key

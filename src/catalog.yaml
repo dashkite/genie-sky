@@ -1,0 +1,29 @@
+missing arguments: >-
+  Wrong number of arguments: got ${ got }, expected ${ expected }
+
+graphene db > missing configuration: >-
+  Missing configuration for collection [ ${ name } ]
+
+graphene db > create successful: >-
+  DB [ ${ name } ] created successfully with address [ ${ address } ]
+
+graphene collection > missing configuration: >-
+  Missing configuration for collection [ ${ byname } ]
+
+graphene collection > does not exist: >-
+  Collection [ ${ byname } ] does not exist
+
+graphene collection > create successful: >-
+  Collection [ ${ byname } ] created successfully
+
+graphene collection > publish: >-
+  Publishing to collection [ ${ byname } ] ...
+
+graphene entry > add: >-
+  ... add [ ${ key } ]
+
+graphene entry > update: >-
+  ... update [ ${ key } ]
+
+graphene entry > delete: >-
+  ... delete [ ${ key } ]

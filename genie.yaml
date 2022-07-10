@@ -12,3 +12,10 @@ presets:
   media:
     glob: 'src/**/*.hbs'
     target: build/node
+
+  yaml:
+    targets:
+      node:
+        - preset: js
+          glob:
+            - "{src,test}/**/*.yaml"
