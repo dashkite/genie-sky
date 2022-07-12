@@ -29,7 +29,7 @@ export default (genie, { namespace, bridge, lambda }) ->
       { name } = lambda.handlers[0] 
       await createRule {
         name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
-        target: await buildTarget "#{namespace}-#{environment}-#{name}-lambda"
+        target: await buildTarget "#{namespace}-#{environment}-#{name}"
         schedule: bridge.schedule
       }    
     
