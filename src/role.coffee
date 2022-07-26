@@ -14,7 +14,7 @@ import {
 } from "@dashkite/dolores/roles"
 
 import {
-  getLambdaARN
+  getLambdaUnqualifiedARN
 } from "@dashkite/dolores/lambda"
 
 import {
@@ -121,7 +121,7 @@ mixinPolicyBuilders =
         "lambda:InvokeFunction"
       ]
       Resource: [
-        await getLambdaARN mixin.name
+        await getLambdaUnqualifiedARN mixin.name
       ]
 
     ]
