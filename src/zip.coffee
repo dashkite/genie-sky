@@ -31,6 +31,8 @@ bundle = ( { environment, name, path, aliases } ) ->
           test: /.yaml$/
           type: "json"
           loader: require.resolve "yaml-loader"
+          options:
+            maxAliasCount: -1
         ,
           test: /.pug$/
           use: [ require.resolve "pug-loader" ]
@@ -71,7 +73,8 @@ export default (genie, { lambda }) ->
       newHashes[ handler.name ] = result.hash
 
       # compare to saved hashes and skip zip/upload when they're the same
-      if oldHashes[ handler.name ] != result.hash
+      #if oldHashes[ handler.name ] != result.hash
+      if true
 
         # TODO apparently webpack returns before it's finished writing the file?
         loop

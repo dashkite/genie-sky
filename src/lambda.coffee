@@ -34,6 +34,7 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
       data = await FS.readFile "build/lambda/#{ handler.name }.zip"
     
     if data?
+      console.log "publishing #{handler.name}"
 
       name = nameLambda { namespace, environment, name: handler.name }
 
