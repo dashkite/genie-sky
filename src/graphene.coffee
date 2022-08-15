@@ -23,8 +23,7 @@ export default ( genie, { graphene } ) ->
 
     for description in collections
       if !( collection = await db.collections.get description.byname )?
-        missing.push description
-    
+        missing.push description    
     { db, missing }
 
   findCollection = ( cname, byname ) ->
@@ -54,7 +53,7 @@ export default ( genie, { graphene } ) ->
   genie.define "sky:graphene:collections:put", guardDB ( description ) ->
     { db, missing } = await findMissing description 
     for { name, byname } in missing
-      await db.collections.create byname, { name }
+      collection = await db.collections.create byname, { name }
       log "graphene collection > create successful", { byname }
 
   genie.define "sky:graphene:collection:put", guardCollection ({ db, byname, name }) ->
@@ -75,9 +74,7 @@ export default ( genie, { graphene } ) ->
     publish.encoding ?= "utf8"
     log "graphene collection > publish", { byname }
     diff publish,
-      list: -> 
-        ( await collection.entries.list() )
-          .map ({ _ }) -> _            
+      list: -> ( await collection.metadata.list() ).entries
       add: (key, content) -> 
         log "graphene entry > add", { key }
         collection.entries.put key, content

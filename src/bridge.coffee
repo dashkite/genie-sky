@@ -18,8 +18,6 @@ buildTarget = (name) ->
 
 export default (genie, { namespace, bridge, lambda }) ->
 
-  # TODO add delete / teardown
-
   genie.define "sky:bridge:publish", 
     [ 
       "sky:roles:publish:*"

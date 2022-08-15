@@ -42,7 +42,6 @@ diff = (publish, operations) ->
   # anything left in published has no local counterpart,
   # so delete it
   for key, _ of published
-    console.log "... deleting [ #{ key } ]"
     operations.delete key 
 
 

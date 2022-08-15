@@ -9,6 +9,9 @@ import { getCertificateARN } from "@dashkite/dolores/acm"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
 
+qname = ({ namespace, name, environment }) ->
+  "#{namespace}-#{environment}-#{name}"
+
 tld = (domain) -> It.join ".", ( Text.split ".", domain )[-2..]
 
 templateCase = Fn.pipe [
@@ -20,7 +23,6 @@ templateCase = Fn.pipe [
 
 export default (genie, { namespace, lambda, edge }) ->
 
-  # TODO add lambda versioning
   genie.define "sky:edge:publish", 
     [ 
       "sky:roles:publish:*"
@@ -29,12 +31,13 @@ export default (genie, { namespace, lambda, edge }) ->
     guard (environment) ->
       origins = if edge.origins? then edge.origins else [ edge.origin ]
       templates = Templates.create "#{__dirname}"
+      name = edge.name ? "edge"
       template = await templates.render "template.yaml",
-        name: edge.name ? namespace
+        name: name
         namespace: namespace
         environment: environment
         description: edge.description ?
-          "#{Text.titleCase namespace} #{Text.titleCase environment}"
+          "#{Text.titleCase namespace} #{Text.titleCase name}"
         aliases: aliases = do ->
           for alias in edge.aliases
             if Type.isString alias
@@ -59,14 +62,18 @@ export default (genie, { namespace, lambda, edge }) ->
             min: 0
             max: 0
             default: 0
-          certificate: await getCertificateARN edge.name
+          certificate: await getCertificateARN namespace
         origins: origins
         handlers: await do ->
-          for handler in lambda.handlers
+          for handler in lambda.handlers       
             event: handler.event ? handler.name
             includesBody: handler.includesBody ? false
-            arn: await getLatestLambdaARN "#{namespace}-#{environment}-#{handler.name}"
-      deployStack "#{namespace}-#{environment}", template      
+            arn: await getLatestLambdaARN qname {
+              namespace
+              name: handler.name
+              environment
+            }     
+      deployStack (qname { namespace, name, environment }), template      
       
   genie.define "sky:edge:delete", guard (environment) ->
-    deleteStack "#{namespace}-#{environment}"
+    deleteStack "#{namespace}-#{name}-#{environment}"
