@@ -28,18 +28,26 @@ bundle = ( { environment, name, path, aliases } ) ->
           test: /\.coffee$/
           use: [ require.resolve "coffee-loader" ]
         ,
-          test: /.yaml$/
+          test: /\.yaml$/
           type: "json"
           loader: require.resolve "yaml-loader"
         ,
-          test: /.pug$/
+          test: /\.pug$/
           use: [ require.resolve "pug-loader" ]
         ,
-          test: /.styl$/
+          test: /\.styl$/
           use: [
             require.resolve "raw-loader"
             require.resolve "stylus-loader"
           ]
+        ,
+          test: /\.(hbs|txt)$/
+          use: [ require.resolve "raw-loader" ]
+        ,
+          test: /\.js$/,
+          enforce: "pre",
+          use: [ require.resolve "source-map-loader" ]
+        
         ]
       resolve:
         extensions: [ ".js", ".json", ".yaml", ".coffee" ]

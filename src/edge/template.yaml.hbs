@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "{{name}} ({{environment}})"
+Description: "{{description}} ({{environment}})"
 Resources:
   CustomDomainCF:
     Type: "AWS::CloudFront::Distribution"
@@ -9,7 +9,7 @@ Resources:
         {{#each aliases}}
           - '{{{domain}}}'
         {{/each}}
-        Comment: {{description}}
+        Comment: {{description}} ({{environment}})
         DefaultCacheBehavior:
           AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
           CachedMethods: ["GET", "HEAD", "OPTIONS"]

@@ -11,8 +11,6 @@ import {
 
 export default (genie, { namespace, alb, lambda, mixins }) ->
 
-  # TODO add delete / teardown
-
   # genie.define "publish", [ "update" ], (environment) ->
   genie.define "sky:alb:publish", 
     [ 

@@ -11,7 +11,7 @@ import {
   getRoleARN
 } from "@dashkite/dolores/roles"
 
-updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
+updateLambdas = ({ namespace, environment, lambda, version }) ->
 
   for handler in lambda?.handlers ? []
     
@@ -24,18 +24,20 @@ updateLambdas = ({ namespace, environment, lambda, variables, version }) ->
       name = "#{namespace}-#{environment}-#{handler.name}"
 
       role = await getRoleARN "#{name}-role"
-
+      
       await publishLambda name, data, {
         handler: "#{ handler.name }.handler"
+        environment: {}
         handler.configuration...
-        environment: { environment, variables... }
+        handler.configurations?.default...
+        handler.configurations?[ environment ]?.configuration...
         role
       }
 
       if version
         await versionLambda name
 
-export default (genie, { namespace, lambda, variables }) ->
+export default (genie, { namespace, lambda }) ->
   
   genie.define "sky:lambda:update",
     [ 
@@ -48,7 +50,6 @@ export default (genie, { namespace, lambda, variables }) ->
         namespace
         environment
         lambda
-        variables
         version: false 
       }
 
@@ -63,7 +64,6 @@ export default (genie, { namespace, lambda, variables }) ->
         namespace
         environment
         lambda
-        variables
         version: true
       }
 

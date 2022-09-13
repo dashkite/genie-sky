@@ -11,8 +11,11 @@ export default (genie, { namespace, tables }) ->
 
   putTable = (table) ->
     if !( await hasTable table.name )
-      configuration = YAML.load await FS.readFile table.path
-      await createTable configuration.main
+      configuration = YAML.load await FS.readFile ( table.path ? "#{table.name}.yaml" )
+      await createTable {
+        TableName: table.name
+        configuration.main...
+      }
 
   genie.define "sky:tables:check", ->
     missing = []
