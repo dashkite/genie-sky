@@ -2,6 +2,7 @@ import FS from "fs/promises"
 import sort from "sort-package-json"
 import { Messages } from "@dashkite/messages"
 import catalog from "./catalog"
+import { getHash } from "@dashkite/masonry/atlas"
 
 messages = Messages.create()
 messages.add catalog
@@ -27,4 +28,4 @@ warn = ( key, context ) ->
 fatal = ( key, context ) ->
   console.error "sky:presets: " + messages.message key, context
 
-export { guard, getPackage, log, warn, fatal }
+export { guard, getPackage, getHash, log, warn, fatal }

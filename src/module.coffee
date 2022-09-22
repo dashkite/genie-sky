@@ -2,7 +2,7 @@ import Path from "node:path"
 import * as Text from "@dashkite/joy/text"
 import * as Time from "@dashkite/joy/time"
 import * as Graphene from "@dashkite/graphene-lambda-client"
-import { getPackage } from "./helpers"
+import { getPackage, getHash } from "./helpers"
 import { diff } from "./diff"
 
 export default ( genie, options ) ->
@@ -21,10 +21,12 @@ export default ( genie, options ) ->
     { name, exports } = await getPackage()
     if Text.startsWith "@" then name = name[1..]
     root = Path.dirname exports["."].browser
+    hash = await getHash process.cwd()
+    console.log {root, hash}
 
     publish =
       root: root
-      target: Path.join name, root
+      target: Path.join name, hash, root
       encoding: "utf8"
 
     # Give the FS operations a sec
@@ -32,7 +34,6 @@ export default ( genie, options ) ->
 
     # TODO possibly refactor into common function(s)?
 
-    console.log "publishing module [ #{name} ]"
     diff publish,
       list: -> 
         { entries } = await collection.metadata.list()
