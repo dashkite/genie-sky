@@ -34,7 +34,9 @@ export default ( genie, options ) ->
 
     console.log "publishing module [ #{name} ]"
     diff publish,
-      list: -> collection.metadata.list()      
+      list: -> 
+        { entries } = await collection.metadata.list()
+        entries     
       add: (key, content) -> 
         console.log "... add [ #{ key } ]"
         collection.entries.put key, content
