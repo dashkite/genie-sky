@@ -8,6 +8,7 @@ import bridge from "./bridge"
 import stepFunction from "./step-function"
 import buckets from "./s3"
 import tables from "./dynamodb"
+import cloudfront from "./cloudfront"
 import graphene from "./graphene"
 import queues from "./queue"
 import ses from "./ses"
@@ -25,6 +26,7 @@ export default (genie) ->
     stepFunction genie, options
     buckets genie, options
     tables genie, options
+    cloudfront genie, options
     graphene genie, options
     queues genie, options
     ses genie, options

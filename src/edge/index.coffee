@@ -1,8 +1,12 @@
+import FS from "node:fs/promises"
 import * as Fn from "@dashkite/joy/function"
 import * as Type from "@dashkite/joy/type"
 import * as It from "@dashkite/joy/iterable"
 import * as Text from "@dashkite/joy/text"
 import Templates from "@dashkite/template"
+import compress from "brotli/compress"
+import { convert } from "@dashkite/bake"
+
 import { guard } from "../helpers"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getCertificateARN } from "@dashkite/dolores/acm"
@@ -21,6 +25,22 @@ templateCase = Fn.pipe [
   Text.capitalize
 ]
 
+normalizeHeaders = ( headers ) ->
+  for { name, path, value } in headers
+    if path?
+      value ?= convert from: "bytes", to: "base64", 
+        compress await FS.readFile path
+    { name, value }
+
+normalizeOrigins = ({ origin, origins }) ->
+  origins ?= [ origin ]
+  for origin in origins
+    if Type.isString origin
+      domain: origin
+    else if origin.headers?
+      { origin..., headers: await normalizeHeaders origin.headers }
+    else origin
+      
 export default (genie, { namespace, lambda, edge }) ->
 
   genie.define "sky:edge:publish", 
@@ -29,7 +49,8 @@ export default (genie, { namespace, lambda, edge }) ->
       "sky:lambda:publish:*" 
     ], 
     guard (environment) ->
-      origins = if edge.origins? then edge.origins else [ edge.origin ]
+      origins = await normalizeOrigins edge
+      console.log origins
       templates = Templates.create "#{__dirname}"
       name = edge.name ? "edge"
       template = await templates.render "template.yaml",
