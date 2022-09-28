@@ -39,11 +39,11 @@ export default ( genie, options ) ->
         { entries } = await collection.metadata.list()
         entries     
       add: (key, content) -> 
-        console.log "... add [ #{ key } ]"
+        # console.log "... add [ #{ key } ]"
         collection.entries.put key, content
       update: (key, content) ->
-        console.log "... update [ #{ key } ]"
+        # console.log "... update [ #{ key } ]"
         collection.entries.put key, content
       delete: (key) ->
-        console.log "... delete [ #{ key } ]"
+        # console.log "... delete [ #{ key } ]"
         collection.entries.delete key
