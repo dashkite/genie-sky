@@ -31,9 +31,9 @@ diff = (publish, operations) ->
       content = convert from: "bytes", to: publish.encoding, input
       remote = published[ key ]
       if !remote?
-        await operations.add key, content
+        operations.add key, content
       else if hash != ( remote.hash ? m.computeHash remote.content )
-        await operations.update key, content
+        operations.update key, content
         delete published[ key ]
       else
         delete published[ key ]
