@@ -44,19 +44,13 @@ getHeaders = ( headers ) ->
         else operand
     { name, value }
 
-templateCase = Fn.pipe [
-  Text.camelCase
-  Text.capitalize
-]
-
 export default (genie, { namespace, alb, lambda }) ->
 
   templates = Templates.create "#{__dirname}"
-  templates._.h.registerHelper { templateCase }
 
   genie.define "sky:alb:publish", guard (environment) ->
     context =
-      name: getName { namespace, environment, alb, lambda }
+      name: getName { namespace, environment, alb }
       description: getDescription { namespace, environment, alb }
       zone: id: await getHostedZoneID getTLD alb.domain
       domain: alb.domain
@@ -74,5 +68,5 @@ export default (genie, { namespace, alb, lambda }) ->
       await templates.render "template.yaml", context
 
   genie.define "sky:alb:delete", guard (environment) ->
-    deleteStack "#{namespace}-#{environment}-alb"
+    deleteStack getName { namespace, environment, alb }
 

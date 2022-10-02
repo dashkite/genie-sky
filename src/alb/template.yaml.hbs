@@ -86,62 +86,38 @@ Resources:
           Value: "false"
 
   {{#if headers}}
-  {{#each headers}}
-  ByteMatch{{{ templateCase name }}}:
-    Type: AWS::WAFRegional::ByteMatchSet
-    Properties:
-      Name: >-
-        ByteMatch for Header [ {{{ name }}} ]
-      ByteMatchTuples:
-        - FieldToMatch:
-            Type: HEADER
-            Data: "{{{ name }}}"
-          PositionalConstraint: EXACTLY
-          TargetString: "{{{ value }}}"
-          TextTransformation: NONE
-
-  HeaderRule{{{ templateCase name }}}:
-    Type: AWS::WAFRegional::Rule
-    DependsOn:
-      - ByteMatch{{{ templateCase name }}}
-    Properties:
-      Name: >-
-        Header Rule for [ {{{ name }}} ]
-      MetricName: {{templateCase name}}
-      Predicates:
-        - Type: ByteMatch
-          Negated: false
-          DataId: !Ref ByteMatch{{{ templateCase name }}}
-  {{/each}}
-
   WAF:
-    Type: AWS::WAFRegional::WebACL
-    DependsOn:
-      {{#each headers}}
-      - HeaderRule{{{ templateCase name }}}
-      {{/each}}
-    Properties:
-      MetricName: {{templateCase name}}
-      Name: >-
-        WAF for [ {{{ name }}} ] ALB
-      DefaultAction:
-        Type: BLOCK
+    Type: AWS::WAFv2::WebACL
+    Properties: 
+      Name: "waf-{{{  name }}}"
+      Scope: REGIONAL
+      DefaultAction: 
+        Block: {}
       Rules:
         {{#each headers}}
-        - Action:
-            Type: ALLOW
+        - Name: "match-header-{{{ name }}}"
+          Action: 
+            Allow: {}
           Priority: 1
-          RuleId: !Ref HeaderRule{{{ templateCase name }}}
+          Statement: 
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: "{{{ name }}}"
+              PositionalConstraint: EXACTLY
+              SearchString: "{{{ value }}}"
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+          VisibilityConfig: 
+            MetricName: match-header-{{{ name}}}
+            CloudWatchMetricsEnabled: true
+            SampledRequestsEnabled: true
         {{/each}}
-
-  WAFAssociation:
-    Type: AWS::WAFRegional::WebACLAssociation
-    DependsOn:
-      - ALB
-      - WAF
-    Properties:
-      ResourceArn: !Ref ALB
-      WebACLId: !Ref WAF
+      VisibilityConfig: 
+        MetricName: waf-{{{ name}}}
+        CloudWatchMetricsEnabled: true
+        SampledRequestsEnabled: true
   {{/if}}
 
   DNS:
