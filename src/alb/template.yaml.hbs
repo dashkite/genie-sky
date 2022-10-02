@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  {{{ description }}}
+Resources:
+  ALB:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      Name: "{{{ name }}}"
+      Scheme: internet-facing
+      Type: application
+      Subnets:
+      {{#each subnets}}
+        - {{{ id }}}
+      {{/each}}
+      SecurityGroups: 
+      {{#each security.groups}}
+        - {{{ id }}}
+      {{/each}}
+      IpAddressType: "ipv4"
+      LoadBalancerAttributes: 
+        - Key: "access_logs.s3.enabled"
+          Value: "false"
+        - Key: "idle_timeout.timeout_seconds"
+          Value: "60"
+        - Key: "deletion_protection.enabled"
+          Value: "false"
+        - Key: "routing.http2.enabled"
+          Value: "true"
+        - Key: "routing.http.drop_invalid_header_fields.enabled"
+          Value: "false"
+        - Key: "routing.http.xff_client_port.enabled"
+          Value: "false"
+        - Key: "routing.http.preserve_host_header.enabled"
+          Value: "false"
+        - Key: "routing.http.xff_header_processing.mode"
+          Value: "append"
+        - Key: "routing.http.desync_mitigation_mode"
+          Value: "defensive"
+        - Key: "waf.fail_open.enabled"
+          Value: "false"
+        - Key: "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
+          Value: "false"
+  Listener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - ALB
+      - Targets
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 443
+      Protocol: "HTTPS"
+      SslPolicy: "ELBSecurityPolicy-2016-08"
+      Certificates: 
+        - CertificateArn: "{{{ certificate.arn }}}"
+      DefaultActions: 
+        - TargetGroupArn: !Ref Targets
+          Type: forward
+
+  Permission:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - ALB
+    Properties:
+      FunctionName: "{{{ lambda.arn }}}"
+      Action: "lambda:InvokeFunction"
+      Principal: "elasticloadbalancing.amazonaws.com"
+
+  Targets:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - Permission
+    Properties:
+      TargetType: "lambda"
+      Targets: 
+        - Id: "{{{ lambda.arn }}}"
+      HealthCheckEnabled: true
+      HealthCheckPath: "/ping"
+      HealthCheckIntervalSeconds: 270
+      HealthCheckTimeoutSeconds: 30
+      UnhealthyThresholdCount: 2
+      Matcher: 
+          HttpCode: "200"
+      HealthyThresholdCount: 5
+      TargetGroupAttributes: 
+        - Key: "lambda.multi_value_headers.enabled"
+          Value: "false"
+
+  {{#if headers}}
+  {{#each headers}}
+  ByteMatch{{{ templateCase name }}}:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: >-
+        ByteMatch for Header [ {{{ name }}} ]
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: HEADER
+            Data: "{{{ name }}}"
+          PositionalConstraint: EXACTLY
+          TargetString: "{{{ value }}}"
+          TextTransformation: NONE
+
+  HeaderRule{{{ templateCase name }}}:
+    Type: AWS::WAFRegional::Rule
+    DependsOn:
+      - ByteMatch{{{ templateCase name }}}
+    Properties:
+      Name: >-
+        Header Rule for [ {{{ name }}} ]
+      MetricName: {{templateCase name}}
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref ByteMatch{{{ templateCase name }}}
+  {{/each}}
+
+  WAF:
+    Type: AWS::WAFRegional::WebACL
+    DependsOn:
+      {{#each headers}}
+      - HeaderRule{{{ templateCase name }}}
+      {{/each}}
+    Properties:
+      MetricName: {{templateCase name}}
+      Name: >-
+        WAF for [ {{{ name }}} ] ALB
+      DefaultAction:
+        Type: BLOCK
+      Rules:
+        {{#each headers}}
+        - Action:
+            Type: ALLOW
+          Priority: 1
+          RuleId: !Ref HeaderRule{{{ templateCase name }}}
+        {{/each}}
+
+  WAFAssociation:
+    Type: AWS::WAFRegional::WebACLAssociation
+    DependsOn:
+      - ALB
+      - WAF
+    Properties:
+      ResourceArn: !Ref ALB
+      WebACLId: !Ref WAF
+  {{/if}}
+
+  DNS:
+    Type: "AWS::Route53::RecordSetGroup"
+    DependsOn:
+      - Listener
+    Properties:
+      Comment: >-
+        Direct endpoint for API [ {{{ name }}} ]
+      HostedZoneId: {{{ zone.id }}}
+      RecordSets:
+        - Name: {{{ domain }}}
+          Type: A
+          AliasTarget:
+            DNSName: !GetAtt [ ALB, DNSName ]
+            EvaluateTargetHealth: false
+            HostedZoneId: !GetAtt [ ALB, CanonicalHostedZoneID ]
