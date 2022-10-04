@@ -40,39 +40,22 @@ Resources:
           Value: "false"
         - Key: "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
           Value: "false"
-  Listener:
-    Type: "AWS::ElasticLoadBalancingV2::Listener"
-    DependsOn:
-      - ALB
-      - Targets
-    Properties:
-      LoadBalancerArn: !Ref ALB
-      Port: 443
-      Protocol: "HTTPS"
-      SslPolicy: "ELBSecurityPolicy-2016-08"
-      Certificates: 
-        - CertificateArn: "{{{ certificate.arn }}}"
-      DefaultActions: 
-        - TargetGroupArn: !Ref Targets
-          Type: forward
 
-  Permission:
+  DefaultPermission:
     Type: "AWS::Lambda::Permission"
-    DependsOn:
-      - ALB
     Properties:
-      FunctionName: "{{{ lambda.arn }}}"
+      FunctionName: "{{{ handler.arn }}}"
       Action: "lambda:InvokeFunction"
       Principal: "elasticloadbalancing.amazonaws.com"
 
-  Targets:
+  DefaultTargets:
     Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
     DependsOn:
-      - Permission
+      - DefaultPermission
     Properties:
       TargetType: "lambda"
       Targets: 
-        - Id: "{{{ lambda.arn }}}"
+        - Id: "{{{ handler.arn }}}"
       HealthCheckEnabled: true
       HealthCheckPath: "/ping"
       HealthCheckIntervalSeconds: 270
@@ -84,6 +67,72 @@ Resources:
       TargetGroupAttributes: 
         - Key: "lambda.multi_value_headers.enabled"
           Value: "false"
+
+  Listener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - ALB
+      - DefaultTargets
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 443
+      Protocol: "HTTPS"
+      SslPolicy: "ELBSecurityPolicy-2016-08"
+      Certificates: 
+        - CertificateArn: "{{{ certificate.arn }}}"
+      DefaultActions: 
+        - TargetGroupArn: !Ref DefaultTargets
+          Type: forward
+
+  {{#if rules}}
+  {{#each rules}}
+  {{{ awsCase name }}}Permission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: "{{{ handler.arn }}}"
+      Action: "lambda:InvokeFunction"
+      Principal: "elasticloadbalancing.amazonaws.com"
+
+  {{{ awsCase name }}}Targets:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - {{{ awsCase name }}}Permission
+    Properties:
+      TargetType: "lambda"
+      Targets: 
+        - Id: "{{{ handler.arn }}}"
+      HealthCheckEnabled: true
+      HealthCheckPath: "/ping"
+      HealthCheckIntervalSeconds: 270
+      HealthCheckTimeoutSeconds: 30
+      UnhealthyThresholdCount: 2
+      Matcher: 
+          HttpCode: "200"
+      HealthyThresholdCount: 5
+      TargetGroupAttributes: 
+        - Key: "lambda.multi_value_headers.enabled"
+          Value: "false"
+
+  {{{ awsCase name }}}Rule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn:
+      - Listener
+      - {{{ awsCase name }}}Targets
+    Properties: 
+      Actions: 
+        - TargetGroupArn: !Ref {{{ awsCase name }}}Targets
+          Type: forward
+      Conditions: 
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              {{#each origins}}
+              - "{{{.}}}"
+              {{/each}}
+      ListenerArn: !Ref Listener
+      Priority: {{ increment @index }}
+  {{/each}}
+  {{/if}}
 
   {{#if headers}}
   WAF:

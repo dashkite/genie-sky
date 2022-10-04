@@ -34,6 +34,15 @@ getTLD = Fn.pipe [
   It.join "."
 ]
 
+getRules = ({ rules, namespace, environment }) ->
+  for rule in rules
+    handler = await getLambda qname {
+      namespace
+      name: rule.handler
+      environment
+    }
+    { rule..., handler }
+
 getHeaders = ( headers ) ->
   for { name, value } in headers
     if value.startsWith "$"
@@ -44,9 +53,17 @@ getHeaders = ( headers ) ->
         else operand
     { name, value }
 
+awsCase = Fn.pipe [
+  Text.camelCase
+  Text.capitalize 
+]
+
+increment = ( n ) -> n + 1
+
 export default (genie, { namespace, alb, lambda }) ->
 
   templates = Templates.create "#{__dirname}"
+  templates._.h.registerHelper { awsCase, increment }
 
   genie.define "sky:alb:publish", guard (environment) ->
     context =
@@ -58,11 +75,12 @@ export default (genie, { namespace, alb, lambda }) ->
       security:
         groups: await VPC.SecurityGroups.list alb.vpc
       certificate: arn: await getCertificateARN getTLD alb.domain
-      lambda: await getLambda qname {
+      handler: await getLambda qname {
         namespace
-        name: lambda.handlers[0].name
+        name: alb.handler
         environment
       }
+      rules: await getRules { rules: alb.rules, namespace, environment }
       headers: if alb.headers? then await getHeaders alb.headers  
     deployStack context.name,
       await templates.render "template.yaml", context
