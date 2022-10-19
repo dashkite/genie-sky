@@ -50,7 +50,7 @@ bundle = ( { environment, name, path, aliases } ) ->
         
         ]
       resolve:
-        extensions: [ ".js", ".json", ".yaml", ".coffee" ]
+        extensions: [ ".js", ".json", ".yaml", ".coffee", ".pug" ]
         modules: [ "node_modules" ]
         alias: aliases
       (error, result) ->
