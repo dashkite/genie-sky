@@ -50,7 +50,6 @@ export default (genie, { namespace, lambda, edge }) ->
     ], 
     guard (environment) ->
       origins = await normalizeOrigins edge
-      console.log origins
       templates = Templates.create "#{__dirname}"
       name = edge.name ? "edge"
       template = await templates.render "template.yaml",
