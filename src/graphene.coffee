@@ -1,11 +1,11 @@
 import { inspect } from "node:util"
-import * as Graphene from "@dashkite/graphene-lambda-client"
+import * as Graphene from "@dashkite/graphene-core"
 import { guard, log, warn, fatal } from "./helpers"
 import { diff } from "./diff"
 
 export default ( genie, { graphene } ) ->
   
-  client = Graphene.Client.create "graphene-beta-development-api"
+  client = Graphene.Client.create()
 
   findDB = ( name ) ->
     graphene.find ( description ) -> description.name == name
@@ -18,13 +18,12 @@ export default ( genie, { graphene } ) ->
         fatal "graphene db > missing configuration", { name }
 
   findMissing = ({ db, collections }) ->
-    db = await client.db.get db 
     missing = []
 
     for description in collections
-      if !( collection = await db.collections.get description.byname )?
+      if !( collection = await (client.db db).collection.get description.byname )?
         missing.push description    
-    { db, missing }
+    missing
 
   findCollection = ( cname, byname ) ->
     { db, collections } = findDB cname
@@ -46,41 +45,37 @@ export default ( genie, { graphene } ) ->
   # genie.define "sky:graphene:database:delete", guard ( name ) ->
 
   genie.define "sky:graphene:collections:check", guardDB ( description ) ->
-    { missing } = await findMissing description
+    missing = await findMissing description
     for { byname } in missing
-      warn "graphene collection > does not exist", { byname  }
+      warn "graphene collection > does not exist", { byname }
 
   genie.define "sky:graphene:collections:put", guardDB ( description ) ->
-    { db, missing } = await findMissing description 
+    { db } = description
+    missing = await findMissing description 
     for { name, byname } in missing
-      collection = await db.collections.create byname, { name }
+      collection = await (client.db db).collection.create { byname, name }
       log "graphene collection > create successful", { byname }
 
-  genie.define "sky:graphene:collection:put", guardCollection ({ db, byname, name }) ->
-    name ?= byname
-    db = await client.db.get db 
-    await db.collections.create byname, { name }
+  genie.define "sky:graphene:collection:put", guardCollection ({ db, byname }) ->
+    await (client.db db).collection.create { byname }
     log "graphene collection > create successful", { byname }
 
-  genie.define "sky:graphene:collection:put", guardCollection ({ db, byname }) ->
-    db = await client.db.get db 
-    console.log inspect await db.collections.get byname
-
-  # genie.define "sky:graphene:collection:delete", guardCollection ({ byname }) ->
+  genie.define "sky:graphene:collection:delete", guardCollection ({ db, byname }) ->
+    await (client.db db).collection.delete byname
+    log "graphene collection > delete successful", { byname }
     
   genie.define "sky:graphene:collection:publish", guardCollection ({ db, byname, publish }) ->
-    db = await client.db.get db 
-    collection = await db.collections.get byname
+    collection = client.collection { db, collection: byname }
     publish.encoding ?= "utf8"
     log "graphene collection > publish", { byname }
     diff publish,
-      list: -> ( await collection.metadata.list() ).entries
+      list: -> collection.metadata.list()
       add: (key, content) -> 
         log "graphene entry > add", { key }
-        collection.entries.put key, content
+        collection.put key, content
       update: (key, content) ->
         log "graphene entry > update", { key }
-        collection.entries.put key, content
+        collection.put key, content
       delete: (key) ->
         log "graphene entry > delete", { key }
-        collection.entries.delete key
+        collection.delete key

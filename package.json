@@ -41,7 +41,7 @@
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
     "@dashkite/dolores": "file:../dolores",
-    "@dashkite/graphene-lambda-client": "file:../graphene-lambda-client",
+    "@dashkite/graphene-core": "file:../graphene-core",
     "@dashkite/masonry": "file:../masonry",
     "@dashkite/messages": "file:../messages",
     "@dashkite/sky-alb": "^0.0.3",
