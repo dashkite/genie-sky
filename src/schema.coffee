@@ -13,6 +13,7 @@ validate = ( schema ) ->
       for error in ajv.errors
         console.error "Error:", error.message
         console.error "       @", error.instancePath
+      throw new Error "validation failed"
 
 export default (t, { schema }) ->
   { type, glob, auto } = schema
