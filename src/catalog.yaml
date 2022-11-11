@@ -16,6 +16,9 @@ graphene collection > does not exist: >-
 graphene collection > create successful: >-
   Collection [ ${ byname } ] created successfully
 
+graphene collection > delete successful: >-
+  Collection [ ${ byname } ] deleted successfully
+
 graphene collection > publish: >-
   Publishing to collection [ ${ byname } ] ...
 

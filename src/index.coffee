@@ -13,6 +13,7 @@ import graphene from "./graphene"
 import queues from "./queue"
 import ses from "./ses"
 import _module from "./module"
+import schema from "./schema"
 
 export default (genie) ->
   if (options = genie.get "sky")?
@@ -31,3 +32,4 @@ export default (genie) ->
     queues genie, options
     ses genie, options
     _module genie, options
+    schema genie, options

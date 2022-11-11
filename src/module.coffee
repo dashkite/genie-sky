@@ -1,13 +1,13 @@
 import Path from "node:path"
 import * as Text from "@dashkite/joy/text"
 import * as Time from "@dashkite/joy/time"
-import * as Graphene from "@dashkite/graphene-lambda-client"
+import * as Graphene from "@dashkite/graphene-core"
 import { getPackage, getHash } from "./helpers"
 import { diff } from "./diff"
 
 export default ( genie, options ) ->
 
-  client = Graphene.Client.create "graphene-beta-development-api"
+  client = Graphene.Client.create()
 
   # TODO presently unused
   { module } = options
@@ -15,8 +15,7 @@ export default ( genie, options ) ->
   genie.define "sky:module:publish", [ "build" ], ->
 
     # the dashkite internals database
-    db = await client.db.get "dd343rnxc1hjqqhu0hq8viun7"
-    collection = await db.collections.get "modules.dashkite.com"
+    collection = client.collection { db: "dd343rnxc1hjqqhu0hq8viun7", collection: "modules.dashkite.com" }
     
     { name, exports } = await getPackage()
     if Text.startsWith "@" then name = name[1..]
@@ -35,15 +34,13 @@ export default ( genie, options ) ->
     # TODO possibly refactor into common function(s)?
 
     diff publish,
-      list: -> 
-        { entries } = await collection.metadata.list()
-        entries     
+      list: -> collection.metadata.list()
       add: (key, content) -> 
         # console.log "... add [ #{ key } ]"
-        collection.entries.put key, content
+        collection.put key, content
       update: (key, content) ->
         # console.log "... update [ #{ key } ]"
-        collection.entries.put key, content
+        collection.put key, content
       delete: (key) ->
         # console.log "... delete [ #{ key } ]"
-        collection.entries.delete key
+        collection.delete key
