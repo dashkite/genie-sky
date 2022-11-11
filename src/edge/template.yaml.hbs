@@ -1,43 +1,130 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "{{description}} ({{environment}})"
 Resources:
-  CustomDomainCF:
+
+  Certificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties: 
+      DomainName: {{{ certificate.verification }}}
+      ValidationMethod: DNS
+      {{#if certificate.aliases}}
+      SubjectAlternativeNames:
+        {{#each certificate.aliases}}
+        - "{{{ . }}}"
+        {{/each}}
+      {{/if}}
+
+  CachePolicy:
+    Type: "AWS::CloudFront::CachePolicy"
+    Properties:
+      CachePolicyConfig:
+        Name: {{{ name }}}-{{{ environment }}}-cache-policy
+        DefaultTTL: {{{ cache.ttl.default }}}
+        MinTTL: {{{ cache.ttl.min }}}
+        MaxTTL: {{{ cache.ttl.max }}}
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig: 
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: true
+          EnableAcceptEncodingGzip: true
+          HeadersConfig: 
+            HeaderBehavior: whitelist
+            Headers:
+              - Host
+          QueryStringsConfig: 
+            QueryStringBehavior: all
+
+  OriginRequestPolicy:
+    Type: "AWS::CloudFront::OriginRequestPolicy"
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: {{{ name }}}-{{{ environment }}}-origin-request-policy
+        CookiesConfig: 
+          CookieBehavior: none
+        HeadersConfig: 
+          HeaderBehavior: allViewer
+        QueryStringsConfig:
+          QueryStringBehavior: all
+
+  ResponseHeadersPolicy:
+    Type: "AWS::CloudFront::ResponseHeadersPolicy"
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: {{{ name }}}-{{{ environment }}}-response-headers-policy
+        CorsConfig: 
+          AccessControlAllowCredentials: false
+          AccessControlAllowHeaders:
+            Items: [ "*" ]
+          AccessControlAllowMethods: 
+            Items: [ ALL ]
+          AccessControlAllowOrigins: 
+            Items: [ "*" ]
+          AccessControlExposeHeaders: 
+            Items: [ "*" ]
+          {{!-- 
+
+            Chrome max is 7200
+            https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age#directives
+          
+          --}}
+          AccessControlMaxAgeSec: 7200
+          OriginOverride: false
+        CustomHeadersConfig:
+          Items: []
+        SecurityHeadersConfig: 
+          ContentSecurityPolicy: 
+            ContentSecurityPolicy: >-
+              default-src https:;
+              script-src https: 'unsafe-inline';
+              style-src https:
+            Override: false
+          ContentTypeOptions: 
+            Override: true
+          FrameOptions: 
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy: 
+            Override: true
+            ReferrerPolicy: no-referrer
+          StrictTransportSecurity: 
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: true
+            Preload: true
+            Override: true
+        ServerTimingHeadersConfig: 
+          Enabled: false
+
+  Distribution:
     Type: "AWS::CloudFront::Distribution"
+    DependsOn:
+      - CachePolicy
+      - OriginRequestPolicy
+      - ResponseHeadersPolicy
+      - Certificate
     Properties:
       DistributionConfig:
         Aliases:
         {{#each aliases}}
-          - '{{{domain}}}'
+          - '{{{ domain }}}'
         {{/each}}
-        Comment: {{description}} ({{environment}})
+        Comment: {{{ description }}} ({{{ environment }}})
         DefaultCacheBehavior:
-          AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-          CachedMethods: ["GET", "HEAD", "OPTIONS"]
-          Compress: false
-          MinTTL: {{cache.ttl.min}}
-          MaxTTL: {{cache.ttl.max}}
-          DefaultTTL: {{cache.ttl.default}}
-          ForwardedValues:
-            Cookies:
-              Forward: "all"
-            Headers:
-              - "Accept"
-              - "Accept-Encoding"
-              - "Access-Control-Request-Headers"
-              - "Access-Control-Request-Method"
-              - "Authorization"
-              - "Host"
-            QueryString: true
-            QueryStringCacheKeys: ["*"]
-          SmoothStreaming: false
-          TargetOriginId: {{{origins.[0].domain}}}
+          TargetOriginId: {{{ origins.[0].domain }}}
+          AllowedMethods: [ GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE ]
+          CachedMethods: [ GET, HEAD, OPTIONS ]
+          Compress: true
+          CachePolicyId: !Ref CachePolicy
+          OriginRequestPolicyId: !Ref OriginRequestPolicy
+          ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
           ViewerProtocolPolicy: redirect-to-https
+          {{#if handlers }}
           LambdaFunctionAssociations:
             {{#each handlers}}
-            - EventType: {{event}}
-              IncludeBody: {{includesBody}}
-              LambdaFunctionARN: {{arn}}
+            - EventType: {{{ event }}}
+              IncludeBody: {{{ includesBody }}}
+              LambdaFunctionARN: {{{ arn }}}
             {{/each}}
+          {{/if}}
 
         DefaultRootObject: ""
         Enabled: true
@@ -45,8 +132,8 @@ Resources:
         IPV6Enabled: false
         Origins:
           {{#each origins}}
-          - Id: {{{domain}}}
-            DomainName: {{{domain}}}
+          - Id: {{{ domain }}}
+            DomainName: {{{ domain }}}
             CustomOriginConfig:
               HTTPSPort: 443
               OriginKeepaliveTimeout: 60
@@ -56,39 +143,42 @@ Resources:
             {{#if headers}}
             OriginCustomHeaders:
               {{#each headers}}
-              - HeaderName: "{{{name}}}"
+              - HeaderName: "{{{ name }}}"
                 HeaderValue: >-
-                  {{{value}}}
+                  {{{ value }}}
               {{/each}}
             {{/if}}
 
           {{/each}}
-        PriceClass: PriceClass_{{cache.[price-class]}}
+        PriceClass: PriceClass_100
         ViewerCertificate:
-          AcmCertificateArn: {{cache.certificate}}
+          AcmCertificateArn: !Ref Certificate
           MinimumProtocolVersion: "TLSv1.2_2021"
           SslSupportMethod: "sni-only"
       Tags:
         - Key: component
-          Value: {{namespace}}
+          Value: {{{ namespace }}}
         - Key: environment
-          Value: {{environment}}
+          Value: {{{ environment }}}
 
   {{#if dns}}
   {{#each dns}}
-  RecordSet{{name}}:
+  RecordSet{{{ awsCase tld }}}:
     Type: "AWS::Route53::RecordSetGroup"
     DependsOn:
-      - "CustomDomainCF"
+      - Distribution
     Properties:
-      Comment: "{{name}} alias for {{this.name}} ({{this.environment}})"
-      HostedZoneId: {{{zone}}}
+      Comment: >-
+        {{{ tld }}} alias for 
+        {{{ @root.namespace }}} {{{ @root.name }}} 
+        ({{{ @root.environment }}})
+      HostedZoneId: {{{ zone }}}
       RecordSets:
         {{#each aliases}}
-        - Name: '{{{.}}}.'
+        - Name: '{{{ . }}}.'
           Type: A
           AliasTarget:
-            DNSName: !GetAtt [ CustomDomainCF, "DomainName" ]
+            DNSName: !GetAtt [ Distribution, "DomainName" ]
             EvaluateTargetHealth: false
             HostedZoneId: Z2FDTNDATAQYW2
         {{/each}}
@@ -97,4 +187,4 @@ Resources:
 
 Outputs:
   CloudFrontDistributions:
-    Value: !Ref CustomDomainCF
+    Value: !Ref Distribution

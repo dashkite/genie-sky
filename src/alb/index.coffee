@@ -7,7 +7,7 @@ import Templates from "@dashkite/template"
 import * as VPC from "@dashkite/dolores/vpc"
 import { getCertificateARN } from "@dashkite/dolores/acm"
 import { getLambda } from "@dashkite/dolores/lambda"
-import { getHostedZone } from "@dashkite/dolores/route53"
+import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { getSecretReference } from "@dashkite/dolores/secrets"
 import {
   deployStack
@@ -26,7 +26,6 @@ getDescription = ({ namespace, environment, alb }) ->
 getName = ({ namespace, environment, alb }) ->
   qname { namespace, environment, name: alb.name }
 
-getHostedZoneID = ( tld ) -> ( await getHostedZone tld ).id
 
 getTLD = Fn.pipe [
   Text.split "."
@@ -54,8 +53,10 @@ getHeaders = ( headers ) ->
     { name, value }
 
 awsCase = Fn.pipe [
-  Text.camelCase
-  Text.capitalize 
+  Text.normalize
+  Text.titleCase 
+  Text.camelCase 
+  Text.capitalize
 ]
 
 increment = ( n ) -> n + 1
