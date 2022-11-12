@@ -1,3 +1,5 @@
+import * as Logger from "@dashkite/dolores/logger"
+
 import zip from "./zip"
 import secrets from "./secrets"
 import role from "./role"
@@ -16,6 +18,10 @@ import _module from "./module"
 import schema from "./schema"
 
 export default (genie) ->
+  
+  genie.define "sky:clean", -> Logger.clean()
+  genie.before "clean", "sky:clean"
+  
   if (options = genie.get "sky")?
     zip genie, options
     secrets genie, options

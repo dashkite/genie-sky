@@ -1,49 +1,52 @@
 import * as M from "@dashkite/masonry"
 import YAML from "js-yaml"
 import Ajv from "ajv/dist/2020"
-import apiSchema from "@dashkite/sky-api-description/schema"
-import policySchema from "@dashkite/enchant/schema"
-import runeSchema from "@dashkite/runes/schema"
 
-ajv = new Ajv allowUnionTypes: true
+fail = ( message ) -> throw new Error "sky-presets: #{ message }"
 
-validate = ( schema ) ->
+load = ( type ) ->
+  switch type
+    when "api" then import( "@dashkite/sky-api-description/schema" )
+    when "policy" then import( "@dashkite/enchant/schema" )
+    when "rune" then import( "@dashkite/runes/schema" )
+    else fail "invalid schema type [ #{ type } ]"
+
+_validate = ( type ) ->
   ({ input }) -> 
-    if ! (ajv.validate schema, YAML.load input)
+    ajv = new Ajv allowUnionTypes: true
+    schema = await load type
+    if ! ( ajv.validate schema, YAML.load input )
       for error in ajv.errors
         console.error "Error:", error.message
         console.error "       @", error.instancePath
-      throw new Error "validation failed"
+      fail "validation failed"
 
-export default (t, { schema }) ->
-  { type, glob, auto } = schema
+validate = ({ glob, type }) ->
+  M.start [
+      M.glob glob, "."
+      M.read
+      M.tr _validate type
+    ]
 
-  t.define "sky:schema:api:validate", M.start [
-    M.glob glob, "."
-    M.read
-    M.tr validate apiSchema
-  ]
+export default (t, { schema, schemas }) ->
 
-  t.define "sky:schema:policy:validate", M.start [
-    M.glob glob, "."
-    M.read
-    M.tr validate policySchema
-  ]
+  if schema? || schemas?
 
-  t.define "sky:schema:rune:validate", M.start [
-    M.glob glob, "."
-    M.read
-    M.tr validate runeSchema
-  ]
+    schemas ?= [ schema ]
+  
+    for schema in schemas
+      
+      { type, glob, auto } = schema
+  
+      if !( type? )
+        fail "missing schema type"
+      if !( glob? ) 
+        fail "missing schema glob"
+      
+      t.define "sky:schema:#{type}:validate", validate { glob, type }
 
-  auto ?= true
-  if auto
-    switch type
-      when "api"
-        t.before "build", "sky:schema:api:validate"
-      when "policy"
-        t.before "build", "sky:schema:policy:validate"
-      when "rune"
-        t.before "build", "sky:schema:rune:validate"
+      if ( auto ?= true )
+        t.before "build", "sky:schema:#{type}:validate"
+
 
 

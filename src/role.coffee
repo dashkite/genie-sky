@@ -29,6 +29,10 @@ import {
   getQueueARN
 } from "@dashkite/dolores/queue"
 
+import {
+  log
+} from "@dashkite/dolores/logger"
+
 buildCloudWatchPolicy = (name, handler) ->
   region = handler.region ? "us-east-1"
 
@@ -44,17 +48,17 @@ buildCloudWatchPolicy = (name, handler) ->
   ]
 
 buildSecretsPolicy = (secrets) ->
-  console.log "*** build secrets policy ***"
-
   Effect: "Allow"
   Action: [ "secretsmanager:GetSecretValue" ]
   Resource: await do ->
     for secret in secrets
       if secret.type == "wildcard"
-        console.log "authorize secret access for wildcard scope: #{secret.name}"
+        log "secrets", "build-policy", 
+          "authorize secret access for wildcard scope: #{ secret.name }"
         await getWildcardARN secret.name
       else
-        console.log "authorize secret access for: #{secret.name}"
+        log "secrets", "build-policy", 
+          "authorize secret access for: #{ secret.name }"
         await getSecretARN secret.name
 
 mixinPolicyBuilders =
