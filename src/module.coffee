@@ -15,7 +15,14 @@ export default ( genie, options ) ->
   genie.define "sky:module:publish", [ "build" ], ->
 
     # the dashkite internals database
-    collection = client.collection { db: "dd343rnxc1hjqqhu0hq8viun7", collection: "modules.dashkite.com" }
+    db = client.db "7tro1s4qcwnz2ytrj1eox8y1a"
+    if !(collectionInstance = await db.collection.get "modules.dashkite.com")?
+      collectionInstance = await db.collection.create byname: "modules.dashkite.com"
+      loop
+        response = await db.collection.getStatus "modules.dashkite.com"
+        break if response.status == "ready"
+        await Time.sleep 3 * 1000
+    collection = collectionInstance.entries
     
     { name, exports } = await getPackage()
     if Text.startsWith "@" then name = name[1..]

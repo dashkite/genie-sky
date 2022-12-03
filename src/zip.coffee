@@ -10,7 +10,7 @@ bundle = ( { environment, name, path, aliases } ) ->
   new Promise (resolve, reject) ->
     Webpack 
       mode: environment
-      devtool: if environment != "production" then "inline-source-map"
+      devtool: if environment != "production" then "eval-source-map"
       optimization:
         nodeEnv: environment
       target: "node"
