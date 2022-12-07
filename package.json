@@ -35,6 +35,7 @@
   },
   "homepage": "https://github.com/dashkite/sky-presets#readme",
   "devDependencies": {
+    "@dashkite/atlas": "file:../atlas",
     "@dashkite/genie": "^0.5.11",
     "@dashkite/genie-presets": "^0.5.7"
   },
@@ -53,6 +54,7 @@
     "brotli": "^1.3.3",
     "coffee-loader": "^3.0.0",
     "css-loader": "^6.6.0",
+    "esbuild": "^0.15.18",
     "js-yaml": "^4.1.0",
     "mime-types": "^2.1.35",
     "node-fetch": "^2.6.7",

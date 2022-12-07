@@ -1,101 +1,101 @@
 import FS from "fs/promises"
 import Path from "path"
-import YAML from "js-yaml"
-import * as m from "@dashkite/masonry"
-import { confidential } from "panda-confidential"
-import Webpack from "webpack"
+# import YAML from "js-yaml"
+# import { confidential } from "panda-confidential"
 import { guard } from "./helpers"
+import execa from "execa"
+# import * as Fn from "@dashkite/joy/function"
+# import * as It from "@dashkite/joy/iterable"
+# import * as Obj from "@dashkite/joy/object"
+import * as Type from "@dashkite/joy/type"
+import { generic } from "@dashkite/joy/generic"
+import * as Text from "@dashkite/joy/text"
+import * as Atlas from "@dashkite/atlas"
+import { FileReference } from "@dashkite/atlas"
 
-bundle = ( { environment, name, path, aliases } ) ->
-  new Promise (resolve, reject) ->
-    Webpack 
-      mode: environment
-      devtool: if environment != "production" then "eval-source-map"
-      optimization:
-        nodeEnv: environment
-      target: "node"
-      node:
-        global: true
-      entry:
-        index: Path.resolve path
-      output:
-        path: Path.resolve "build/lambda"
-        filename: "#{name}.js"
-        library: 
-          type: "commonjs2"
-      module:
-        rules: [
-          test: /\.coffee$/
-          use: [ require.resolve "coffee-loader" ]
-        ,
-          test: /\.yaml$/
-          type: "json"
-          loader: require.resolve "yaml-loader"
-        ,
-          test: /\.pug$/
-          use: [ require.resolve "pug-loader" ]
-        ,
-          test: /\.styl$/
-          use: [
-            require.resolve "raw-loader"
-            require.resolve "stylus-loader"
-          ]
-        ,
-          test: /\.(hbs|txt)$/
-          use: [ require.resolve "raw-loader" ]
-        ,
-          test: /\.js$/,
-          enforce: "pre",
-          use: [ require.resolve "source-map-loader" ]
-        
-        ]
-      resolve:
-        extensions: [ ".js", ".json", ".yaml", ".coffee", ".pug" ]
-        modules: [ "node_modules" ]
-        alias: aliases
-      (error, result) ->
-        if error? || result.hasErrors()
-          console.error result?.toString colors: true
-          reject error
-        else
-          resolve result
+# deliver = generic
+#   name: "deliver"
+#   description: "Generate Import Map URLs"
+#   default: ({ name, version }) ->
+#     "node_modules/#{ name }"
+
+# generic deliver, Type.isString, ( name ) ->
+#   "node_modules/#{ name }"
+
+# generic deliver, ( Type.isKind Atlas.FileReference ), ( reference ) ->
+#   { name, hash } = reference
+#   if Text.startsWith "@", name
+#     name = name[1..]
+#   console.log reference
+#   "https://modules.dashkite.com/#{name}/#{hash}/"
+
+# generic deliver, ( Type.isKind Atlas.Scope ), ({ reference }) -> deliver reference
+
+# generic deliver, ( Type.isKind Atlas.ParentScope ), ({ reference }) ->
+#   # hacky AF but just need to get this working
+#   # amounts to a no-op for file references
+#   ( deliver reference ).replace "@#{ reference.version }", ""
+
+getDependencies = ( path ) ->
+  console.log "sky presets: atlas: starting"
+
+  # TODO possibly support this interface in Atlas directly?
+  console.log "sky presets: atlas: reading package.json"
+  pkg = JSON.parse await FS.readFile Path.resolve path, "package.json"
+
+  console.log "sky presents: atlas: creating file reference", path
+  generator = await Atlas.Reference.create pkg.name, "file:#{path}"
+  generator.root = "."
+
+  generator.scopes
+
+exec = ( command ) ->
+  execa.command command,
+    shell: true, stripFinalNewline: true
+
+bundle = ({ name, path }) ->
+
+  dependencies = await getDependencies "."
+  
+  await FS.mkdir "build/lambda/#{ name }/node_modules", recursive: true
+  
+  loop
+    try
+      await FS.readdir "build/node/src"
+      break
+  
+  await FS.cp "build/node/src", "build/lambda/#{ name }", recursive: true
+
+  for dependency from dependencies
+    if Type.isType FileReference, dependency
+      await exec "npm pack #{ dependency.url }"
+    else
+      await exec "cd build/lambda/#{ name } && npm i #{ dependency.name }"
+  
+  await exec "cd build/lambda/#{ name } && npm i --production ../../../*.tgz"
+  await exec "cd build/lambda/#{ name } && zip -qr ../#{ name }.zip ."
+
+
+  # await FS.mkdir "build/lambda", recursive: true
+  # loop
+  #   try
+  #     await FS.readdir "build/node/src"
+  #     break
+  # await FS.cp "build/node/src", "build/lambda/src", recursive: true
+  # text = await FS.readFile "package.json", "utf8"  
+  # await FS.writeFile "build/lambda/package.json",
+  #   text.replaceAll "../", "../../../"
+  # text = await FS.readFile "package-lock.json", "utf8"  
+  # await FS.writeFile "build/lambda/package-lock.json",
+  #   text.replaceAll "../", "../../../"
+  # console.log "installing..."
+  # await exec "cd build/lambda && npm ci --production --install-links"
+  # console.log "zipping..."
+  # await exec "zip -qr build/lambda.zip build/lambda"
+  # # processToString exec "shasum -a 256 -p build/lambda.zip"
 
 export default (genie, { lambda }) ->
-  genie.define "sky:zip", guard (environment) ->
-    environment = "development" if environment != "production"
-    oldHashes = await do ->
-      try
-        YAML.load await FS.readFile ".sky/hashes"
-      catch
-        {}
-    newHashes = {}
-
+  genie.define "sky:zip", "build", ->
     for handler in lambda.handlers
-      handler.aliases ?= {}
-      for alias, path of handler.aliases
-        handler.aliases[ alias ] = Path.resolve path
-
-      result = await bundle { environment, handler... }
-      newHashes[ handler.name ] = result.hash
-
-      # compare to saved hashes and skip zip/upload when they're the same
-      if oldHashes[ handler.name ] != result.hash
-
-        # TODO apparently webpack returns before it's finished writing the file?
-        loop
-          try
-            await FS.readFile "build/lambda/#{ handler.name }.js"
-            break
-
-        await do m.exec "zip", [
-          "-qj"
-          "-9"
-          "build/lambda/#{ handler.name }.zip"
-          "build/lambda/#{ handler.name }.js"
-        ]
-      else
-        console.log "No updates for Lambda [ #{ handler.name } ]"
-
-    await FS.mkdir ".sky", recursive: true # recursive implies force
-    await FS.writeFile ".sky/hashes", YAML.dump newHashes
+      await bundle handler
 

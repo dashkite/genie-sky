@@ -30,12 +30,15 @@ updateLambdas = ({ namespace, environment, lambda, version }) ->
     
     if data?
 
+      console.log "uploading zip file", data.length
+
       name = "#{namespace}-#{environment}-#{handler.name}"
 
       role = await getRoleARN "#{name}-role"
 
+      # TODO get handler from config
       await publishLambda name, data, {
-        handler: "#{ handler.name }.handler"
+        handler: "index.handler"
         environment: {}
         handler.configuration...
         handler.configurations?.default...
@@ -140,10 +143,10 @@ export default (genie, { namespace, lambda }) ->
 
   genie.define "sky:lambda:publish",
     [ 
-      "clean"
-      "sky:roles:publish:*"
-      "sky:lambda:handlers"
-      "sky:zip:*" 
+      # "clean"
+      # "sky:roles:publish:*"
+      # "sky:lambda:handlers"
+      # "sky:zip:*" 
     ],
     guard (environment) ->
       updateLambdas {
