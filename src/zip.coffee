@@ -23,6 +23,18 @@ bundle = ( { environment, name, path, aliases } ) ->
         filename: "#{name}.js"
         library: 
           type: "commonjs2"
+      externals:
+        "@aws-sdk/client-acm": "@aws-sdk/client-acm"
+        "@aws-sdk/client-cloudformation": "@aws-sdk/client-cloudformation"
+        "@aws-sdk/client-dynamodb": "@aws-sdk/client-dynamodb"
+        "@aws-sdk/client-iam": "@aws-sdk/client-iam"
+        "@aws-sdk/client-kinesis": "@aws-sdk/client-kinesis"
+        "@aws-sdk/client-lambda": "@aws-sdk/client-lambda"
+        "@aws-sdk/client-route-53": "@aws-sdk/client-route-53"
+        "@aws-sdk/client-s3": "@aws-sdk/client-s3"
+        "@aws-sdk/client-secrets-manager": "@aws-sdk/client-secrets-manager"
+        "@aws-sdk/client-sfn": "@aws-sdk/client-sfn"
+        "@aws-sdk/client-sqs": "@aws-sdk/client-sqs"
       module:
         rules: [
           test: /\.coffee$/
