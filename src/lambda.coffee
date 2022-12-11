@@ -25,8 +25,7 @@ updateLambdas = ({ namespace, environment, lambda, version }) ->
   for handler in lambda?.handlers ? []
     
     try
-      # if there's no zip file, the file hasn't changed
-      data = await FS.readFile "build/lambda/#{ handler.name }.zip"
+      data = await FS.readFile ".sky/build/#{ handler.name }.zip"
     
     if data?
 
@@ -143,10 +142,10 @@ export default (genie, { namespace, lambda }) ->
 
   genie.define "sky:lambda:publish",
     [ 
-      # "clean"
-      # "sky:roles:publish:*"
-      # "sky:lambda:handlers"
-      # "sky:zip:*" 
+      "clean"
+      "sky:roles:publish:*"
+      "sky:lambda:handlers"
+      "sky:zip:*" 
     ],
     guard (environment) ->
       updateLambdas {
