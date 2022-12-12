@@ -1,8 +1,16 @@
+# Please see docs/zip.md for documentation.
+
 import FS from "fs/promises"
 import Path from "path"
 import { guard } from "./helpers"
 import JSZip from "jszip"
 import _glob from "glob"
+import { log } from "@dashkite/dolores/logger"
+
+Paths =
+  package: Path.resolve "package.json"
+  zip:
+    directory: Path.resolve ".sky", "build"
 
 glob = ( pattern, path ) ->
   new Promise ( resolve, reject ) ->
@@ -14,14 +22,10 @@ glob = ( pattern, path ) ->
         "package-lock.json"
         "test/**/*"
       ]
-      matchBase: true
       ( error, matches ) ->
         if error? then reject error else resolve matches
 
 cat = ( a, b ) -> [ a..., b... ]
-
-# TODO log errors and write to file when finished
-log = ->
 
 readPackage = ( path ) ->
   JSON.parse await FS.readFile ( Path.join path, "package.json" ), "utf8"
@@ -33,20 +37,15 @@ findFiles = ( root ) ->
     files
 
 makeDependency = ( name, paths ) ->
-  # try the list of paths to find the dependency
   for path in paths
     try
       root = Path.join path, "node_modules", name
-      # we don't do anything with the package, we're
-      # just using it to verify that the root is the
-      # right one...
       await readPackage root
       files = await findFiles root
       return { name, root, files }
     catch error
       if error.code != "ENOENT"
-        console.log error
-        log error
+        log "zip", "errors", error.message
   throw new Error "could not resolve #{ name }"
 
 crawl = ( path, dependencies = {}, paths = []) ->
@@ -69,20 +68,17 @@ join = ( root, path ) ->
     path
 
 addFiles = ({ zip, source, target, files }) ->
-  Promise.all do ->
-    for file in files
-      addFile {
-        zip
-        source: join source, file
-        target: join target, file
-      }
+  for file in files
+    await addFile {
+      zip
+      source: join source, file
+      target: join target, file
+    }
 
 bundle = ({ name, path }) ->
 
-  Paths =
-    package: Path.resolve "package.json"
-    zip: Path.resolve ".sky", "build", "#{ name }.zip"
-    build: Path.resolve "build", "node", Path.dirname path
+  Paths.zip.file = Path.join Paths.zip.directory, "#{ name }.zip"
+  Paths.build = Path.resolve "build", "node", Path.dirname path
 
   zip = new JSZip
 
@@ -110,8 +106,8 @@ bundle = ({ name, path }) ->
     compressionOptions:
       level: 9
 
-  await FS.mkdir ( Path.dirname Paths.zip ), recursive: true
-  await FS.writeFile  Paths.zip, buffer
+  await FS.mkdir Paths.zip.directory, recursive: true
+  await FS.writeFile  Paths.zip.file, buffer
   
 export default (genie, { lambda }) ->
 
@@ -119,16 +115,7 @@ export default (genie, { lambda }) ->
     for handler in lambda.handlers
       await bundle handler
 
-  genie.define "sky:zip:build:clean", ->
+  genie.define "sky:zip:clean", ->
     try
-      FS.rm ".sky/build", recursive: true
-
-  genie.define "sky:zip:cache:clean", ->
-    try
-      FS.rm ".sky/cache", recursive: true
-
-  genie.define "sky:zip:clean", [
-    "sky:zip:build:clean"
-    "sky:zip:cache:clean"
-  ]
+      FS.rm Paths.zip.directory, recursive: true
 
