@@ -32,7 +32,7 @@ readPackage = ( path ) ->
 
 findFiles = ( root ) ->
   do ( files = [] ) ->
-    for pattern in [ "**/*.js", "**/*.json" ]
+    for pattern in [ "**/*.js", "**/*.?js", "**/*.json" ]
       files = cat files, await glob pattern, root
     files
 
