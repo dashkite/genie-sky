@@ -46,6 +46,7 @@
     "@dashkite/graphene-core": "file:../graphene-core",
     "@dashkite/masonry": "file:../masonry",
     "@dashkite/messages": "file:../messages",
+    "@dashkite/polaris": "file:../polaris",
     "@dashkite/runes": "file:../runes",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/sky-api-description": "file:../sky-api-description",

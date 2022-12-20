@@ -73,7 +73,28 @@ getHeaders = ( headers ) ->
             uknown operator [ #{ operator } ]"
     { name, value }
 
-getOrigins = ({ origin, origins }) ->
+isS3Origin = ( domain ) ->
+  ( "s3" in domain.split "." ) &&
+    domain.endsWith ".amazonaws.com"
+  
+isS3Website= ( domain ) ->
+  ( domain.endsWith ".amazonaws.com" ) &&
+    ( domain
+      .split "."
+      .some ( text ) -> text.startsWith "s3-website" )
+    
+s3Decorator = ( handler ) ->
+  ( description ) ->
+    for origin in await handler description
+      origin.s3 = do ->
+        if isS3Origin origin.domain
+          private: true
+        else if isS3Website origin.domain
+          website: true
+        else null
+      origin
+
+getOrigins = s3Decorator ({ origin, origins }) ->
   origins ?= [ origin ]
   for origin in origins
     if Type.isString origin
@@ -81,7 +102,10 @@ getOrigins = ({ origin, origins }) ->
     else if origin.headers?
       { origin..., headers: await getHeaders origin.headers }
     else origin
-      
+
+hasOAC = ( origins ) ->
+  ( origins.find ({ s3 }) -> s3.private )?
+
 getHandlers = ({ namespace, environment, handlers }) ->
   for { name, event, body } in handlers       
     event: event ? name
@@ -96,11 +120,14 @@ export default (genie, { namespace, lambda, edge }) ->
   genie.define "sky:edge:publish", guard (environment) ->
     name = edge.name ? "edge"
     aliases = getAliases edge.aliases
+    origins = await getOrigins edge
+    oac = hasOAC origins
     template = await templates.render "template.yaml",
       name: name
       namespace: namespace
       environment: environment
       description: getDescription { namespace, environment, edge }
+      oac: oac
       aliases: aliases
       dns: await getDNSEntries aliases
       # TODO possibly vary by environment
@@ -112,7 +139,7 @@ export default (genie, { namespace, lambda, edge }) ->
       certificate:
         verification: edge.certificate.verification
         aliases: getCertificateAliases aliases
-      origins: await getOrigins edge
+      origins: origins
       handlers: if lambda?.handlers? then getHandlers lambda.handlers
     deployStack (qname { namespace, name, environment }), template      
       

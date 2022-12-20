@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "{{description}} ({{environment}})"
+Description: "{{description}}"
 Resources:
 
   Certificate:
@@ -18,7 +18,7 @@ Resources:
     Type: "AWS::CloudFront::CachePolicy"
     Properties:
       CachePolicyConfig:
-        Name: {{{ name }}}-{{{ environment }}}-cache-policy
+        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-cache-policy
         DefaultTTL: {{{ cache.ttl.default }}}
         MinTTL: {{{ cache.ttl.min }}}
         MaxTTL: {{{ cache.ttl.max }}}
@@ -38,7 +38,7 @@ Resources:
     Type: "AWS::CloudFront::OriginRequestPolicy"
     Properties:
       OriginRequestPolicyConfig:
-        Name: {{{ name }}}-{{{ environment }}}-origin-request-policy
+        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-origin-request-policy
         CookiesConfig: 
           CookieBehavior: none
         HeadersConfig: 
@@ -50,7 +50,7 @@ Resources:
     Type: "AWS::CloudFront::ResponseHeadersPolicy"
     Properties:
       ResponseHeadersPolicyConfig:
-        Name: {{{ name }}}-{{{ environment }}}-response-headers-policy
+        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-response-headers-policy
         CorsConfig: 
           AccessControlAllowCredentials: true
           AccessControlAllowHeaders:
@@ -98,7 +98,21 @@ Resources:
             Override: true
         ServerTimingHeadersConfig: 
           Enabled: false
+  {{!--
+    Commenting out for now because I can't this to work.
+    I've hardocded the ID below...
 
+    {{#if oac}}
+    OriginAccessControl:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties: 
+        OriginAccessControlConfig: 
+            Name: {{{ @root.namespace }}}-{{{ @root.name }}}-s3
+            OriginAccessControlOriginType: s3
+            SigningBehavior: always
+            SigningProtocol: sigv4
+    {{/if}}
+  --}}
   Distribution:
     Type: "AWS::CloudFront::Distribution"
     DependsOn:
@@ -139,10 +153,25 @@ Resources:
           {{#each origins}}
           - Id: {{{ domain }}}
             DomainName: {{{ domain }}}
+            {{!-- {{#if s3.private}} --}}
+            {{!-- OriginAccessControlId: !Ref OriginAccessControl --}}
+            {{!-- Hardcoded for now, since I can't get the above to work --}}
+            {{!-- Reference to the 'Sign Requests' OAC --}}
+            {{!-- OriginAccessControlId: E28FXZ9WYWK3K7 --}}
+            {{!-- 
+              Okay, I couldn't get that to work either: I get a 500
+              from Cloudformation, so I'm leaving this here to try
+              it again later after they hopefully fix whatever's wrong.
+            --}}
+            {{!-- {{/if}} --}}
             CustomOriginConfig:
               HTTPSPort: 443
               OriginKeepaliveTimeout: 60
+              {{#if s3.website}}
+              OriginProtocolPolicy: "http-only"
+              {{else}}
               OriginProtocolPolicy: "https-only"
+              {{/if}}
               OriginReadTimeout: 60
               OriginSSLProtocols: [ "TLSv1.2" ]
             {{#if headers}}
