@@ -12,6 +12,8 @@ import {
   putBucketPolicy
   deleteBucketPolicy
   putBucketWebsite
+  deleteBucketWebsite
+  putBucketRedirect
   getObject
   putObject
   deleteObject
@@ -39,6 +41,10 @@ Presets =
       presets.delete "private"
       presets.add "website"
 
+    if bucket.redirect?
+      presets.delete "private"
+      presets.add "redirect"
+
     # if not private or website then must be public
     if !( presets.has "private" )
       presets.add "public"
@@ -47,7 +53,7 @@ Presets =
 
   private: ( bucket ) ->
     
-    await deleteWebsite bucket.name
+    await deleteBucketWebsite bucket.name
 
     putBucketLifecycle bucket.name,
       Rules: [
@@ -74,6 +80,9 @@ Presets =
       Templates.website { bucket }
     putBucketWebsite bucket.name, bucket.website
 
+  redirect: ( bucket ) ->
+    await deleteBucketLifecycle bucket.name
+    putBucketRedirect bucket.name, bucket.redirect
 
 configureBucket = ( bucket ) ->
 
