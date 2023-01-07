@@ -25,16 +25,20 @@ Resources:
         ParametersInCacheKeyAndForwardedToOrigin:
           CookiesConfig: 
             CookieBehavior: none
-          EnableAcceptEncodingBrotli: true
-          EnableAcceptEncodingGzip: true
-          HeadersConfig: 
+          EnableAcceptEncodingBrotli: {{{ cache.compress }}}
+          EnableAcceptEncodingGzip: {{{ cache.compress }}}
+          HeadersConfig:
+            {{#if cache.headers }}
             HeaderBehavior: whitelist
             Headers:
-              - Host
-              - Accept-Language
-              - Authorization
+              {{#each cache.headers}}
+              - {{{ . }}}
+              {{/each}}
+            {{else}}
+            HeaderBehavior: none
+            {{/if}}
           QueryStringsConfig: 
-            QueryStringBehavior: all
+            QueryStringBehavior: {{{ cache.queries }}}
 
   OriginRequestPolicy:
     Type: "AWS::CloudFront::OriginRequestPolicy"

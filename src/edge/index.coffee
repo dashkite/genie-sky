@@ -104,7 +104,50 @@ getOrigins = s3Decorator ({ origin, origins }) ->
     else origin
 
 hasOAC = ( origins ) ->
-  ( origins.find ({ s3 }) -> s3.private )?
+  ( origins.find ({ s3 }) -> s3?.private )?
+
+# TODO possibly vary by environment
+getCache = ( preset ) ->
+
+  switch preset
+
+    when "static"
+      # static content so cache everything aggressively
+      # but allow for authorized content
+      ttl:
+        default: 86400 # 1 day
+        min: 1
+        max: 31536000 # 1 year
+      headers: [
+          "Authorization"
+          "Host"
+        ]
+      compress: true
+      queries: "none"
+
+    when "dynamic"
+      # basically we handle the edge caching
+      # so turn everything off
+      ttl:
+        default: 0
+        min: 0
+        max: 0
+      compress: false
+      queries: "none"
+
+    # allow for backward compatibility
+    else
+      # let cloudfront do the caching
+      ttl: cache.ttl ? 
+        default: 0
+        min: 0
+        max: 31536000 # 1 year
+      compress: true
+      headers: [
+          "Authorization"
+          "Host"
+        ]
+      queries: "all"
 
 getHandlers = ({ namespace, environment, handlers }) ->
   for { name, event, body } in handlers       
@@ -130,12 +173,7 @@ export default (genie, { namespace, lambda, edge }) ->
       oac: oac
       aliases: aliases
       dns: await getDNSEntries aliases
-      # TODO possibly vary by environment
-      cache:
-        ttl:
-          min: 0
-          max: 31536000
-          default: 0
+      cache: getCache edge.cache
       certificate:
         verification: edge.certificate.verification
         aliases: getCertificateAliases aliases
