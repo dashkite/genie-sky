@@ -141,6 +141,18 @@ mixinPolicyBuilders =
 
     ]
 
+  cloudfront: (mixin) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "cloudfront:ListDistributions"
+        "cloudfront:CreateInvalidation"
+      ]
+      Resource: ["*"]
+
+    ]
+
   "step-function": do (self = false, managed = null) ->
     managed = [
         Effect: "Allow"
