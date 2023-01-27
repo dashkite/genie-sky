@@ -50,6 +50,7 @@
     "@dashkite/enchant": "link:../enchant",
     "@dashkite/graphene-core": "link:../graphene-core",
     "@dashkite/joy": "^0.3.16",
+    "@dashkite/katana": "^0.4.8",
     "@dashkite/masonry": "link:../masonry",
     "@dashkite/messages": "link:../messages",
     "@dashkite/polaris": "link:../polaris",

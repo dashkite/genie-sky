@@ -9,6 +9,7 @@ specifiers:
   '@dashkite/genie-presets': ^0.5.7
   '@dashkite/graphene-core': link:../graphene-core
   '@dashkite/joy': ^0.3.16
+  '@dashkite/katana': ^0.4.8
   '@dashkite/masonry': link:../masonry
   '@dashkite/messages': link:../messages
   '@dashkite/polaris': link:../polaris
@@ -45,6 +46,7 @@ dependencies:
   '@dashkite/enchant': link:../enchant
   '@dashkite/graphene-core': link:../graphene-core
   '@dashkite/joy': 0.3.16
+  '@dashkite/katana': 0.4.8
   '@dashkite/masonry': link:../masonry
   '@dashkite/messages': link:../messages
   '@dashkite/polaris': link:../polaris
@@ -2596,7 +2598,6 @@ packages:
     resolution: {integrity: sha512-KOfMS5aRZItxPeMv0OXbOTCj5BZhN9jM190jae8HB7WgGB5uM5jEzRWmyh3yVbxTaL83o7csktRzUkxkr/Op1A==}
     dependencies:
       '@dashkite/joy': 0.3.16
-    dev: true
 
   /@dashkite/masonry/0.12.4:
     resolution: {integrity: sha512-6Yp0m4DI0bXztnD6Wwi5SAGl2tMgS8a+ZERkZf54dCrQgyfq65snFTxcbG8ZZ0sWdOCzm6gw4kT333oNZ/u7Qg==}
