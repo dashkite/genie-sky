@@ -6,6 +6,7 @@ import { guard } from "./helpers"
 import JSZip from "jszip"
 import { log } from "@dashkite/dolores/logger"
 import esbuild from "esbuild"
+import * as Time from "@dashkite/joy/time"
 
 normalize = ( path ) ->
   if path[0] == "/" || path[0] == "."
@@ -125,6 +126,7 @@ bundle = ({ name, path }) ->
 export default (genie, { lambda }) ->
 
   genie.define "sky:zip", "build", ->
+    await Time.sleep 1000
     for handler in lambda.handlers
       await bundle handler
 
