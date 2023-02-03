@@ -64,10 +64,8 @@ Resources:
           AccessControlAllowMethods: 
             Items: [ GET, HEAD, PUT, POST, PATCH, DELETE, OPTIONS ]
           AccessControlAllowOrigins: 
-            Items:
-              - "https://*.dashkite.com"
-              - "https://*.dashkite.io"
-              - "https://dashkite.com"
+            {{!-- TODO use the list of aliases here? --}}
+            Items: "*"
           AccessControlExposeHeaders: 
             Items:
               - www-authenticate
