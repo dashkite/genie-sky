@@ -33,6 +33,10 @@ import {
   log
 } from "@dashkite/dolores/logger"
 
+import {
+  create as getTopic
+} from "@dashkite/dolores/sns"
+
 buildCloudWatchPolicy = (name, handler) ->
   region = handler.region ? "us-east-1"
 
@@ -216,19 +220,36 @@ mixinPolicyBuilders =
 
   queue: (mixin) ->
     [
-
       Effect: "Allow"
       Action: [
+        "sqs:CreateQueue"
+        "sqs:DeleteQueue"
         "sqs:GetQueueUrl"
         "sqs:DeleteMessage"
         "sqs:ReceiveMessage"
         "sqs:SendMessage"
       ]
-      Resource: await getQueueARN mixin.name
+      Resource: if mixin.name?
+        await getQueueARN mixin.name
+      else
+        "arn:aws:sqs:*:*:*"
 
     ]
-    
 
+  sns: ( mixin ) ->
+    [
+      Effect: "Allow"
+      Action: [
+        "sns:CreateTopic"
+        "sns:DeleteTopic"
+        "sns:Publish"
+        "sns:Subscribe"
+      ]
+      Resource: ( await getTopic mixin.name ).arn
+    ]
+
+builders = mixinPolicyBuilders
+builders.sqs = builders.queue
   
 
 buildMixinPolicy = (mixin, base) ->
@@ -274,9 +295,14 @@ export default (genie, options) ->
           _queue = { queue..., type: "queue" }
           policies.push ( await buildMixinPolicy _queue, base )...
 
+      # if sqs? && sqs.length > 0
+      #   for item in sqs
+      #     policies.push builders.sqs item
+
       if mixins?
         for mixin in mixins
-          policies.push ( await buildMixinPolicy mixin, base )...
+          if ( builder = builders[ mixin.type ] )?
+            policies.push ( await builder mixin )...
 
       await createRole role, policies, options[ "managed-policies" ]
 
