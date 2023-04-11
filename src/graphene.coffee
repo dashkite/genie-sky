@@ -25,12 +25,19 @@ export default ( genie, { graphene } ) ->
         db.addresses[ drn ] = address
         updated = true
       for collection in db.collections
-        collection.byname ?= await getDomain collection.uri
-        if !( _collection = await (client.db address).collection.get collection.byname )?
-          _collection = await (client.db address).collection.create { byname: collection.byname }
-          console.log "created collection: #{collection.byname} for database: #{address}"
-          created.push { address, byname: collection.byname }
-          updated = true
+        { byname } = collection
+        if !byname?
+          if collection.uri?
+            collection.bynames ?= {}
+            if !( byname = collection.bynames[ drn ])?
+              byname = await getDomain collection.uri
+        if byname?
+          if !( _collection = await (client.db address).collection.get byname )?
+            _collection = await (client.db address).collection.create { byname }
+            console.log "created collection: #{byname} for database: #{address}"
+            collection.bynames[ drn ] = byname
+            created.push { address, byname }
+            updated = true
     if updated then await updateConfig graphene
     Promise.all do ->
       for { address, byname } in created 
@@ -45,6 +52,8 @@ export default ( genie, { graphene } ) ->
       for collection in db.collections when collection.publish?
         drn = await getDRN db.uri
         { publish, byname } = collection
+        if !byname?
+          byname = collection.bynames[ drn ]
         _collection = client.collection { 
           db: db.addresses[ drn ]
           collection: byname 
@@ -73,7 +82,7 @@ export default ( genie, { graphene } ) ->
         delete db.addresses[ drn ]
         updated = true
       for collection in db.collections
-        if collection.uri?
-          delete collection.byname
+        if collection.bynames?[ drn ]?
+          delete collection.bynames[ drn ]
           updated = true
     if updated then await updateConfig graphene

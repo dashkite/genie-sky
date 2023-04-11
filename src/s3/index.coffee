@@ -26,7 +26,7 @@ import {
 
 import { diff } from "../diff"
 
-import { yaml, getDomain } from "../helpers"
+import { yaml, getDomain, getDRN } from "../helpers"
 
 import prompts from "prompts"
 
@@ -105,24 +105,36 @@ export default ( genie, { s3 } ) ->
       updated = false
       for bucket in s3
         if !bucket.domain?
-          bucket.domain = await getDomain bucket.uri
-          await configureBucket bucket
-          console.log "created bucket #{bucket.domain}"
-          updated = true
+          if bucket.uri?
+            drn = await getDRN bucket.uri
+            bucket.domains ?= {}
+            if !bucket.domains[ drn ]?
+              domain = await getDomain bucket.uri
+              bucket.domains[ drn ] = domain
+              await configureBucket { bucket..., domain } 
+              console.log "created bucket #{domain}"
+              updated = true
       if updated then await updateConfig s3
 
     genie.define "sky:s3:undeploy", ->
       updated = false
       for bucket in s3
-        if bucket.domain?
-          if await hasBucket bucket.domain
-            await emptyBucket bucket.domain
-            await deleteBucket bucket.domain
-            console.log "deleted bucket #{bucket.domain}"
-            delete bucket.domain
-            updated = true
+        { domain } = bucket
+        if bucket.uri?
+          drn = await getDRN bucket.uri
+          domain ?= bucket.domains?[ drn ]
+        if domain?
+          if await hasBucket domain
+            await emptyBucket domain
+            await deleteBucket domain
+            console.log "deleted bucket #{domain}"
+            if bucket.uri?
+              drn = await getDRN bucket.uri
+              if bucket.domains?[ drn ]?
+                delete bucket.domains[ drn ]
+                updated = true
           else
-            throw new Error "bucket [#{bucket.domain}] does not exist"
+            throw new Error "bucket [#{domain}] does not exist"
       if updated then await updateConfig s3
 
     genie.define "sky:s3:publish", [ "sky:s3:deploy" ], ->
@@ -130,6 +142,9 @@ export default ( genie, { s3 } ) ->
       for bucket in s3 when bucket.publish?
 
         { publish, domain } = bucket
+        if bucket.uri?
+          drn = await getDRN bucket.uri
+          domain ?= bucket.domains[ drn ]
 
         publish.encoding ?= "bytes"
 

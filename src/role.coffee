@@ -275,7 +275,6 @@ export default (genie, options) ->
       policies = [ ( buildCloudWatchPolicy drn, handler ) ]
 
       if secrets? && secrets.length > 0
-        console.log "SECRETS", secrets
         policies.push await buildSecretsPolicy secrets
 
       if buckets? && buckets.length > 0
