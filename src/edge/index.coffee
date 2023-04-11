@@ -7,17 +7,11 @@ import Templates from "@dashkite/template"
 import compress from "brotli/compress"
 import { convert } from "@dashkite/bake"
 
-import { guard } from "../helpers"
+import { Name } from "@dashkite/name"
+import { getDRN, getDescription, getDomain } from "../helpers"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
-
-qname = ({ namespace, name, environment }) ->
-  "#{namespace}-#{environment}-#{name}"
-
-getDescription = ({ namespace, environment, edge }) ->
-  edge.description ? 
-    Text.titleCase "#{ namespace } #{ edge.name } (#{ environment })"
 
 
 getTLD = Fn.pipe [
@@ -35,10 +29,7 @@ awsCase = Fn.pipe [
 
 getAliases = ( aliases ) ->
   for alias in aliases
-    if Type.isString alias
-      domain: alias
-    else
-      alias
+    domain: await getDomain alias
 
 getCertificateAliases = ( aliases ) ->
   result = {}
@@ -73,35 +64,23 @@ getHeaders = ( headers ) ->
             uknown operator [ #{ operator } ]"
     { name, value }
 
-isS3Origin = ( domain ) ->
-  ( "s3" in domain.split "." ) &&
-    domain.endsWith ".amazonaws.com"
-  
-isS3Website= ( domain ) ->
-  ( domain.endsWith ".amazonaws.com" ) &&
-    ( domain
-      .split "."
-      .some ( text ) -> text.startsWith "s3-website" )
-    
-s3Decorator = ( handler ) ->
-  ( description ) ->
-    for origin in await handler description
-      origin.s3 = do ->
-        if isS3Origin origin.domain
-          private: true
-        else if isS3Website origin.domain
-          website: true
-        else null
-      origin
-
-getOrigins = s3Decorator ({ origin, origins }) ->
+getOrigins = ({ origin, origins }) ->
   origins ?= [ origin ]
   for origin in origins
-    if Type.isString origin
-      domain: origin
-    else if origin.headers?
-      { origin..., headers: await getHeaders origin.headers }
-    else origin
+    domain = await getDomain origin.domain
+    result = 
+      switch origin.type
+        when "s3"
+          s3: private: true
+          domain: domain
+        when "s3-website"
+          s3: website: true
+          domain: domain
+        else
+          { domain }
+    if origin.headers?
+      result.headers = await getHeaders origin.headers
+    result
 
 hasOAC = ( origins ) ->
   ( origins.find ({ s3 }) -> s3?.private )?
@@ -149,27 +128,30 @@ getCache = ( preset ) ->
         ]
       queries: "all"
 
-getHandlers = ({ namespace, environment, handlers }) ->
+getHandlers = ({ namespace, handlers }) ->
   for { name, event, body } in handlers       
     event: event ? name
     includesBody: body ? false
-    arn: await getLatestLambdaARN qname { namespace, environment, name }     
+    arn: await getLatestLambdaARN await getDRN { namespace, name }     
 
 export default (genie, { namespace, lambda, edge }) ->
 
   templates = Templates.create "#{__dirname}"
   templates._.h.registerHelper { awsCase }
 
-  genie.define "sky:edge:publish", guard (environment) ->
+  genie.define "sky:edge:publish", ->
+    mode = process.env.mode ? "development"
     name = edge.name ? "edge"
-    aliases = getAliases edge.aliases
+    uri = Name.getURI { type: "edge", namespace, name }
+    drn = await getDRN uri
+    aliases = await getAliases edge.aliases
     origins = await getOrigins edge
     oac = hasOAC origins
     template = await templates.render "template.yaml",
-      name: name
+      name: drn
       namespace: namespace
-      environment: environment
-      description: getDescription { namespace, environment, edge }
+      environment: mode
+      description: await getDescription uri
       oac: oac
       aliases: aliases
       dns: await getDNSEntries aliases
@@ -179,7 +161,8 @@ export default (genie, { namespace, lambda, edge }) ->
         aliases: getCertificateAliases aliases
       origins: origins
       handlers: if lambda?.handlers? then getHandlers lambda.handlers
-    deployStack (qname { namespace, name, environment }), template      
+    deployStack (await getDRN uri), template      
       
-  genie.define "sky:edge:delete", guard (environment) ->
-    deleteStack "#{namespace}-#{name}-#{environment}"
+  genie.define "sky:edge:delete", ->
+    name = edge.name ? "edge"
+    deleteStack await getDRN Name.getURI { type: "edge", namespace, name }

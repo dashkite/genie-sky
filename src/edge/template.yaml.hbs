@@ -18,7 +18,7 @@ Resources:
     Type: "AWS::CloudFront::CachePolicy"
     Properties:
       CachePolicyConfig:
-        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-cache-policy
+        Name: {{{ name }}}-cache-policy
         DefaultTTL: {{{ cache.ttl.default }}}
         MinTTL: {{{ cache.ttl.min }}}
         MaxTTL: {{{ cache.ttl.max }}}
@@ -44,7 +44,7 @@ Resources:
     Type: "AWS::CloudFront::OriginRequestPolicy"
     Properties:
       OriginRequestPolicyConfig:
-        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-origin-request-policy
+        Name: {{{ name }}}-origin-request-policy
         CookiesConfig: 
           CookieBehavior: none
         HeadersConfig: 
@@ -56,7 +56,7 @@ Resources:
     Type: "AWS::CloudFront::ResponseHeadersPolicy"
     Properties:
       ResponseHeadersPolicyConfig:
-        Name: {{{ namespace }}}-{{{ name }}}-{{{ environment }}}-response-headers-policy
+        Name: {{{ name }}}-response-headers-policy
         CorsConfig: 
           AccessControlAllowCredentials: true
           AccessControlAllowHeaders:
@@ -131,7 +131,7 @@ Resources:
         {{#each aliases}}
           - '{{{ domain }}}'
         {{/each}}
-        Comment: {{{ description }}} ({{{ environment }}})
+        Comment: {{{ description }}}
         DefaultCacheBehavior:
           TargetOriginId: {{{ origins.[0].domain }}}
           AllowedMethods: [ GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE ]
@@ -209,8 +209,7 @@ Resources:
     Properties:
       Comment: >-
         {{{ tld }}} alias for 
-        {{{ @root.namespace }}} {{{ @root.name }}} 
-        ({{{ @root.environment }}})
+        {{{ @root.name }}} 
       HostedZoneId: {{{ zone }}}
       RecordSets:
         {{#each aliases}}

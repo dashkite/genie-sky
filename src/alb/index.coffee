@@ -14,18 +14,8 @@ import {
   deleteStack
 } from "@dashkite/dolores/stack"
 
-import { guard } from "../helpers"
-
-qname = ({ namespace, name, environment }) ->
-  "#{namespace}-#{environment}-#{name}"
-
-getDescription = ({ namespace, environment, alb }) ->
-  alb.description ? 
-    Text.titleCase "#{ namespace } #{ alb.name } (#{ environment })"
-
-getName = ({ namespace, environment, alb }) ->
-  qname { namespace, environment, name: alb.name }
-
+import { Name } from "@dashkite/name"
+import { getDomain, getDRN, getDescription } from "../helpers"
 
 getTLD = Fn.pipe [
   Text.split "."
@@ -33,13 +23,12 @@ getTLD = Fn.pipe [
   It.join "."
 ]
 
-getRules = ({ rules, namespace, environment }) ->
+getRules = ({ rules, namespace }) ->
   for rule in rules
-    handler = await getLambda qname {
-      namespace
-      name: rule.handler
-      environment
-    }
+    rule.domains = 
+      for domain in rule.domains
+        await getDomain domain
+    handler = await getLambda await getDRN Name.getURI { type: "lambda", namespace, name: rule.handler }
     { rule..., handler }
 
 getHeaders = ( headers ) ->
@@ -66,26 +55,24 @@ export default (genie, { namespace, alb, lambda }) ->
   templates = Templates.create "#{__dirname}"
   templates._.h.registerHelper { awsCase, increment }
 
-  genie.define "sky:alb:publish", guard (environment) ->
+  genie.define "sky:alb:publish", ->
+    domain = await getDomain alb.domain
+    uri = Name.getURI { type: "alb", namespace, name: alb.name }
     context =
-      name: getName { namespace, environment, alb }
-      description: getDescription { namespace, environment, alb }
-      zone: id: await getHostedZoneID getTLD alb.domain
-      domain: alb.domain
+      name: await getDRN uri
+      description: alb.description ? await getDescription uri
+      zone: id: await getHostedZoneID getTLD domain
+      domain: domain
       subnets: await VPC.Subnets.list alb.vpc ? "default"
       security:
         groups: await VPC.SecurityGroups.list alb.vpc
-      certificate: arn: await getCertificateARN getTLD alb.domain
-      handler: await getLambda qname {
-        namespace
-        name: alb.handler
-        environment
-      }
-      rules: await getRules { rules: alb.rules, namespace, environment }
+      certificate: arn: await getCertificateARN getTLD domain
+      handler: await getLambda await getDRN Name.getURI { type: "lambda", namespace, name: alb.handler }
+      rules: await getRules { rules: alb.rules, namespace }
       headers: if alb.headers? then await getHeaders alb.headers  
     deployStack context.name,
       await templates.render "template.yaml", context
 
-  genie.define "sky:alb:delete", guard (environment) ->
-    deleteStack getName { namespace, environment, alb }
+  genie.define "sky:alb:delete", ->
+    deleteStack await getDRN Name.getURI { type: "alb", namespace, name: alb.name }
 

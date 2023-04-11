@@ -1,4 +1,5 @@
-import { guard } from "./helpers"
+import { getDRN, getDomain } from "./helpers"
+import { Name } from "@dashkite/name"
 
 import {
   getSecretARN
@@ -89,17 +90,16 @@ mixinPolicyBuilders =
         resources
     ]
 
-  s3: (mixin, base) ->
+  s3: (mixin) ->
 
     [
       Effect: "Allow"
       Action: [ "s3:*" ]
-      Resource: do ->
+      Resource: await do ->
         resources = []
-        for bucket in mixin.buckets
-          _bucket = "#{base}-#{bucket}"
-          resources.push "arn:aws:s3:::#{_bucket}"
-          resources.push "arn:aws:s3:::#{_bucket}/*"
+        domain = await getDomain mixin.uri
+        resources.push "arn:aws:s3:::#{domain}"
+        resources.push "arn:aws:s3:::#{domain}/*"
         resources
     ]
 
@@ -127,7 +127,7 @@ mixinPolicyBuilders =
         "lambda:InvokeFunction"
       ]
       Resource: [
-        await getLambdaUnqualifiedARN mixin.name
+        await getLambdaUnqualifiedARN await getDRN mixin.uri
       ]
 
     ]
@@ -264,36 +264,34 @@ export default (genie, options) ->
   # TODO add delete / teardown
   # TODO add support for multiple lambdas
   
-  genie.define "sky:roles:publish", guard (environment) ->
-
-    base = "#{namespace}-#{environment}"
+  genie.define "sky:roles:publish", ->
 
     for handler in ( lambda?.handlers ? [] )
 
-      lambda = "#{base}-#{handler.name}"
-      role = "#{lambda}-role"
+      drn = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
 
       # TODO possibly explore how to split out role building
       # TODO allow for different policies for different handlers
-      policies = [ ( buildCloudWatchPolicy lambda, handler ) ]
+      policies = [ ( buildCloudWatchPolicy drn, handler ) ]
 
       if secrets? && secrets.length > 0
+        console.log "SECRETS", secrets
         policies.push await buildSecretsPolicy secrets
 
       if buckets? && buckets.length > 0
         for bucket in buckets
           _bucket = { bucket..., type: "bucket" }
-          policies.push ( await buildMixinPolicy _bucket, base )...
+          policies.push ( await buildMixinPolicy _bucket, drn )...
 
       if tables? && tables.length > 0
         for table in tables
           _table = { table..., type: "table" }
-          policies.push ( await buildMixinPolicy _table, base )...
+          policies.push ( await buildMixinPolicy _table, drn )...
 
       if queues? && queues.length > 0
         for queue in queues
           _queue = { queue..., type: "queue" }
-          policies.push ( await buildMixinPolicy _queue, base )...
+          policies.push ( await buildMixinPolicy _queue, drn )...
 
       # if sqs? && sqs.length > 0
       #   for item in sqs
@@ -301,15 +299,15 @@ export default (genie, options) ->
 
       if mixins?
         for mixin in mixins
+          if mixin.uri?
+            description = Name.parse mixin.uri
+            mixin = { description..., mixin... }
           if ( builder = builders[ mixin.type ] )?
             policies.push ( await builder mixin )...
 
-      await createRole role, policies, options[ "managed-policies" ]
+      await createRole drn, policies, options[ "managed-policies" ]
 
-  genie.define "sky:roles:delete", guard (environment) ->
-    base = "#{namespace}-#{environment}"
-
+  genie.define "sky:roles:delete", ->
     for handler in ( lambda?.handlers ? [] )
-      lambda = "#{base}-#{handler.name}"
-      role = lambda
-      deleteRole role
+      drn = await getDRN  Name.getURI { type: "lambda", namespace, name: handler.name }
+      deleteRole drn

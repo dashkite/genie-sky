@@ -26,6 +26,8 @@ import {
 
 import { diff } from "../diff"
 
+import { yaml, getDomain } from "../helpers"
+
 import prompts from "prompts"
 
 import Templates from "./templates"
@@ -53,9 +55,9 @@ Presets =
 
   private: ( bucket ) ->
     
-    await deleteBucketWebsite bucket.name
+    await deleteBucketWebsite bucket.domain
 
-    putBucketLifecycle bucket.name,
+    putBucketLifecycle bucket.domain,
       Rules: [
         ID: "Temporary"
         Expiration:
@@ -66,119 +68,85 @@ Presets =
       ]
     
   public: ( bucket ) ->
-    await deleteBucketLifecycle bucket.name
-    deleteBucketPolicy bucket.name
+    await deleteBucketLifecycle bucket.domain
+    deleteBucketPolicy bucket.domain
 
   cloudfront: ( bucket ) ->
-    distribution = await getDistributionForDomain bucket.name
-    putBucketPolicy bucket.name,
+    distribution = await getDistributionForDomain bucket.domain
+    putBucketPolicy bucket.domain,
       Templates.cloudfront { bucket, distribution }
 
   website: ( bucket ) ->
-    await deleteBucketLifecycle bucket.name
-    await putBucketPolicy bucket.name,
+    await deleteBucketLifecycle bucket.domain
+    await putBucketPolicy bucket.domain,
       Templates.website { bucket }
-    putBucketWebsite bucket.name, bucket.website
+    putBucketWebsite bucket.domain, bucket.website
 
   redirect: ( bucket ) ->
-    await deleteBucketLifecycle bucket.name
-    putBucketRedirect bucket.name, bucket.redirect
+    await deleteBucketLifecycle bucket.domain
+    putBucketRedirect bucket.domain, bucket.redirect
 
 configureBucket = ( bucket ) ->
 
-  await putBucket bucket.name
+  await putBucket bucket.domain
 
   await Promise.all do ->
     for preset from Presets.get bucket
       Presets[ preset ] bucket
 
+updateConfig = ( config ) ->
+  cfg = await yaml.read "genie.yaml"
+  cfg.sky.s3 = config
+  yaml.write "genie.yaml", cfg
 
-export default ( genie, options ) ->
+export default ( genie, { s3 } ) ->
 
-  if options.buckets?
+    genie.define "sky:s3:deploy", ->
+      updated = false
+      for bucket in s3
+        if !bucket.domain?
+          bucket.domain = await getDomain bucket.uri
+          await configureBucket bucket
+          console.log "created bucket #{bucket.domain}"
+          updated = true
+      if updated then await updateConfig s3
 
-    { buckets } = options
+    genie.define "sky:s3:undeploy", ->
+      updated = false
+      for bucket in s3
+        if bucket.domain?
+          if await hasBucket bucket.domain
+            await emptyBucket bucket.domain
+            await deleteBucket bucket.domain
+            console.log "deleted bucket #{bucket.domain}"
+            delete bucket.domain
+            updated = true
+          else
+            throw new Error "bucket [#{bucket.domain}] does not exist"
+      if updated then await updateConfig s3
 
-    genie.define "sky:s3:check", ->
-      missing = []
-      for bucket in buckets
-        if !( await hasBucket bucket.name )
-          missing.push bucket.name
-      if missing.length == 0
-        console.log "All buckets are available."
-      else
-        for name in missing
-          console.warn "Bucket [#{name}] does not exist or is unavailable"
-        throw new Error "buckets:check failed"
+    genie.define "sky:s3:publish", [ "sky:s3:deploy" ], ->
 
-    genie.define "sky:s3:buckets:put", ->
-      for bucket in buckets
-        await configureBucket bucket
+      for bucket in s3 when bucket.publish?
 
-    genie.define "sky:s3:bucket:put", (name) ->
-      if ( bucket = buckets.find (b) -> b.name == name )?
-        await configureBucket bucket
-      else
-        throw new Error "configuration is not available for bucket [#{name}]"
+        { publish, domain } = bucket
 
-    genie.define "sky:s3:put", ( name ) ->
-      if name?
-        genie.run "sky:s3:bucket:put:#{ name }"
-      else
-        genie.run "sky:s3:buckets:put"
+        publish.encoding ?= "bytes"
 
-    genie.define "sky:s3:bucket:empty", (name) ->
-      if await hasBucket name
-        await emptyBucket name
-      else
-        throw new Error "bucket [#{name}] does not exist"
+        console.log "publishing to bucket [ #{domain} ]"
 
-    genie.define "sky:s3:empty", ( name ) ->
-      genie.run "sky:s3:bucket:empty:#{ name }"
-
-    genie.define "sky:s3:bucket:delete", (name) ->
-      if await hasBucket name
-        await emptyBucket name
-        await deleteBucket name
-      else
-        throw new Error "bucket [#{name}] does not exist"
-
-    genie.define "sky:s3:delete", ( name ) ->
-      genie.run "sky:s3:bucket:delete:#{ name }"
-
-    genie.define "sky:s3:bucket:get", (name) ->
-      { value } = await prompts
-        type: "text"
-        name: "value"
-        message: "Key for bucket [ #{name} ]:"
-      console.log await getObject name, value
-
-    genie.define "sky:s3:get", ( name ) ->
-      genie.run "sky:s3:bucket:get:#{ name }"
-
-    genie.define "sky:s3:bucket:publish", (name) ->
-
-      { publish } = buckets.find ( bucket ) -> name == bucket.name
-
-      publish.encoding ?= "bytes"
-
-      console.log "publishing to collection [ #{name} ]"
-
-      diff publish,
-        list: Fn.flow [
-            -> listObjects name
-            It.resolve It.map ({ Key }) -> getObject name, Key
-            It.collect
-          ]
-        add: (key, content) -> 
-          console.log "... add [ #{ key } ]"
-          putObject name, key, content
-        update: (key, content) ->
-          console.log "... update [ #{ key } ]"
-          putObject name, key, content
-        delete: (key) ->
-          console.log "... delete [ #{ key } ]"
-          deleteObject name, key
-
-    genie.define "sky:s3:publish", ( name ) ->
-      genie.run "sky:s3:bucket:publish:#{ name }"
+        diff publish,
+          list: Fn.flow [
+              -> listObjects domain
+              It.resolve It.map ({ Key }) -> getObject domain, Key
+              It.collect
+            ]
+          add: (key, content) -> 
+            console.log "... add [ #{ key } ]"
+            putObject domain, key, content
+          update: (key, content) ->
+            console.log "... update [ #{ key } ]"
+            putObject domain, key, content
+          delete: (key) ->
+            console.log "... delete [ #{ key } ]"
+            deleteObject domain, key

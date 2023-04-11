@@ -8,7 +8,9 @@ import * as Time from "@dashkite/joy/time"
 
 import YAML from "js-yaml"
 
-import { guard } from "./helpers"
+import { Name } from "@dashkite/name"
+import { guard, getDRN } from "./helpers"
+import { Mixins } from "./mixins"
 
 import {
   publishLambda
@@ -20,7 +22,8 @@ import {
   getRoleARN
 } from "@dashkite/dolores/roles"
 
-updateLambdas = ({ namespace, environment, lambda, version }) ->
+updateLambdas = ({ namespace, lambda, version, context }) ->
+  mode = process.env.mode ? "development"
 
   for handler in lambda?.handlers ? []
     
@@ -31,17 +34,20 @@ updateLambdas = ({ namespace, environment, lambda, version }) ->
 
       console.log "uploading zip file", data.length
 
-      name = "#{namespace}-#{environment}-#{handler.name}"
+      name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
+      role = await getRoleARN name
 
-      role = await getRoleARN "#{name}-role"
+      config = { 
+        handler.configuration...
+        handler.configurations?.default...
+        ( handler.configurations?[ mode ] )...
+      }
+      config.environment = { context, config.environment... }
 
       # TODO get handler from config
       await publishLambda name, data, {
         handler: "index.handler"
-        environment: {}
-        handler.configuration...
-        handler.configurations?.default...
-        ( handler.configurations?[ environment ] )...
+        config...
         role
       }
 
@@ -114,7 +120,7 @@ verifyHandlers = ({ generate, verify }) ->
       console.error error
     throw new Error "API handlers mismatch"
 
-export default (genie, { namespace, lambda }) ->
+export default (genie, { namespace, lambda, mixins }) ->
   
   genie.define "sky:lambda:handlers", ->
 
@@ -143,16 +149,17 @@ export default (genie, { namespace, lambda }) ->
   genie.define "sky:lambda:publish",
     [ 
       "clean"
-      "sky:roles:publish:*"
+      "sky:roles:publish"
       "sky:lambda:handlers"
-      "sky:zip:*" 
+      "sky:zip" 
     ],
-    guard (environment) ->
+    ->
+      context = JSON.stringify await Mixins.apply mixins, genie
       updateLambdas {
         namespace
-        environment
         lambda
         version: true
+        context
       }
 
   genie.define "sky:lambda:version", guard (environment, name) ->

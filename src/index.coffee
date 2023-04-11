@@ -16,11 +16,19 @@ import queues from "./queue"
 import ses from "./ses"
 import _module from "./module"
 import schema from "./schema"
+import { Mixins } from "./mixins"
 
 export default (genie) ->
   
   genie.define "sky:clean", -> Logger.clean()
   genie.before "clean", "sky:clean"
+  genie.define "sky:env", ->
+    options = genie.get "sky"
+    { mixins } = options
+    options.env = 
+      mode: process.env.mode ? "development"
+      context: await Mixins.apply mixins, genie
+  genie.before "pug", "sky:env"
   
   if (options = genie.get "sky")?
     zip genie, options

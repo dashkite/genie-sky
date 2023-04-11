@@ -126,7 +126,7 @@ Resources:
         - Field: host-header
           HostHeaderConfig:
             Values:
-              {{#each origins}}
+              {{#each domains}}
               - "{{{.}}}"
               {{/each}}
       ListenerArn: !Ref Listener

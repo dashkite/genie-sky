@@ -1,15 +1,16 @@
 import FS from "fs/promises"
 import Path from "path"
 import * as m from "@dashkite/masonry"
-import { guard } from "./helpers"
 import { publishSES } from "@dashkite/dolores/ses"
+import { Name } from "@dashkite/name"
+import { getDRN } from "./helpers"
 
-publishTemplates = ({ namespace, environment, ses }) ->
+publishTemplates = ({ namespace, ses }) ->
   for template in ses?.templates ? []
-    name = "#{namespace}-#{environment}-#{template.name}"
+    name = await getDRN Name.getURI { type: "ses", namespace, name: template.name }
     html = await FS.readFile Path.resolve "build", "node", "email", "#{template.name}.html"
     text = await FS.readFile Path.resolve "build", "email", "#{template.name}.md"
-    console.log name
+    console.log "Publishing template: #{name}"
     await publishSES {template..., name, html, text}
 
 
@@ -23,13 +24,12 @@ export default (genie, { namespace, ses }) ->
   
   genie.after "build", "markdown"
   
-  genie.define "sky:ses:templates:publish",
+  genie.define "sky:ses:publish",
     [
       "build"
     ],
-    guard (environment) ->
+    ->
       publishTemplates {
         namespace
-        environment
         ses
       }
