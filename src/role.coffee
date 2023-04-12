@@ -90,6 +90,17 @@ mixinPolicyBuilders =
         resources
     ]
 
+  secret: (mixin) ->
+    [
+      Effect: "Allow"
+      Action: [ "secretsmanager:GetSecretValue" ]
+      Resource: await do ->
+        name = await getDRN mixin.uri
+        log "secrets", "build-policy", 
+          "authorize secret access for: #{ name }"
+        await getSecretARN name
+    ]
+
   s3: (mixin) ->
 
     [

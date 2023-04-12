@@ -25,9 +25,9 @@ export default (genie) ->
   genie.define "sky:env", ->
     options = genie.get "sky"
     { mixins } = options
-    options.env = 
-      mode: process.env.mode ? "development"
-      context: await Mixins.apply mixins, genie
+    options.env = mode: process.env.mode ? "development"
+    if mixins?
+      options.env.context = await Mixins.apply mixins, genie
   genie.before "pug", "sky:env"
   
   if (options = genie.get "sky")?

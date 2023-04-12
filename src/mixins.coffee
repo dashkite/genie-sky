@@ -23,7 +23,7 @@ Mixins =
           components.namespace == namespace &&
             components.name == name
     drn = await getDRN uri
-    configuration.addresses[ drn ]
+    configuration.addresses?[ drn ]
 
   ses: ( uri ) ->
     getDRN uri
@@ -33,6 +33,9 @@ Mixins =
 
   domain: ( uri ) ->
     getDomain uri
+
+  secret: ( uri ) ->
+    getDRN uri
 
   origin: ( uri ) ->
     "https://#{ await getDomain uri }"

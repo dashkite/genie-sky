@@ -35,7 +35,8 @@ export default ( genie, { graphene } ) ->
           if !( _collection = await (client.db address).collection.get byname )?
             _collection = await (client.db address).collection.create { byname }
             console.log "created collection: #{byname} for database: #{address}"
-            collection.bynames[ drn ] = byname
+            if collection.bynames?
+              collection.bynames[ drn ] = byname
             created.push { address, byname }
             updated = true
     if updated then await updateConfig graphene
