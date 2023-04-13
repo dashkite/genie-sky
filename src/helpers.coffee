@@ -38,8 +38,7 @@ fatal = ( key, context ) ->
   console.error "sky:presets: " + messages.message key, context
 
 run = ( action, options ) ->
-  exec action, 
-    { stdout: "inherit", stderr: "inherit", shell: true, options... }
+  ( await exec action, { shell: true, options... } ).stdout
 
 getBranch = -> run "git branch --show-current"
 
