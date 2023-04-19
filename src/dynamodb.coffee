@@ -7,40 +7,41 @@ import {
   deleteTable
 } from "@dashkite/dolores/dynamodb"
 
-export default (genie, { namespace, tables }) ->
+import { getDRN, yaml } from "./helpers"
 
-  putTable = (table) ->
-    if !( await hasTable table.name )
-      configuration = YAML.load await FS.readFile ( table.path ? "#{table.name}.yaml" )
-      await createTable {
-        TableName: table.name
-        configuration.main...
-      }
+export default (genie, { namespace, dynamodb }) ->
+  { tables } = dynamodb ? {}
 
-  genie.define "sky:tables:check", ->
-    missing = []
+  updateConfig = ( config ) ->
+    cfg = await yaml.read "genie.yaml"
+    cfg.sky.dynamodb.tables = config
+    yaml.write "genie.yaml", cfg
+
+  genie.define "sky:dynamodb:deploy", ->
+    updated = false
     for table in tables
-      if !( await hasTable table.name )
-        missing.push table.name
-    if missing.length == 0
-      console.log "All tables are available."
-    else
-      for name in missing
-        console.warn "Table [#{name}] does not exist or is unavailable"
-      throw new Error "tables:check failed"
+      drn = await getDRN table.uri
+      if !( await hasTable drn )
+        configuration = YAML.load await FS.readFile ( table.path ? "#{drn}.yaml" )
+        await createTable {
+          TableName: drn
+          configuration.main...
+        }, { pitr: table.pitr ? false }
+        console.log "created table: #{drn}"
+        table.names ?= []
+        table.names.push drn
+        updated = true
+    if updated
+      await updateConfig tables
 
-  genie.define "sky:tables:put", ->
+  genie.define "sky:dynamodb:undeploy", ->
+    updated = false
     for table in tables
-      await putTable table
-
-  genie.define "sky:table:put", (name) ->
-    if ( table = tables.find (t) -> t.name == name )?
-      await putTable table
-    else
-      throw new Error "configuration is not available for table [#{name}]"
-
-  genie.define "sky:table:delete", (name) ->
-    if await hasTable name
-      await deleteTable name
-    else
-      throw new Error "table [#{name}] does not exist"
+      drn = await getDRN table.uri
+      if await hasTable drn
+        await deleteTable drn
+        console.log "deleted table: #{drn}"
+        table.names = table.names.filter ( name ) -> name != drn
+        updated = true
+    if updated
+      await updateConfig tables

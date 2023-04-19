@@ -4,9 +4,13 @@ import * as Polaris from "@dashkite/polaris"
 import { guard, log, warn, fatal, yaml, getDRN, getDomain } from "./helpers"
 import { diff } from "./diff"
 
+resolveTables = ( tables ) ->
+  resolved = {}
+  for key, value of tables
+    resolved[ key ] = await getDRN value
+  resolved
+
 export default ( genie, { graphene } ) ->
-  
-  client = Graphene.Client.create()
   
   updateConfig = ( config ) ->
     cfg = await yaml.read "genie.yaml"
@@ -14,13 +18,14 @@ export default ( genie, { graphene } ) ->
     yaml.write "genie.yaml", cfg
 
   genie.define "sky:graphene:deploy", ->
+    client = Graphene.Client.create tables: await resolveTables graphene.tables
     created = []
     updated = false
-    for db in graphene
+    for db in graphene.databases
       drn = await getDRN db.uri
       db.addresses ?= {}
       if !( address = db.addresses[ drn ])?
-        { address } = await client.db.create db
+        { address } = await client.db.create { name: drn }
         console.log "created db: #{address} for drn: #{drn}."
         db.addresses[ drn ] = address
         updated = true
@@ -49,7 +54,8 @@ export default ( genie, { graphene } ) ->
             await Time.sleep 3 * 1000
 
   genie.define "sky:graphene:publish", [ "sky:graphene:deploy" ], ->
-    for db in graphene
+    client = Graphene.Client.create tables: await resolveTables graphene.tables
+    for db in graphene.databases
       for collection in db.collections when collection.publish?
         drn = await getDRN db.uri
         { publish, byname } = collection
@@ -74,8 +80,9 @@ export default ( genie, { graphene } ) ->
             _collection.delete key
 
   genie.define "sky:graphene:undeploy", ->
+    client = Graphene.Client.create tables: await resolveTables graphene.tables
     updated = false
-    for db in graphene
+    for db in graphene.databases
       drn = await getDRN db.uri
       if ( address = db.addresses[ drn ])?
         await client.db.delete address

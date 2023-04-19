@@ -222,10 +222,16 @@ mixinPolicyBuilders =
 
       Effect: "Allow"
       Action: [ "dynamodb:*" ]
-      Resource: [
-        getTableARN mixin.name
-        "#{getTableARN mixin.name}/*"
-      ] 
+      Resource: if mixin.uri? 
+        [
+          getTableARN await getDRN mixin.uri
+          "#{getTableARN await getDRN mixin.uri}/*"
+        ]
+      else if mixin.name?
+        [
+          getTableARN mixin.name
+          "#{getTableARN mixin.name}/*"
+        ]
 
     ]
 
@@ -287,25 +293,6 @@ export default (genie, options) ->
 
       if secrets? && secrets.length > 0
         policies.push await buildSecretsPolicy secrets
-
-      if buckets? && buckets.length > 0
-        for bucket in buckets
-          _bucket = { bucket..., type: "bucket" }
-          policies.push ( await buildMixinPolicy _bucket, drn )...
-
-      if tables? && tables.length > 0
-        for table in tables
-          _table = { table..., type: "table" }
-          policies.push ( await buildMixinPolicy _table, drn )...
-
-      if queues? && queues.length > 0
-        for queue in queues
-          _queue = { queue..., type: "queue" }
-          policies.push ( await buildMixinPolicy _queue, drn )...
-
-      # if sqs? && sqs.length > 0
-      #   for item in sqs
-      #     policies.push builders.sqs item
 
       if mixins?
         for mixin in mixins

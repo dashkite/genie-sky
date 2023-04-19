@@ -11,13 +11,14 @@ Mixins =
     { namespace, name, repo } = Name.parse uri
     configuration = if repo?
       cfg = await yaml.read ( Path.join "..", repo, "genie.yaml" )
-      cfg.sky.graphene.find ( description ) ->
+      cfg.sky.graphene.databases.find ( description ) ->
         components = Name.parse description.uri
         components.namespace == namespace &&
           components.name == name
     else
       genie.get "sky"
         .graphene
+        .databases
         .find ( description ) ->
           components = Name.parse description.uri
           components.namespace == namespace &&
@@ -39,6 +40,12 @@ Mixins =
 
   origin: ( uri ) ->
     "https://#{ await getDomain uri }"
+
+  table: ( uri ) ->
+    getDRN uri
+
+  name: ( uri ) ->
+    getDRN uri
 
   apply: ( descriptions, genie ) ->
     configurations = {}

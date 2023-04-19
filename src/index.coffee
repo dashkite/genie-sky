@@ -14,7 +14,6 @@ import cloudfront from "./cloudfront"
 import graphene from "./graphene"
 import queues from "./queue"
 import ses from "./ses"
-import _module from "./module"
 import schema from "./schema"
 import { Mixins } from "./mixins"
 
@@ -45,5 +44,4 @@ export default (genie) ->
     graphene genie, options
     queues genie, options
     ses genie, options
-    _module genie, options
     schema genie, options

@@ -165,5 +165,7 @@ export default (genie, { namespace, lambda, mixins }) ->
   genie.define "sky:lambda:version", guard (environment, name) ->
     versionLambda "#{namespace}-#{environment}-#{name}"
 
-  genie.define "sky:lambda:delete", guard (environment, name) ->
-    deleteLambda "#{namespace}-#{environment}-#{name}"
+  genie.define "sky:lambda:delete", ->
+    for handler in lambda?.handlers ? []
+      name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
+      await deleteLambda name
