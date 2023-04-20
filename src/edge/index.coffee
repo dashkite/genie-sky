@@ -8,17 +8,10 @@ import compress from "brotli/compress"
 import { convert } from "@dashkite/bake"
 
 import { Name } from "@dashkite/name"
-import { getDRN, getDescription, getDomain } from "../helpers"
+import { getDRN, getDescription, getDomain, getRootDomain } from "../helpers"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
-
-
-getTLD = Fn.pipe [
-  Text.split "."
-  ( components ) -> components[-2..]
-  It.join "."
-]
 
 awsCase = Fn.pipe [
   Text.normalize
@@ -28,25 +21,26 @@ awsCase = Fn.pipe [
 ]
 
 getAliases = ( aliases ) ->
-  for alias in aliases
-    domain: await getDomain alias
+  for uri in aliases
+    domain: await getDomain uri
+    uri: uri
 
 getCertificateAliases = ( aliases ) ->
   result = {}
   for alias in aliases
-    tld = getTLD alias.domain 
-    result[ tld ] ?= "*.#{tld}"
+    root = getRootDomain alias.uri 
+    result[ root ] ?= "*.#{root}"
   Object.values result  
 
 getDNSEntries = ( aliases ) ->
   result = {}
   for alias in aliases
-    tld = getTLD alias.domain 
-    result[ tld ] ?=
-      tld: tld
-      zone: await getHostedZoneID tld
+    root = getRootDomain alias.uri 
+    result[ root ] ?=
+      tld: root
+      zone: await getHostedZoneID root
       aliases: []
-    result[ tld ].aliases.push alias.domain
+    result[ root ].aliases.push alias.domain
   Object.values result
 
 getHeaders = ( headers ) ->

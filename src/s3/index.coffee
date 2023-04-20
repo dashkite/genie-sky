@@ -47,8 +47,8 @@ Presets =
       presets.delete "private"
       presets.add "redirect"
 
-    # if not private or website then must be public
-    if !( presets.has "private" )
+    if bucket.public?
+      presets.delete "private"
       presets.add "public"
         
     presets
@@ -111,7 +111,7 @@ export default ( genie, { s3 } ) ->
             if !bucket.domains[ drn ]?
               domain = await getDomain bucket.uri
               bucket.domains[ drn ] = domain
-              await configureBucket { bucket..., domain } 
+              await configureBucket { bucket..., domain, name: domain } 
               console.log "created bucket #{domain}"
               updated = true
       if updated then await updateConfig s3

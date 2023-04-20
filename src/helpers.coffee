@@ -61,8 +61,9 @@ getDRN = ( uri ) ->
   else mode
   ( "#{namespace}-#{name}-#{address}" )[...32]
 
-getSubdomain = ( uri ) ->
-  { name } = Name.parse uri
+getSubdomain = ( input ) ->
+  { name } = input
+  if !name? then { name } = Name.parse input
   mode = process.env.mode ? "development"
   if mode == "production"
     name
@@ -70,20 +71,36 @@ getSubdomain = ( uri ) ->
     address = if mode == "development"
       await getLocalAddress()
     else mode
-    "#{name}-#{address}"
+    if name == ""
+      address
+    else
+      "#{name}-#{address}"
 
 getDomain = ( uri ) ->
   { namespace, name, tld, type, region } = Name.parse uri
   region ?= "us-east-1"
-  subdomain = await getSubdomain uri
+  mode = process.env.mode ? "development"
+  domain = if name == ""
+    if mode == "production"
+      "#{namespace}.#{tld}"
+    else
+      subdomain = await getSubdomain { name }
+      "#{subdomain}.#{namespace}.#{tld}"
+  else
+    subdomain = await getSubdomain uri
+    "#{subdomain}.#{namespace}.#{tld}"
   switch type
     when "s3"
-      "#{subdomain}.s3.#{region}.amazonaws.com"
+      "#{domain}.s3.#{region}.amazonaws.com"
     when "s3-website"
       # TODO handle .region case
-      "#{subdomain}.s3-website-#{region}.amazonaws.com"
+      "#{domain}.s3-website-#{region}.amazonaws.com"
     else
-      "#{subdomain}.#{namespace}.#{tld}"
+      domain
+
+getRootDomain = ( uri ) ->
+  { namespace, tld } = Name.parse uri
+  "#{namespace}.#{tld}"
 
 getDescription = ( uri ) ->
   { namespace, name } = Name.parse uri
@@ -109,5 +126,5 @@ yaml = { read, write }
 export { 
   guard, getPackage, getHash, log, 
   warn, fatal, getDRN, getSubdomain, yaml, 
-  getDomain, getDescription
+  getDomain, getDescription, getRootDomain
 }
