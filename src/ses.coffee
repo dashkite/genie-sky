@@ -3,7 +3,7 @@ import Path from "path"
 import * as m from "@dashkite/masonry"
 import { publishTemplate, deleteTemplate } from "@dashkite/dolores/ses"
 import { Name } from "@dashkite/name"
-import { getDRN } from "./helpers"
+import { getDRN } from "@dashkite/drn"
 
 publishTemplates = ({ namespace, ses }) ->
   for template in ses?.templates ? []

@@ -7,7 +7,7 @@ import {
   deleteTable
 } from "@dashkite/dolores/dynamodb"
 
-import { getDRN, yaml } from "./helpers"
+import { getDRN, yaml } from "@dashkite/drn"
 
 export default (genie, { namespace, dynamodb }) ->
   { tables } = dynamodb ? {}

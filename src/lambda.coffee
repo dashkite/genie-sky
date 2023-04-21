@@ -9,8 +9,8 @@ import * as Time from "@dashkite/joy/time"
 import YAML from "js-yaml"
 
 import { Name } from "@dashkite/name"
-import { guard, getDRN } from "./helpers"
-import { Mixins } from "./mixins"
+import { Mixins, getDRN } from "@dashkite/drn"
+import { guard } from "./helpers"
 
 import {
   publishLambda
@@ -42,7 +42,7 @@ updateLambdas = ({ namespace, lambda, version, context }) ->
         handler.configurations?.default...
         ( handler.configurations?[ mode ] )...
       }
-      config.environment = { context, config.environment... }
+      config.environment = { context, mode, config.environment... }
 
       # TODO get handler from config
       await publishLambda name, data, {

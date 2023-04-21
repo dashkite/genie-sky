@@ -1,7 +1,8 @@
 import { inspect } from "node:util"
 import * as Graphene from "@dashkite/graphene-core"
 import * as Polaris from "@dashkite/polaris"
-import { guard, log, warn, fatal, yaml, getDRN, getDomain } from "./helpers"
+import { guard, log, warn, fatal } from "./helpers"
+import { yaml, getDRN, getDomain } from "@dashkite/drn"
 import { diff } from "./diff"
 
 resolveTables = ( tables ) ->

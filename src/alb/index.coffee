@@ -15,7 +15,7 @@ import {
 } from "@dashkite/dolores/stack"
 
 import { Name } from "@dashkite/name"
-import { getDomain, getDRN, getDescription } from "../helpers"
+import { getDomain, getDRN, getDescription } from "@dashkite/drn"
 
 getTLD = Fn.pipe [
   Text.split "."

@@ -2,7 +2,6 @@ import Path from "node:path"
 import * as m from "@dashkite/masonry"
 import * as Fn from "@dashkite/joy/function"
 import * as It from "@dashkite/joy/iterable"
-import * as K from "@dashkite/katana/sync"
 import { convert } from "@dashkite/bake"
 
 diff = (publish, operations) ->

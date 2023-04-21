@@ -8,7 +8,7 @@ import compress from "brotli/compress"
 import { convert } from "@dashkite/bake"
 
 import { Name } from "@dashkite/name"
-import { getDRN, getDescription, getDomain, getRootDomain } from "../helpers"
+import { getDRN, getDescription, getDomain, getRootDomain } from "@dashkite/drn"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
@@ -141,6 +141,7 @@ export default (genie, { namespace, lambda, edge }) ->
     aliases = await getAliases edge.aliases
     origins = await getOrigins edge
     oac = hasOAC origins
+    edge.cache ?= if mode == "production" then "static" else "dynamic"
     template = await templates.render "template.yaml",
       name: drn
       namespace: namespace

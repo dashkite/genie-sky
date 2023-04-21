@@ -1,4 +1,5 @@
 import * as Logger from "@dashkite/dolores/logger"
+import { Mixins } from "@dashkite/drn"
 
 import zip from "./zip"
 import secrets from "./secrets"
@@ -15,7 +16,6 @@ import graphene from "./graphene"
 import queues from "./queue"
 import ses from "./ses"
 import schema from "./schema"
-import { Mixins } from "./mixins"
 
 export default (genie) ->
   

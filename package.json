@@ -5,9 +5,6 @@
   "exports": {
     ".": {
       "node": "./build/node/src/index.js"
-    },
-    "./mixins": {
-      "node": "./build/node/src/mixins.js"
     }
   },
   "main": "build/node/src/index.js",
@@ -50,6 +47,7 @@
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
     "@dashkite/dolores": "link:../dolores",
+    "@dashkite/drn": "link:../drn",
     "@dashkite/enchant": "link:../enchant",
     "@dashkite/graphene-core": "link:../graphene-core",
     "@dashkite/joy": "^0.3.16",

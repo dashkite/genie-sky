@@ -4,6 +4,7 @@ specifiers:
   '@dashkite/atlas': link:../atlas
   '@dashkite/bake': ^0.0.6
   '@dashkite/dolores': link:../dolores
+  '@dashkite/drn': link:../drn
   '@dashkite/enchant': link:../enchant
   '@dashkite/genie': ^0.5.11
   '@dashkite/genie-presets': ^0.5.7
@@ -45,6 +46,7 @@ specifiers:
 dependencies:
   '@dashkite/bake': 0.0.6
   '@dashkite/dolores': link:../dolores
+  '@dashkite/drn': link:../drn
   '@dashkite/enchant': link:../enchant
   '@dashkite/graphene-core': link:../graphene-core
   '@dashkite/joy': 0.3.16

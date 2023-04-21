@@ -26,7 +26,7 @@ import {
 
 import { diff } from "../diff"
 
-import { yaml, getDomain, getDRN } from "../helpers"
+import { yaml, getDomain, getDRN } from "@dashkite/drn"
 
 import prompts from "prompts"
 

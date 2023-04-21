@@ -1,4 +1,4 @@
-import { getDRN, getDomain } from "./helpers"
+import { getDRN, getDomain } from "@dashkite/drn"
 import { Name } from "@dashkite/name"
 
 import {
