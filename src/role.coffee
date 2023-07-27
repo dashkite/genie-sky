@@ -108,7 +108,9 @@ mixinPolicyBuilders =
       Action: [ "s3:*" ]
       Resource: await do ->
         resources = []
-        domain = await getDomain mixin.uri
+        { name, namespace, tld } = Name.parse mixin.uri
+        _uri = Name.getURI { type: "domain", name, namespace, tld }
+        domain = await getDomain _uri
         resources.push "arn:aws:s3:::#{domain}"
         resources.push "arn:aws:s3:::#{domain}/*"
         resources
