@@ -42,7 +42,7 @@
   "devDependencies": {
     "@dashkite/atlas": "link:../atlas",
     "@dashkite/genie": "^0.5.11",
-    "@dashkite/genie-presets": "^0.5.7"
+    "@dashkite/genie-presets": "^0.7.0"
   },
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
