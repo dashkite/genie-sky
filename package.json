@@ -41,7 +41,8 @@
   "homepage": "https://github.com/dashkite/sky-presets#readme",
   "devDependencies": {
     "@dashkite/atlas": "link:../atlas",
-    "@dashkite/genie": "link:../genie"
+    "@dashkite/genie": "link:../genie",
+    "@dashkite/genie-coffee": "link:../genie-coffee"
   },
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
