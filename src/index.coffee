@@ -1,6 +1,3 @@
-import * as Logger from "@dashkite/dolores/logger"
-import { Mixins } from "@dashkite/drn"
-
 Presets = {
   zip: -> import( "./zip" )
   secrets: -> import( "./secrets" )
@@ -21,11 +18,14 @@ Presets = {
 
 export default (genie) ->
   
-  genie.define "sky:clean", -> Logger.clean()
+  genie.define "sky:clean", -> 
+    Logger = await import( "@dashkite/dolores/logger" )
+    Logger.clean()
   
   genie.on "clean", "sky:clean"
   
   genie.define "sky:env", ->
+    { Mixins } = await import( "@dashkite/drn" )
     options = genie.get "sky"
     { mixins } = options
     options.env = mode: process.env.mode ? "development"

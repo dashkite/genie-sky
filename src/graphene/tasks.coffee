@@ -11,17 +11,14 @@ resolveTables = ( tables ) ->
     resolved[ key ] = await getDRN value
   resolved
 
-export default ( genie, { graphene } ) ->
+updateConfig = ( config ) ->
+  cfg = await yaml.read "genie.yaml"
+  cfg.sky.graphene = config
+  yaml.write "genie.yaml", cfg
 
-  genie.on "deploy", "sky:graphene:deploy"
-  genie.on "undeploy", "sky:graphene:undeploy"
-  
-  updateConfig = ( config ) ->
-    cfg = await yaml.read "genie.yaml"
-    cfg.sky.graphene = config
-    yaml.write "genie.yaml", cfg
+Tasks =
 
-  genie.define "sky:graphene:deploy", "build", ->
+  deploy: ( Genie, { graphene })  ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     created = []
     updated = false
@@ -57,7 +54,7 @@ export default ( genie, { graphene } ) ->
             break if response.status == "ready"
             await Time.sleep 3 * 1000
 
-  genie.define "sky:graphene:publish", [ "sky:graphene:deploy" ], ->
+  publish: ( Genie, { graphene }) ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     for db in graphene.databases
       for collection in db.collections when collection.publish?
@@ -83,7 +80,7 @@ export default ( genie, { graphene } ) ->
             console.log "entry > delete", { key }
             _collection.delete key
 
-  genie.define "sky:graphene:undeploy", ->
+  undeploy: ( Genie, { graphene }) ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     updated = false
     for db in graphene.databases
@@ -98,3 +95,5 @@ export default ( genie, { graphene } ) ->
           delete collection.bynames[ drn ]
           updated = true
     if updated then await updateConfig graphene
+
+export { Tasks }
