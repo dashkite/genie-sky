@@ -12,13 +12,16 @@ resolveTables = ( tables ) ->
   resolved
 
 export default ( genie, { graphene } ) ->
+
+  genie.on "deploy", "sky:graphene:deploy"
+  genie.on "undeploy", "sky:graphene:undeploy"
   
   updateConfig = ( config ) ->
     cfg = await yaml.read "genie.yaml"
     cfg.sky.graphene = config
     yaml.write "genie.yaml", cfg
 
-  genie.define "sky:graphene:deploy", ->
+  genie.define "sky:graphene:deploy", "build", ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     created = []
     updated = false

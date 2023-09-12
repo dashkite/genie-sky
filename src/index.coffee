@@ -1,47 +1,44 @@
 import * as Logger from "@dashkite/dolores/logger"
 import { Mixins } from "@dashkite/drn"
 
-import zip from "./zip"
-import secrets from "./secrets"
-import role from "./role"
-import lambda from "./lambda"
-import alb from "./alb"
-import edge from "./edge"
-import bridge from "./bridge"
-import stepFunction from "./step-function"
-import buckets from "./s3"
-import tables from "./dynamodb"
-import cloudfront from "./cloudfront"
-import graphene from "./graphene"
-import queues from "./queue"
-import ses from "./ses"
-import schema from "./schema"
+Presets = {
+  zip: -> import( "./zip" )
+  secrets: -> import( "./secrets" )
+  role: -> import( "./role" )
+  lambda: -> import( "./lambda" )
+  alb: -> import( "./alb" )
+  edge: -> import( "./edge" )
+  bridge: -> import( "./bridge" )
+  "step-function": -> import( "./step-function" )
+  buckets: -> import( "./buckets" )
+  tables: -> import( "./tables" )
+  cloudfront: -> import( "./cloudfront" )
+  graphene: -> import( "./graphene" )
+  queues: -> import( "./queues" )
+  ses: -> import( "./ses" )
+  schema: -> import( "./schema" )
+}
 
 export default (genie) ->
   
   genie.define "sky:clean", -> Logger.clean()
-  genie.before "clean", "sky:clean"
+  
+  genie.on "clean", "sky:clean"
+  
   genie.define "sky:env", ->
     options = genie.get "sky"
     { mixins } = options
     options.env = mode: process.env.mode ? "development"
     if mixins?
       options.env.context = await Mixins.apply mixins, genie
+  
   genie.before "pug", "sky:env"
   
   if (options = genie.get "sky")?
-    zip genie, options
-    secrets genie, options
-    role genie, options
-    lambda genie, options
-    alb genie, options
-    edge genie, options
-    bridge genie, options
-    stepFunction genie, options
-    buckets genie, options
-    tables genie, options
-    cloudfront genie, options
-    graphene genie, options
-    queues genie, options
-    ses genie, options
-    schema genie, options
+    Promise.all do ->
+      for name in Object.keys options
+        if ( loader = Presets[ name ])?
+          do ( name ) ->
+            installer = await loader()
+            installer.default genie, options
+

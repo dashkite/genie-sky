@@ -121,6 +121,10 @@ verifyHandlers = ({ generate, verify }) ->
     throw new Error "API handlers mismatch"
 
 export default (genie, { namespace, lambda, mixins }) ->
+
+  genie.on "deploy", "sky:lambda:publish"
+
+  genie.on "undeploy", "sky:lambda:delete"
   
   genie.define "sky:lambda:handlers", ->
 
