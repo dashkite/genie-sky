@@ -4,7 +4,7 @@ import * as Fn from "@dashkite/joy/function"
 import * as It from "@dashkite/joy/iterable"
 import { convert } from "@dashkite/bake"
 
-diff = (publish, operations) ->
+diff = ( publish, operations ) ->
 
   # first, get the list of published items
   published = await do Fn.flow [

@@ -10,7 +10,6 @@ import YAML from "js-yaml"
 
 import { Name } from "@dashkite/name"
 import { Mixins, getDRN } from "@dashkite/drn"
-import { guard } from "./helpers"
 
 import {
   publishLambda
@@ -22,7 +21,12 @@ import {
   getRoleARN
 } from "@dashkite/dolores/roles"
 
-updateLambdas = ({ namespace, lambda, version, context }) ->
+import { Runner } from "#helpers/runner"
+
+run = Runner.make -> import( "./tasks" )
+
+deployLambdas = ({ namespace, lambda, context }) ->
+  
   mode = process.env.mode ? "development"
 
   for handler in lambda?.handlers ? []
@@ -31,8 +35,6 @@ updateLambdas = ({ namespace, lambda, version, context }) ->
       data = await FS.readFile ".sky/build/#{ handler.name }.zip"
     
     if data?
-
-      console.log "uploading zip file", data.length
 
       name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
       role = await getRoleARN name
@@ -51,7 +53,7 @@ updateLambdas = ({ namespace, lambda, version, context }) ->
         role
       }
 
-      if version
+      if handler.version == true
         await versionLambda name
 
 isHandler = Pred.all [
@@ -120,10 +122,17 @@ verifyHandlers = ({ generate, verify }) ->
       console.error error
     throw new Error "API handlers mismatch"
 
-export default (genie, { namespace, lambda, mixins }) ->
-  
-  genie.define "sky:lambda:handlers", ->
+Tasks =
 
+  deploy: ( Genie, { namespace, lambda, mixins }) ->
+      
+      deployLambdas {
+        namespace
+        lambda
+        context: JSON.stringify await Mixins.apply mixins, Genie
+      }
+
+  handlers: ({ namespace, lambda, mixins }) ->
     for handler in lambda.handlers
       if handler.generate?
         await generateHandlerIndex handler
@@ -131,41 +140,13 @@ export default (genie, { namespace, lambda, mixins }) ->
       if handler.generate? or handler.verify?
         await verifyHandlers handler
 
-  genie.define "sky:lambda:update",
-    [ 
-      "clean"
-      "sky:roles:publish:*"
-      "sky:lambda:handlers"
-      "sky:zip:*" 
-    ],
-    guard (environment) ->
-      updateLambdas {
-        namespace
-        environment
-        lambda
-        version: false 
-      }
-
-  genie.define "sky:lambda:publish",
-    [ 
-      "clean"
-      "sky:roles:publish"
-      "sky:lambda:handlers"
-      "sky:zip" 
-    ],
-    ->
-      context = JSON.stringify await Mixins.apply mixins, genie
-      updateLambdas {
-        namespace
-        lambda
-        version: true
-        context
-      }
-
-  genie.define "sky:lambda:version", guard (environment, name) ->
+  version: ({ namespace, lambda, mixins }, environment, name ) ->
+    # (environment, name)
     versionLambda "#{namespace}-#{environment}-#{name}"
-
-  genie.define "sky:lambda:delete", ->
+  
+  delete: ({ namespace, lambda, mixins }) ->
     for handler in lambda?.handlers ? []
       name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
       await deleteLambda name
+
+export default Tasks

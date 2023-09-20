@@ -28,25 +28,17 @@ validate = ({ glob, type }) ->
       M.tr _validate type
     ]
 
-export default (t, { schema, schemas }) ->
+Tasks = 
 
-  if schema? || schemas?
+  validate: ({ schema }) ->
+    
+    schema = if !( Array.isArray schema )
+      [ schema ]
+    else schema
 
-    schemas ?= [ schema ]
-  
-    for schema in schemas
-      
-      { type, glob, auto } = schema
-  
-      if !( type? )
-        fail "missing schema type"
-      if !( glob? ) 
-        fail "missing schema glob"
-      
-      t.define "sky:schema:#{type}:validate", validate { glob, type }
+    for { type, glob } in schema
+      validate { glob, type }
 
-      if ( auto ?= true )
-        t.before "build", "sky:schema:#{type}:validate"
-
+export default Tasks
 
 
