@@ -2,7 +2,6 @@
 
 import FS from "fs/promises"
 import Path from "path"
-import { guard } from "./helpers"
 import JSZip from "jszip"
 import { log } from "@dashkite/dolores/logger"
 import esbuild from "esbuild"
@@ -123,14 +122,15 @@ bundle = ({ name, path }) ->
   await FS.mkdir Paths.zip.directory, recursive: true
   await FS.writeFile  Paths.zip.file, buffer
   
-export default (genie, { lambda }) ->
+Tasks =
 
-  genie.define "sky:zip", "build", ->
-    await Time.sleep 1000
+  zip: ({ lambda }) ->
+    # await Time.sleep 1000
     for handler in lambda.handlers
       await bundle handler
 
-  genie.define "sky:zip:clean", ->
+  clean: ->
     try
-      FS.rm Paths.zip.directory, recursive: true
+      await FS.rm Paths.zip.directory, recursive: true
 
+export default Tasks

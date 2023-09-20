@@ -24,7 +24,9 @@ import {
   getDistributionForDomain
 } from "@dashkite/dolores/cloudfront"
 
-import { diff } from "../../diff"
+import { log } from "@dashkite/dolores/logger"
+
+import { diff } from "#helpers/diff"
 
 import { yaml, getDomain, getDRN } from "@dashkite/drn"
 
@@ -101,7 +103,7 @@ updateConfig = ( config ) ->
 
 Tasks =
 
-  deploy: ( Genie, { s3 }) ->
+  deploy: ({ s3 }) ->
     updated = false
     for bucket in s3
       if !bucket.domain?
@@ -112,11 +114,11 @@ Tasks =
             domain = await getDomain bucket.uri
             bucket.domains[ drn ] = domain
             await configureBucket { bucket..., domain, name: domain } 
-            console.log "created bucket #{domain}"
+            log "s3", "deploy", "created bucket #{domain}"
             updated = true
     if updated then await updateConfig s3
 
-    undeploy: ( Genie, { s3 }) ->
+    undeploy: ({ s3 }) ->
       updated = false
       for bucket in s3
         { domain } = bucket
@@ -127,17 +129,17 @@ Tasks =
           if await hasBucket domain
             await emptyBucket domain
             await deleteBucket domain
-            console.log "deleted bucket #{domain}"
+            log "s3", "undeploy", "deleted bucket #{domain}"
             if bucket.uri?
               drn = await getDRN bucket.uri
               if bucket.domains?[ drn ]?
                 delete bucket.domains[ drn ]
                 updated = true
           else
-            throw new Error "bucket [#{domain}] does not exist"
+            throw new Error "bucket [ #{domain} ] does not exist"
       if updated then await updateConfig s3
 
-    publish: ( Genie, { s3 }) ->
+    publish: ({ s3 }) ->
 
       for bucket in s3 when bucket.publish?
 
@@ -148,7 +150,7 @@ Tasks =
 
         publish.encoding ?= "bytes"
 
-        console.log "publishing to bucket [ #{domain} ]"
+        log "s3", "publish", "publishing to bucket [ #{domain} ]"
 
         diff publish,
           list: Fn.flow [
@@ -157,11 +159,13 @@ Tasks =
               It.collect
             ]
           add: (key, content) -> 
-            console.log "... add [ #{ key } ]"
+            log "s3", "publish", "... add [ #{ key } ]"
             putObject domain, key, content
           update: (key, content) ->
-            console.log "... update [ #{ key } ]"
+            log "s3", "publish", "... update [ #{ key } ]"
             putObject domain, key, content
           delete: (key) ->
-            console.log "... delete [ #{ key } ]"
+            log "s3", "publish", "... delete [ #{ key } ]"
             deleteObject domain, key
+
+export default Tasks

@@ -1,44 +1,41 @@
-Presets = {
-  zip: -> import( "./zip" )
-  secrets: -> import( "./secrets" )
-  role: -> import( "./role" )
-  lambda: -> import( "./lambda" )
-  alb: -> import( "./alb" )
-  edge: -> import( "./edge" )
-  bridge: -> import( "./bridge" )
-  "step-function": -> import( "./step-function" )
-  buckets: -> import( "./buckets" )
-  tables: -> import( "./tables" )
-  cloudfront: -> import( "./cloudfront" )
-  graphene: -> import( "./graphene" )
-  queues: -> import( "./queues" )
-  ses: -> import( "./ses" )
-  schema: -> import( "./schema" )
-}
+import { generic } from "@dashkite/joy/generic"
+import * as Type from "@dashkite/joy/type"
 
-export default (genie) ->
+Preset =
   
-  genie.define "sky:clean", -> 
-    Logger = await import( "@dashkite/dolores/logger" )
-    Logger.clean()
+  imported: []
   
-  genie.on "clean", "sky:clean"
+  install: generic name: "install" 
   
-  genie.define "sky:env", ->
-    { Mixins } = await import( "@dashkite/drn" )
-    options = genie.get "sky"
-    { mixins } = options
-    options.env = mode: process.env.mode ? "development"
-    if mixins?
-      options.env.context = await Mixins.apply mixins, genie
   
-  genie.before "pug", "sky:env"
-  
-  if (options = genie.get "sky")?
-    Promise.all do ->
-      for name in Object.keys options
-        if ( loader = Presets[ name ])?
-          do ( name ) ->
-            installer = await loader()
-            installer.default genie, options
+generic Preset.install, Type.isString, ( name ) ->
+  unless name in Preset.imported
+    try
+      installer = ( await import( "./#{ name }" ) ).default
+      Preset.install installer
+    catch error
+      if error.code != "MODULE_NOT_FOUND"
+        console.log error
 
+generic Preset.install, Type.isObject, ( installer ) ->
+  Promise.all [
+    Preset.install installer.import
+    Preset.install installer.install
+  ]  
+
+generic Preset.install, Type.isArray, ( installers ) ->
+  Promise.all do ->
+    for installer in installers
+      Preset.install installer
+      
+export default ( genie ) ->
+  
+  if ( options = genie.get "sky" )?
+
+    generic Preset.install, Type.isFunction, ( install ) ->
+      install genie, options
+    
+    Promise.all [
+      Preset.install [ "clean", "env" ]
+      Preset.install ( Object.keys options )
+    ]

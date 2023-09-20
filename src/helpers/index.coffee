@@ -1,4 +1,5 @@
 import FS from "fs/promises"
+import { log } from "@dashkite/dolores/logger"
 import { Messages } from "@dashkite/messages"
 import catalog from "./catalog"
 
@@ -17,16 +18,16 @@ guard = (f) ->
 getPackage = do (cache = null) -> ->
   cache ?= JSON.parse await FS.readFile "./package.json", "utf8"
 
-log = ( key, context ) ->
-  console.log "sky:presets: " + messages.message key, context
+warn = ( key, context ) ->
+  log "genie-sky", "info", messages.message key, context
 
 warn = ( key, context ) ->
-  console.warn "sky:presets: " + messages.message key, context
+  log "genie-sky", "warn", messages.message key, context
 
 fatal = ( key, context ) ->
-  console.error "sky:presets: " + messages.message key, context
+  log "genie-sky", "fatal", messages.message key, context
 
 export { 
-  guard, getPackage, log, 
-  warn, fatal
+  getPackage, 
+  info, warn, fatal
 }

@@ -1,9 +1,11 @@
 import { inspect } from "node:util"
+import Path from "node:path"
+import Zephyr from "@dashkite/zephyr"
+import { log } from "@dashkite/dolores/logger"
 import * as Graphene from "@dashkite/graphene-core"
 import * as Polaris from "@dashkite/polaris"
-import { guard, log, warn, fatal } from "./helpers"
 import { yaml, getDRN, getDomain } from "@dashkite/drn"
-import { diff } from "./diff"
+import { diff } from "#helpers/diff"
 
 resolveTables = ( tables ) ->
   resolved = {}
@@ -11,89 +13,97 @@ resolveTables = ( tables ) ->
     resolved[ key ] = await getDRN value
   resolved
 
-updateConfig = ( config ) ->
-  cfg = await yaml.read "genie.yaml"
-  cfg.sky.graphene = config
-  yaml.write "genie.yaml", cfg
+Sky =
+  root: Path.join "#{ process.env.HOME }", ".sky"
+  path: ( name ) -> Path.join @root, "#{ name }.yaml"
+  read: ( name ) -> Zephyr.read @path name
+  write: ( name, data ) -> Zephyr.write ( @path name ), data
 
 Tasks =
 
-  deploy: ( Genie, { graphene })  ->
-    client = Graphene.Client.create tables: await resolveTables graphene.tables
-    created = []
-    updated = false
+  deploy: ({ graphene })  ->
+    client = Graphene.Client.create 
+      tables: await resolveTables graphene.tables
+    created = {}
     for db in graphene.databases
-      drn = await getDRN db.uri
-      db.addresses ?= {}
-      if !( address = db.addresses[ drn ])?
-        { address } = await client.db.create { name: drn }
-        console.log "created db: #{address} for drn: #{drn}."
-        db.addresses[ drn ] = address
-        updated = true
+      name = await getDRN db.uri
+      address = undefined
+      byname = undefined
+      if ( data = await Sky.read name )?
+        { address } = data
+        log "graphene", "deploy", 
+          "found db: #{ address } for: #{ name }."
+      else
+        { address } = await client.db.create { name }
+        log "graphene", "deploy", 
+          "created db: #{ address } for: #{ name }."
+        await Sky.write name, { address }
+      
+      created[ address ] = []
       for collection in db.collections
-        { byname } = collection
-        if !byname?
-          if collection.uri?
-            collection.bynames ?= {}
-            if !( byname = collection.bynames[ drn ])?
-              byname = await getDomain collection.uri
+        { byname, bynames, uri } = collection
+        byname ?= bynames?[ name ] ?
+          ( if uri? then await getDomain uri )
         if byname?
-          if !( _collection = await (client.db address).collection.get byname )?
-            _collection = await (client.db address).collection.create { byname }
-            console.log "created collection: #{byname} for database: #{address}"
-            if collection.bynames?
-              collection.bynames[ drn ] = byname
-            created.push { address, byname }
-            updated = true
-    if updated then await updateConfig graphene
+          await do ( byname ) ->
+            do ({ db, collection } = {}) ->
+              db = client.db address
+              if !( collection = await db.collection.get byname )?
+                collection = await db.collection.create { byname }
+                log "graphene", "deploy", "created collection: 
+                  #{ byname } for database: #{ address }"
+                created[ address ].push byname
     Promise.all do ->
-      for { address, byname } in created 
-        do ->
-          loop
-            response = await (client.db address).collection.getStatus byname
-            break if response.status == "ready"
-            await Time.sleep 3 * 1000
+      for address, bynames of created 
+        for byname in bynames
+          do ({ db, response } = {}) ->
+            db = client.db address
+            loop
+              response = await db.collection.getStatus byname
+              break if response.status == "ready"
+              await Time.sleep 1000
 
-  publish: ( Genie, { graphene }) ->
+  publish: ({ graphene }) ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     for db in graphene.databases
       for collection in db.collections when collection.publish?
-        drn = await getDRN db.uri
+        name = await getDRN db.uri
         { publish, byname } = collection
         if !byname?
-          byname = collection.bynames[ drn ]
+          byname = collection.bynames[ name ]
         _collection = client.collection { 
-          db: db.addresses[ drn ]
+          db: db.addresses[ name ]
           collection: byname 
         }
         publish.encoding ?= "utf8"
-        console.log "publishing collection: #{byname} for database: #{db.addresses[ drn ]}."
+        log "graphene", "publish", "publishing collection: #{byname} for database: #{db.addresses[ drn ]}."
         diff publish,
           list: -> _collection.metadata.list()
           add: (key, content) -> 
-            console.log "entry > add", { key }
+            log "graphene", "publish", "entry > add", { key }
             _collection.put key, content
           update: (key, content) ->
-            console.log "entry > update", { key }
+            log "graphene", "publish", "entry > update", { key }
             _collection.put key, content
           delete: (key) ->
-            console.log "entry > delete", { key }
+            log "graphene", "publish", "entry > delete", { key }
             _collection.delete key
 
-  undeploy: ( Genie, { graphene }) ->
+  undeploy: ({ graphene }) ->
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     updated = false
     for db in graphene.databases
-      drn = await getDRN db.uri
-      if ( address = db.addresses[ drn ])?
+      name = await getDRN db.uri
+      if ( address = db.addresses[ name ])?
         await client.db.delete address
-        console.log "deleted db: #{address} for drn: #{drn}."
-        delete db.addresses[ drn ]
+        log "graphene", "undeploy", "deleted db: 
+          #{ address } for drn: #{ name }."
+        delete db.addresses[ name ]
         updated = true
       for collection in db.collections
-        if collection.bynames?[ drn ]?
-          delete collection.bynames[ drn ]
+        if collection.bynames?[ name ]?
+          delete collection.bynames[ name ]
           updated = true
     if updated then await updateConfig graphene
 
-export { Tasks }
+export default Tasks

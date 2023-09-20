@@ -50,6 +50,9 @@ dependencies:
   '@dashkite/template':
     specifier: ^0.0.1
     version: 0.0.1
+  '@dashkite/zephyr':
+    specifier: link:../zephyr
+    version: link:../zephyr
   ajv:
     specifier: ^8.11.0
     version: 8.12.0

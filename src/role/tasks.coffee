@@ -275,18 +275,30 @@ buildMixinPolicy = (mixin, base) ->
   else
     throw new Error "Unknown mixin [ #{mixin} ] for [ #{base} ]"
 
-export default (genie, options) ->
-  { namespace, lambda, mixins, secrets, buckets, tables, queues } = options
+Tasks =
 
-  # TODO add delete / teardown
-  # TODO add support for multiple lambdas
-  
-  genie.define "sky:roles:publish", ->
+  deploy: ( options ) ->
 
+    {
+      namespace
+      lambda
+      mixins
+      secrets
+      buckets
+      tables
+      queues
+    } = options
+
+    # TODO add delete / teardown
+    # TODO add support for multiple lambdas
+    
     for handler in ( lambda?.handlers ? [] )
 
-      drn = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
-
+      drn = await getDRN Name.getURI { 
+        type: "lambda"
+        namespace
+        name: handler.name
+      }
       # TODO possibly explore how to split out role building
       # TODO allow for different policies for different handlers
       policies = [ ( buildCloudWatchPolicy drn, handler ) ]
@@ -304,7 +316,12 @@ export default (genie, options) ->
 
       await createRole drn, policies, options[ "managed-policies" ]
 
-  genie.define "sky:roles:delete", ->
+
+  undeploy: ( options ) ->
+    { namespace, lambda } = options
     for handler in ( lambda?.handlers ? [] )
       drn = await getDRN  Name.getURI { type: "lambda", namespace, name: handler.name }
       deleteRole drn
+
+export default Tasks
+
