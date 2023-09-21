@@ -14,32 +14,6 @@ Resources:
         {{/each}}
       {{/if}}
 
-  CachePolicy:
-    Type: "AWS::CloudFront::CachePolicy"
-    Properties:
-      CachePolicyConfig:
-        Name: {{{ name }}}-cache-policy
-        DefaultTTL: {{{ cache.ttl.default }}}
-        MinTTL: {{{ cache.ttl.min }}}
-        MaxTTL: {{{ cache.ttl.max }}}
-        ParametersInCacheKeyAndForwardedToOrigin:
-          CookiesConfig: 
-            CookieBehavior: none
-          EnableAcceptEncodingBrotli: {{{ cache.compress }}}
-          EnableAcceptEncodingGzip: {{{ cache.compress }}}
-          HeadersConfig:
-            {{#if cache.headers }}
-            HeaderBehavior: whitelist
-            Headers:
-              {{#each cache.headers}}
-              - {{{ . }}}
-              {{/each}}
-            {{else}}
-            HeaderBehavior: none
-            {{/if}}
-          QueryStringsConfig: 
-            QueryStringBehavior: {{{ cache.queries }}}
-
   OriginRequestPolicy:
     Type: "AWS::CloudFront::OriginRequestPolicy"
     Properties:
@@ -121,7 +95,6 @@ Resources:
   Distribution:
     Type: "AWS::CloudFront::Distribution"
     DependsOn:
-      - CachePolicy
       - OriginRequestPolicy
       - ResponseHeadersPolicy
       - Certificate
@@ -137,7 +110,7 @@ Resources:
           AllowedMethods: [ GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE ]
           CachedMethods: [ GET, HEAD, OPTIONS ]
           Compress: true
-          CachePolicyId: !Ref CachePolicy
+          CachePolicyId: {{{ cache }}}
           OriginRequestPolicyId: !Ref OriginRequestPolicy
           ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
           ViewerProtocolPolicy: redirect-to-https

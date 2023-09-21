@@ -87,40 +87,45 @@ getCache = ( preset ) ->
     when "static"
       # static content so cache everything aggressively
       # but allow for authorized content
-      ttl:
-        default: 86400 # 1 day
-        min: 1
-        max: 31536000 # 1 year
-      headers: [
-          "Authorization"
-          "Host"
-        ]
-      compress: true
-      queries: "none"
+      "8fe497a6-f90b-4207-8fb9-eb4214a4f31f"
+      # ttl:
+      #   default: 86400 # 1 day
+      #   min: 1
+      #   max: 31536000 # 1 year
+      # headers: [
+      #     "Authorization"
+      #     "Host"
+      #   ]
+      # compress: true
+      # queries: "none"
 
     when "dynamic"
       # basically we handle the edge caching
       # so turn everything off
-      ttl:
-        default: 0
-        min: 0
-        max: 0
-      compress: false
-      queries: "none"
+      # AWS policy: Managed-CachingDisabled
+      "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+      # ttl:
+      #   default: 0
+      #   min: 0
+      #   max: 0
+      # compress: false
+      # queries: "none"
 
     # allow for backward compatibility
     else
       # let cloudfront do the caching
-      ttl: cache.ttl ? 
-        default: 0
-        min: 0
-        max: 31536000 # 1 year
-      compress: true
-      headers: [
-          "Authorization"
-          "Host"
-        ]
-      queries: "all"
+      "a53da372-fd09-496e-bd4a-4e04a9028770"
+      
+      # ttl: cache.ttl ? 
+      #   default: 0
+      #   min: 0
+      #   max: 31536000 # 1 year
+      # compress: true
+      # headers: [
+      #     "Authorization"
+      #     "Host"
+      #   ]
+      # queries: "all"
 
 getHandlers = ({ namespace, handlers }) ->
   for { name, event, body } in handlers       
