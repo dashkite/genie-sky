@@ -41,7 +41,7 @@ Tasks =
       
       created[ address ] = []
       for collection in db.collections
-        { byname, bynames, uri } = collection
+        { byname, uri } = collection
         byname ?= bynames?[ name ] ?
           ( if uri? then await getDomain uri )
         if byname?
@@ -69,10 +69,18 @@ Tasks =
       for collection in db.collections when collection.publish?
         name = await getDRN db.uri
         { publish, byname } = collection
-        if !byname?
-          byname = collection.bynames[ name ]
+        byname ?= bynames?[ name ] ?
+          ( if uri? then await getDomain uri )
+        address = await do ->
+          if ( data = await Sky.read name )?
+            data.address
+          else
+            throw new Error "unable to resolve DB uri 
+              [ #{ db.uri } ]"
+
+        console.log { address, byname }
         _collection = client.collection { 
-          db: db.addresses[ name ]
+          db: address
           collection: byname 
         }
         publish.encoding ?= "utf8"
