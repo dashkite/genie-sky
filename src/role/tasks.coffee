@@ -1,4 +1,4 @@
-import { getDRN, getDomain } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 import { Name } from "@dashkite/name"
 
 import {
@@ -95,7 +95,7 @@ mixinPolicyBuilders =
       Effect: "Allow"
       Action: [ "secretsmanager:GetSecretValue" ]
       Resource: await do ->
-        name = await getDRN mixin.uri
+        name = await DRN.resolve mixin.uri
         log "secrets", "build-policy", 
           "authorize secret access for: #{ name }"
         await getSecretARN name
@@ -108,9 +108,7 @@ mixinPolicyBuilders =
       Action: [ "s3:*" ]
       Resource: await do ->
         resources = []
-        { name, namespace, tld } = Name.parse mixin.uri
-        _uri = Name.getURI { type: "domain", name, namespace, tld }
-        domain = await getDomain _uri
+        domain = await DRN.resolve mixin.uri
         resources.push "arn:aws:s3:::#{domain}"
         resources.push "arn:aws:s3:::#{domain}/*"
         resources
@@ -140,7 +138,7 @@ mixinPolicyBuilders =
         "lambda:InvokeFunction"
       ]
       Resource: [
-        await getLambdaUnqualifiedARN await getDRN mixin.uri
+        await getLambdaUnqualifiedARN await DRN.resolve mixin.uri
       ]
 
     ]
@@ -220,21 +218,15 @@ mixinPolicyBuilders =
     ]
 
   table: (mixin) ->
-    [
+    arn = if mixin.uri?
+      getTableARN await DRN.resolve mixin.uri
+    else
+      getTableARN mixin.name
 
+    [
       Effect: "Allow"
       Action: [ "dynamodb:*" ]
-      Resource: if mixin.uri? 
-        [
-          getTableARN await getDRN mixin.uri
-          "#{getTableARN await getDRN mixin.uri}/*"
-        ]
-      else if mixin.name?
-        [
-          getTableARN mixin.name
-          "#{getTableARN mixin.name}/*"
-        ]
-
+      Resource: [ arn, "#{ arn }/*" ]
     ]
 
   queue: (mixin) ->
@@ -296,7 +288,7 @@ Tasks =
     
     for handler in ( lambda?.handlers ? [] )
 
-      drn = await getDRN Name.getURI { 
+      drn = await DRN.resolve { 
         type: "lambda"
         namespace
         name: handler.name
@@ -322,7 +314,11 @@ Tasks =
   undeploy: ( options ) ->
     { namespace, lambda } = options
     for handler in ( lambda?.handlers ? [] )
-      drn = await getDRN  Name.getURI { type: "lambda", namespace, name: handler.name }
+      drn = await DRN.resolve {
+        type: "lambda"
+        namespace
+        name: handler.name 
+      }
       deleteRole drn
 
 export default Tasks

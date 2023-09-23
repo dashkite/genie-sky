@@ -9,7 +9,7 @@ import * as Time from "@dashkite/joy/time"
 import YAML from "js-yaml"
 
 import { Name } from "@dashkite/name"
-import { Mixins, getDRN } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 
 import {
   publishLambda
@@ -35,8 +35,11 @@ deployLambdas = ({ namespace, lambda, context }) ->
       data = await FS.readFile ".sky/build/#{ handler.name }.zip"
     
     if data?
-
-      name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
+      name = await DRN.resolve { 
+        type: "lambda"
+        namespace
+        name: handler.name 
+      }
       role = await getRoleARN name
 
       config = { 
@@ -129,7 +132,9 @@ Tasks =
       deployLambdas {
         namespace
         lambda
-        context: JSON.stringify await Mixins.apply mixins, Genie
+        context: do ->
+          uris = mixins.map ({ uri }) -> uri
+          JSON.stringify await DRN.resolve uris
       }
 
   handlers: ({ namespace, lambda, mixins }) ->
@@ -146,7 +151,11 @@ Tasks =
   
   delete: ({ namespace, lambda, mixins }) ->
     for handler in lambda?.handlers ? []
-      name = await getDRN Name.getURI { type: "lambda", namespace, name: handler.name }
+      name = await DRN.resolve { 
+        type: "lambda"
+        namespace
+        name: handler.name 
+      }
       await deleteLambda name
 
 export default Tasks

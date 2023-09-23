@@ -7,7 +7,7 @@ import {
 } from "@dashkite/dolores/ses"
 import { log } from "@dashkite/dolores/logger"
 import { Name } from "@dashkite/name"
-import { getDRN } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 
 read = ( path ) -> FS.readFile path, "utf8"
 
@@ -26,7 +26,7 @@ Tasks =
     templates = ses?.templates ? []
     root = ses?.root ? Path.join "build", "email"
     for template in templates
-      name = await getDRN Name.getURI {
+      name = await DRN.resolve {
         type: "ses"
         namespace
         name: template.name 
@@ -37,7 +37,7 @@ Tasks =
 
   undeploy: ({ namespace, ses }) ->
     for template in ses?.templates ? []
-      name = await getDRN Name.getURI {
+      name = await DRN.resolve {
         type: "ses"
         namespace
         name: template.name 

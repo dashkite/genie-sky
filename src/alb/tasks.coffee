@@ -15,7 +15,7 @@ import {
 } from "@dashkite/dolores/stack"
 
 import { Name } from "@dashkite/name"
-import { getDomain, getDRN, getDescription } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 
 getTLD = Fn.pipe [
   Text.split "."
@@ -27,8 +27,13 @@ getRules = ({ rules, namespace }) ->
   for rule in rules
     rule.domains = 
       for domain in rule.domains
-        await getDomain domain
-    handler = await getLambda await getDRN Name.getURI { type: "lambda", namespace, name: rule.handler }
+        await DRN.resolve domain
+    name = await DRN.resolve {
+      type: "lambda"
+      namespace
+      name: rule.handler
+    }
+    handler = await getLambda name
     { rule..., handler }
 
 getHeaders = ( headers ) ->
@@ -56,25 +61,28 @@ templates._.h.registerHelper { awsCase, increment }
 Tasks =
 
   deploy: ({ namespace, alb, lambda }) ->
-    domain = await getDomain alb.domain
-    uri = Name.getURI { type: "alb", namespace, name: alb.name }
+    domain = await DRN.resolve alb.domain
+    resources =
+      alb: { type: "alb", namespace, name: alb.name }
+      lambda: { type: "lambda", namespace, name: alb.handler }
     context =
-      name: await getDRN uri
-      description: alb.description ? await getDescription uri
+      name: await DRN.resolve resources.alb
+      description: alb.description ? 
+        await DRN.describe resources.alb
       zone: id: await getHostedZoneID getTLD domain
       domain: domain
       subnets: await VPC.Subnets.list alb.vpc ? "default"
       security:
         groups: await VPC.SecurityGroups.list alb.vpc
       certificate: arn: await getCertificateARN getTLD domain
-      handler: await getLambda await getDRN Name.getURI { type: "lambda", namespace, name: alb.handler }
+      handler: await getLambda await DRN.resolve resources.lambda
       rules: await getRules { rules: alb.rules, namespace }
       headers: if alb.headers? then await getHeaders alb.headers  
     deployStack context.name,
       await templates.render "template.yaml", context
 
-  undeploy: ->
-    deleteStack await getDRN Name.getURI { 
+  undeploy: ({ namespace, alb }) ->
+    deleteStack await DRN.resolve { 
       type: "alb"
       namespace
       name: alb.name 

@@ -7,7 +7,7 @@ import {
   deleteTable
 } from "@dashkite/dolores/dynamodb"
 
-import { getDRN, yaml } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 
 getTableDetail = ( path ) ->
   ( YAML.load await FS.readFile path, "utf-8" ).main
@@ -17,7 +17,7 @@ Tasks =
   deploy: ({ namespace, dynamodb, tables }) ->
     updated = false
     for table in tables
-      drn = await getDRN table.uri
+      drn = await DRN.resolve table.uri
 
       if !( await hasTable drn )
         await createTable {
@@ -29,7 +29,7 @@ Tasks =
   undeploy: ({ namespace, dynamodb, tables }) ->
     updated = false
     for table in tables
-      drn = await getDRN table.uri
+      drn = await DRN.resolve table.uri
       if await hasTable drn
         await deleteTable drn
         console.log "deleted table: #{drn}"

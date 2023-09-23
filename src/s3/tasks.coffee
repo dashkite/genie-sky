@@ -28,7 +28,7 @@ import { log } from "@dashkite/dolores/logger"
 
 import { diff } from "#helpers/diff"
 
-import { yaml, getDomain, getDRN } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 
 import prompts from "prompts"
 
@@ -108,10 +108,10 @@ Tasks =
     for bucket in s3
       if !bucket.domain?
         if bucket.uri?
-          drn = await getDRN bucket.uri
+          drn = await DNR.resolve bucket.uri
           bucket.domains ?= {}
           if !bucket.domains[ drn ]?
-            domain = await getDomain bucket.uri
+            domain = await DRN.resolve bucket.uri
             bucket.domains[ drn ] = domain
             await configureBucket { bucket..., domain, name: domain } 
             log "s3", "deploy", "created bucket #{domain}"
@@ -123,7 +123,7 @@ Tasks =
       for bucket in s3
         { domain } = bucket
         if bucket.uri?
-          drn = await getDRN bucket.uri
+          drn = await DRN.resolve bucket.uri
           domain ?= bucket.domains?[ drn ]
         if domain?
           if await hasBucket domain
@@ -131,7 +131,7 @@ Tasks =
             await deleteBucket domain
             log "s3", "undeploy", "deleted bucket #{domain}"
             if bucket.uri?
-              drn = await getDRN bucket.uri
+              drn = await DRN.resolve bucket.uri
               if bucket.domains?[ drn ]?
                 delete bucket.domains[ drn ]
                 updated = true
@@ -145,7 +145,7 @@ Tasks =
 
         { publish, domain } = bucket
         if bucket.uri?
-          drn = await getDRN bucket.uri
+          drn = await DRN.resolve bucket.uri
           domain ?= bucket.domains[ drn ]
 
         publish.encoding ?= "bytes"

@@ -1,23 +1,17 @@
 import { inspect } from "node:util"
 import Path from "node:path"
-import Zephyr from "@dashkite/zephyr"
 import { log } from "@dashkite/dolores/logger"
 import * as Graphene from "@dashkite/graphene-core"
 import * as Polaris from "@dashkite/polaris"
-import { yaml, getDRN, getDomain } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 import { diff } from "#helpers/diff"
+import LocalStorage from "@dashkite/sky-local-storage"
 
 resolveTables = ( tables ) ->
   resolved = {}
   for key, value of tables
-    resolved[ key ] = await getDRN value
+    resolved[ key ] = await DRN.resolve value
   resolved
-
-Sky =
-  root: Path.join "#{ process.env.HOME }", ".sky"
-  path: ( name ) -> Path.join @root, "#{ name }.yaml"
-  read: ( name ) -> Zephyr.read @path name
-  write: ( name, data ) -> Zephyr.write ( @path name ), data
 
 Tasks =
 
@@ -26,10 +20,10 @@ Tasks =
       tables: await resolveTables graphene.tables
     created = {}
     for db in graphene.databases
-      name = await getDRN db.uri
+      name = await DRN.resolve db.uri
       address = undefined
       byname = undefined
-      if ( data = await Sky.read name )?
+      if ( data = await LocalStorage.read name )?
         { address } = data
         log "graphene", "deploy", 
           "found db: #{ address } for: #{ name }."
@@ -37,13 +31,13 @@ Tasks =
         { address } = await client.db.create { name }
         log "graphene", "deploy", 
           "created db: #{ address } for: #{ name }."
-        await Sky.write name, { address }
+        await LocalStorage.write name, { address }
       
       created[ address ] = []
       for collection in db.collections
         { byname, uri } = collection
         byname ?= bynames?[ name ] ?
-          ( if uri? then await getDomain uri )
+          ( if uri? then await DRN.resolve uri )
         if byname?
           await do ( byname ) ->
             do ({ db, collection } = {}) ->
@@ -67,12 +61,12 @@ Tasks =
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     for db in graphene.databases
       for collection in db.collections when collection.publish?
-        name = await getDRN db.uri
+        name = await DRN.resolve db.uri
         { publish, byname } = collection
         byname ?= bynames?[ name ] ?
-          ( if uri? then await getDomain uri )
+          ( if uri? then await DRN.resolve uri )
         address = await do ->
-          if ( data = await Sky.read name )?
+          if ( data = await LocalStorage.read name )?
             data.address
           else
             throw new Error "unable to resolve DB uri 
@@ -101,7 +95,7 @@ Tasks =
     client = Graphene.Client.create tables: await resolveTables graphene.tables
     updated = false
     for db in graphene.databases
-      name = await getDRN db.uri
+      name = await DRN.resolve db.uri
       if ( address = db.addresses[ name ])?
         await client.db.delete address
         log "graphene", "undeploy", "deleted db: 

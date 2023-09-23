@@ -8,10 +8,13 @@ import compress from "brotli/compress"
 import { convert } from "@dashkite/bake"
 
 import { Name } from "@dashkite/name"
-import { getDRN, getDescription, getDomain, getRootDomain } from "@dashkite/drn"
+import * as DRN from "@dashkite/drn"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
+
+getRootDomain = ( domain ) ->
+  ( domain.split "." )[-2..].join "."
 
 awsCase = Fn.pipe [
   Text.normalize
@@ -22,20 +25,20 @@ awsCase = Fn.pipe [
 
 getAliases = ( aliases ) ->
   for uri in aliases
-    domain: await getDomain uri
+    domain: await DRN.resolve uri
     uri: uri
 
 getCertificateAliases = ( aliases ) ->
   result = {}
   for alias in aliases
-    root = getRootDomain alias.uri 
+    root = getRootDomain await DRN.resolve alias.uri 
     result[ root ] ?= "*.#{root}"
   Object.values result  
 
 getDNSEntries = ( aliases ) ->
   result = {}
   for alias in aliases
-    root = getRootDomain alias.uri 
+    root = getRootDomain await DRN.resolve alias.uri 
     result[ root ] ?=
       tld: root
       zone: await getHostedZoneID root
@@ -61,7 +64,7 @@ getHeaders = ( headers ) ->
 getOrigins = ({ origin, origins }) ->
   origins ?= [ origin ]
   for origin in origins
-    domain = await getDomain origin.domain
+    domain = await DRN.resolve origin.domain
     result = 
       switch origin.type
         when "s3"
@@ -128,10 +131,11 @@ getCache = ( preset ) ->
       # queries: "all"
 
 getHandlers = ({ namespace, handlers }) ->
-  for { name, event, body } in handlers       
+  for { name, event, body } in handlers 
+    lambda = await DRN.resolve { namespace, name }     
     event: event ? name
     includesBody: body ? false
-    arn: await getLatestLambdaARN await getDRN { namespace, name }     
+    arn: await getLatestLambdaARN lambda
 
 templates = Templates.create "#{__dirname}"
 templates._.h.registerHelper { awsCase }
@@ -142,7 +146,7 @@ Tasks =
     mode = process.env.mode ? "development"
     name = edge.name ? "edge"
     uri = Name.getURI { type: "edge", namespace, name }
-    drn = await getDRN uri
+    drn = await DRN.resolve uri
     aliases = await getAliases edge.aliases
     origins = await getOrigins edge
     oac = hasOAC origins
@@ -161,11 +165,11 @@ Tasks =
         aliases: getCertificateAliases aliases
       origins: origins
       handlers: if lambda?.handlers? then getHandlers lambda.handlers
-    deployStack (await getDRN uri), template      
+    deployStack (await DRN.resolve uri), template      
     
   undeploy: ({ namespace, lambda, edge }) ->
-    name = edge.name ? "edge"
-    deleteStack await getDRN Name.getURI { type: "edge", namespace, name }
+    stack = { type: "edge", namespace, name: edge.name ? "edge" }
+    deleteStack await DRN.resolve stack
 
 
 export default Tasks
