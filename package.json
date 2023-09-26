@@ -51,7 +51,7 @@
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
     "@dashkite/dolores": "link:../dolores",
-    "@dashkite/drn": "link:../drn",
+    "@dashkite/drn-sky": "link:../drn-sky",
     "@dashkite/enchant": "link:../enchant",
     "@dashkite/graphene-core": "link:../graphene-core",
     "@dashkite/joy": "^0.3.16",

@@ -18,7 +18,7 @@ guard = (f) ->
 getPackage = do (cache = null) -> ->
   cache ?= JSON.parse await FS.readFile "./package.json", "utf8"
 
-warn = ( key, context ) ->
+info = ( key, context ) ->
   log "genie-sky", "info", messages.message key, context
 
 warn = ( key, context ) ->

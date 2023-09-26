@@ -1,12 +1,40 @@
+import * as cheerio from "cheerio"
+import * as DRN from "@dashkite/drn-sky"
+import M from "@dashkite/masonry"
+
+inject = ( html, env ) ->
+  json = JSON.stringify env, null, 2
+  $ = cheerio.load html
+  $ "head"
+    .append do ->
+      $ "<script type='module'>"
+        .text """
+          import Registry from "@dashkite/helium"
+          Registry.set #{ json }
+          """
+  $.html()
+
+build = ( options ) ->
+  ({ input }) ->
+    mode = process.env.mode ? "development"
+    dictionary = {}
+    if options.env?.drn?
+      for drn in options.env.drn
+        dictionary[ drn ] = await DRN.resolve drn
+    inject input, sky: env: { mode, dictionary }
+      
 export default ( Genie ) ->
 
-  Genie.define "sky:env", ->
-    { Mixins } = await import( "@dashkite/drn" )
-    options = Genie.get "sky"
-    { mixins } = options
-    options.env = mode: process.env.mode ? "development"
-    if mixins?
-      options.env.context = await Mixins.apply mixins
+  options = Genie.get "sky"
   
-  Genie.before "pug", "sky:env"
-    
+  target = options.env.target ?
+    "build/browser/src/index.html"
+
+  Genie.define "sky:env", M.start [
+      M.glob target, "."
+      M.read
+      M.tr build options
+      M.write "."
+    ]
+
+  Genie.after "build", "sky:env"
