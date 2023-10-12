@@ -1,5 +1,4 @@
-import * as DRN from "@dashkite/drn"
-import { Name } from "@dashkite/name"
+import * as DRN from "@dashkite/drn-sky"
 
 import {
   getSecretARN
@@ -303,7 +302,7 @@ Tasks =
       if mixins?
         for mixin in mixins
           if mixin.uri?
-            description = Name.parse mixin.uri
+            description = DRN.decode mixin.uri
             mixin = { description..., mixin... }
           if ( builder = builders[ mixin.type ] )?
             policies.push ( await builder mixin )...

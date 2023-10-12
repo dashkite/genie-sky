@@ -8,7 +8,7 @@
     }
   },
   "imports": {
-    "#helpers/*": "./build/node/src/helpers/runner.js"
+    "#helpers/*": "./build/node/src/helpers/*.js"
   },
   "main": "build/node/src/index.js",
   "files": [
@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@dashkite/bake": "^0.0.6",
+    "@dashkite/diff": "link:../diff",
     "@dashkite/dolores": "link:../dolores",
     "@dashkite/drn-sky": "link:../drn-sky",
     "@dashkite/enchant": "link:../enchant",
@@ -63,6 +64,7 @@
     "@dashkite/runes": "link:../runes",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/sky-api-description": "link:../sky-api-description",
+    "@dashkite/sky-local-storage": "link:../sky-local-storage",
     "@dashkite/template": "^0.0.1",
     "@dashkite/zephyr": "link:../zephyr",
     "ajv": "^8.11.0",
@@ -71,10 +73,12 @@
     "css-loader": "^6.6.0",
     "esbuild": "^0.15.18",
     "execa": "5.1.1",
+    "fast-glob": "^3.3.1",
     "glob": "^8.0.3",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "make-fetch-happen": "^9.1.0",
+    "micromatch": "^4.0.5",
     "mime-types": "^2.1.35",
     "node-fetch": "^2.6.7",
     "panda-confidential": "^3.1.2",

@@ -14,8 +14,7 @@ import {
   deleteStack
 } from "@dashkite/dolores/stack"
 
-import { Name } from "@dashkite/name"
-import * as DRN from "@dashkite/drn"
+import * as DRN from "@dashkite/drn-sky"
 
 getTLD = Fn.pipe [
   Text.split "."

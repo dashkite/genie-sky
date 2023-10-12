@@ -6,8 +6,7 @@ import {
   deleteTemplate 
 } from "@dashkite/dolores/ses"
 import { log } from "@dashkite/dolores/logger"
-import { Name } from "@dashkite/name"
-import * as DRN from "@dashkite/drn"
+import * as DRN from "@dashkite/drn-sky"
 
 read = ( path ) -> FS.readFile path, "utf8"
 

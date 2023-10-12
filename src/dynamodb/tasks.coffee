@@ -7,7 +7,7 @@ import {
   deleteTable
 } from "@dashkite/dolores/dynamodb"
 
-import * as DRN from "@dashkite/drn"
+import * as DRN from "@dashkite/drn-sky"
 
 getTableDetail = ( path ) ->
   ( YAML.load await FS.readFile path, "utf-8" ).main

@@ -7,8 +7,7 @@ import Templates from "@dashkite/template"
 import compress from "brotli/compress"
 import { convert } from "@dashkite/bake"
 
-import { Name } from "@dashkite/name"
-import * as DRN from "@dashkite/drn"
+import * as DRN from "@dashkite/drn-sky"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
@@ -145,7 +144,7 @@ Tasks =
   deploy: ({ namespace, lambda, edge }) ->
     mode = process.env.mode ? "development"
     name = edge.name ? "edge"
-    uri = Name.getURI { type: "edge", namespace, name }
+    uri = DRN.encode { type: "edge", namespace, name }
     drn = await DRN.resolve uri
     aliases = await getAliases edge.aliases
     origins = await getOrigins edge
@@ -155,14 +154,14 @@ Tasks =
       name: drn
       namespace: namespace
       environment: mode
-      description: await getDescription uri
+      description: await DRN.describe uri
       oac: oac
       aliases: aliases
       dns: await getDNSEntries aliases
       cache: getCache edge.cache
       certificate:
         verification: edge.certificate.verification
-        aliases: getCertificateAliases aliases
+        aliases: await getCertificateAliases aliases
       origins: origins
       handlers: if lambda?.handlers? then getHandlers lambda.handlers
     deployStack (await DRN.resolve uri), template      

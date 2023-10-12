@@ -14,7 +14,6 @@ export default ( Genie, options ) ->
     run "deploy", options
 
   Genie.define "sky:graphene:publish", 
-    "sky:graphene:deploy", 
     run "publish", options
 
 

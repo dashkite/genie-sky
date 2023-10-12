@@ -8,8 +8,7 @@ import * as Time from "@dashkite/joy/time"
 
 import YAML from "js-yaml"
 
-import { Name } from "@dashkite/name"
-import * as DRN from "@dashkite/drn"
+import * as DRN from "@dashkite/drn-sky"
 
 import {
   publishLambda
@@ -127,14 +126,16 @@ verifyHandlers = ({ generate, verify }) ->
 
 Tasks =
 
-  deploy: ( Genie, { namespace, lambda, mixins }) ->
+  deploy: ( Genie, { namespace, lambda, env }) ->
       
       deployLambdas {
         namespace
         lambda
-        context: do ->
-          uris = mixins.map ({ uri }) -> uri
-          JSON.stringify await DRN.resolve uris
+        context: await do ->
+          dictionary = {}
+          for uri in env.drn
+            dictionary[ uri ] = await DRN.resolve uri
+          JSON.stringify dictionary
       }
 
   handlers: ({ namespace, lambda, mixins }) ->
@@ -145,11 +146,11 @@ Tasks =
       if handler.generate? or handler.verify?
         await verifyHandlers handler
 
-  version: ({ namespace, lambda, mixins }, environment, name ) ->
+  version: ({ namespace, lambda }, environment, name ) ->
     # (environment, name)
     versionLambda "#{namespace}-#{environment}-#{name}"
   
-  delete: ({ namespace, lambda, mixins }) ->
+  delete: ({ namespace, lambda }) ->
     for handler in lambda?.handlers ? []
       name = await DRN.resolve { 
         type: "lambda"

@@ -10,7 +10,7 @@ inject = ( html, env ) ->
       $ "<script type='module'>"
         .text """
           import Registry from "@dashkite/helium"
-          Registry.set #{ json }
+          Registry.set(#{ json })
           """
   $.html()
 
@@ -26,15 +26,21 @@ build = ( options ) ->
 export default ( Genie ) ->
 
   options = Genie.get "sky"
+
+  if options.mixins?
+    console.warn "found [ mixins ] stanza in genie.yaml:
+      you probably should migrate this to the new [ env ] stanza"
+
+  if options.env?
   
-  target = options.env.target ?
-    "build/browser/src/index.html"
+    target = options.env.target ?
+      "build/browser/src/index.html"
 
-  Genie.define "sky:env", M.start [
-      M.glob target, "."
-      M.read
-      M.tr build options
-      M.write "."
-    ]
+    Genie.define "sky:env", M.start [
+        M.glob target, "."
+        M.read
+        M.tr build options
+        M.write "."
+      ]
 
-  Genie.after "build", "sky:env"
+    Genie.after "build", "sky:env"

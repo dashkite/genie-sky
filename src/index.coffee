@@ -1,5 +1,8 @@
 import { generic } from "@dashkite/joy/generic"
 import * as Type from "@dashkite/joy/type"
+import * as Logger from "@dashkite/dolores/logger"
+
+Logger.configure root: ".sky/log"
 
 Preset =
   

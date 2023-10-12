@@ -8,6 +8,9 @@ dependencies:
   '@dashkite/bake':
     specifier: ^0.0.6
     version: 0.0.6
+  '@dashkite/diff':
+    specifier: link:../diff
+    version: link:../diff
   '@dashkite/dolores':
     specifier: link:../dolores
     version: link:../dolores
@@ -47,6 +50,9 @@ dependencies:
   '@dashkite/sky-api-description':
     specifier: link:../sky-api-description
     version: link:../sky-api-description
+  '@dashkite/sky-local-storage':
+    specifier: link:../sky-local-storage
+    version: link:../sky-local-storage
   '@dashkite/template':
     specifier: ^0.0.1
     version: 0.0.1
@@ -71,6 +77,9 @@ dependencies:
   execa:
     specifier: 5.1.1
     version: 5.1.1
+  fast-glob:
+    specifier: ^3.3.1
+    version: 3.3.1
   glob:
     specifier: ^8.0.3
     version: 8.1.0
@@ -83,6 +92,9 @@ dependencies:
   make-fetch-happen:
     specifier: ^9.1.0
     version: 9.1.0
+  micromatch:
+    specifier: ^4.0.5
+    version: 4.0.5
   mime-types:
     specifier: ^2.1.35
     version: 2.1.35
