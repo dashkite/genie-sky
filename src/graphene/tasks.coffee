@@ -5,8 +5,11 @@ import * as Graphene from "@dashkite/graphene-core"
 import * as Polaris from "@dashkite/polaris"
 import * as DRN from "@dashkite/drn-sky"
 import * as Fn from "@dashkite/joy/function"
+import Time from "@dashkite/joy/time"
 import * as Diff from "@dashkite/diff"
 import LocalStorage from "@dashkite/sky-local-storage"
+import M from "@dashkite/masonry"
+import W from "@dashkite/masonry-targets/watch"
 
 resolve = ( dictionary ) ->
   resolved = {}
@@ -116,6 +119,32 @@ Collection =
         Diff.Graphene.patch { collection }
       ]
 
+Item =
+
+  publish: ( client, db, collection ) ->
+    do ({ address, byname, _collection } = {}) ->
+      ( context ) ->
+        address ?= await DB.resolve db
+        byname ?= await Collection.resolve collection
+        _collection ?= client.collection { 
+          db: address
+          collection: byname
+        }
+        _collection.put context.source.path, context.input
+
+
+  rm: ( client, db, collection ) ->
+    do ({ address, byname, _collection } = {}) ->
+      ( context ) ->
+        address ?= await DB.resolve db
+        byname ?= await Collection.resolve collection
+        _collection ?= client.collection { 
+          db: address
+          collection: byname
+        }
+        _collection.delete context.source.path
+
+
 Tasks =
 
   deploy: ({ graphene })  ->
@@ -140,5 +169,29 @@ Tasks =
         Promise.all do ->
           for collection in collections
             Collection.publish client, db, collection
+
+  watch: ({ graphene }) ->
+
+    client = await Client.make graphene
+
+    watch = ( db, collection ) ->
+      
+      do M.start [
+        W.glob collection.publish
+        W.match type: "file", name: [ "add", "change" ], [
+          M.read
+          Item.publish client, db, collection
+        ]
+        W.match type: "file", name: "rm", [
+          Item.rm client, db, collection
+        ]
+      ]
+
+    Promise.all do ->
+      for { collections, db... } in graphene.databases
+        Promise.all do ->
+          for collection in collections
+            watch db, collection
+
 
 export default Tasks

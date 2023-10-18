@@ -16,6 +16,10 @@ export default ( Genie, options ) ->
   Genie.define "sky:graphene:publish", 
     run "publish", options
 
+  Genie.define "sky:graphene:watch",
+    run "watch", options
+
+  Genie.on "watch", "sky:graphene:watch&"
 
   Genie.define "sky:graphene:undeploy",
     run "undeploy", options

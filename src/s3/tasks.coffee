@@ -1,6 +1,8 @@
 import FS from "node:fs/promises"
 import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
+import M from "@dashkite/masonry"
+import W from "@dashkite/masonry-targets/watch"
 
 import {
   hasBucket
@@ -15,6 +17,8 @@ import {
   putBucketWebsite
   deleteBucketWebsite
   putBucketRedirect
+  putObject
+  deleteObject
 } from "@dashkite/dolores/bucket"
 
 import {
@@ -93,49 +97,58 @@ configureBucket = ( bucket ) ->
     for preset from Presets.get bucket
       Presets[ preset ] bucket
 
+Item =
+
+  publish: ({ publish, domain, drn, uri }) ->
+
+    ( context ) ->
+
+      publish.encoding ?= "bytes"
+
+      drn ?= uri
+
+      domain ?= if drn?
+        await DRN.resolve drn 
+      else
+        throw new Error "missing bucket domain or DRN"
+
+      putObject domain, context.source.path, context.input
+  
+  rm: ( bucket ) ->
+
+    ({ domain, drn, uri }) ->
+
+      drn ?= uri
+
+      domain ?= if drn?
+        await DRN.resolve drn 
+      else
+        throw new Error "missing bucket domain or DRN"
+
+      deleteObject domain, context.source.path
+
 
 Tasks =
 
   deploy: ({ s3 }) ->
-    updated = false
-    for bucket in s3
-      if !bucket.domain?
-        if bucket.uri?
-          drn = await DRN.resolve bucket.uri
-          bucket.domains ?= {}
-          if !bucket.domains[ drn ]?
-            domain = await DRN.resolve bucket.uri
-            bucket.domains[ drn ] = domain
-            await configureBucket { bucket..., domain, name: domain } 
-            log "s3", "deploy", "created bucket #{domain}"
+    for { domain, drn, uri } in s3
+      domain ?= await DRN.resolve drn ? uri
+      await configureBucket { bucket..., name: domain } 
+      log "s3", "deploy", "configured bucket #{ domain }"
     
   undeploy: ({ s3 }) ->
-    updated = false
-    for bucket in s3
-      { domain } = bucket
-      if bucket.uri?
-        drn = await DRN.resolve bucket.uri
-        domain ?= bucket.domains?[ drn ]
-      if domain?
-        if await hasBucket domain
-          await emptyBucket domain
-          await deleteBucket domain
-          log "s3", "undeploy", "deleted bucket #{domain}"
-          if bucket.uri?
-            drn = await DRN.resolve bucket.uri
-            if bucket.domains?[ drn ]?
-              delete bucket.domains[ drn ]
-              updated = true
-        else
-          throw new Error "bucket [ #{ domain } ] does not exist"
+    for { domain, drn, uri } in s3
+      domain ?= await DRN.resolve drn ? uri
+      if await hasBucket domain
+        await emptyBucket domain
+        await deleteBucket domain
+        log "s3", "undeploy", "deleted bucket #{ domain }"
 
   publish: ({ s3 }) ->
     
     Promise.all await do ->
 
-      for bucket in s3 when bucket.publish?
-
-        { publish, domain } = bucket
+      for { publish, domain } in s3 when bucket.publish?
 
         publish.encoding ?= "bytes"
 
@@ -158,5 +171,24 @@ Tasks =
               undefined # avoid returning a promise
             Diff.S3.patch { domain }
           ]
+
+  watch: ({ s3 }) ->
+
+    watch = ( bucket ) ->
+      
+      do M.start [
+        W.glob bucket.publish
+        W.match type: "file", name: [ "add", "change" ], [
+          M.read
+          Item.publish bucket
+        ]
+        W.match type: "file", name: "rm", [
+          Item.rm bucket
+        ]
+      ]
+
+    Promise.all do ->
+      for bucket in s3 when bucket.publish?
+        watch bucket
 
 export default Tasks

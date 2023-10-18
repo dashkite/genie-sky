@@ -24,14 +24,17 @@ dependencies:
     specifier: link:../graphene-core
     version: link:../graphene-core
   '@dashkite/joy':
-    specifier: ^0.3.16
-    version: 0.3.16
+    specifier: link:../joy
+    version: link:../joy
   '@dashkite/katana':
     specifier: ^0.4.8
     version: 0.4.8
   '@dashkite/masonry':
     specifier: link:../masonry
     version: link:../masonry
+  '@dashkite/masonry-targets':
+    specifier: link:../masonry-targets
+    version: link:../masonry-targets
   '@dashkite/messages':
     specifier: link:../messages
     version: link:../messages
