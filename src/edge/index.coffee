@@ -55,7 +55,7 @@ getHeaders = ( headers ) ->
             compress await FS.readFile operand
         else
           throw new Error "Sky Presets: edge: 
-            uknown operator [ #{ operator } ]"
+            unknown operator [ #{ operator } ]"
     { name, value }
 
 getOrigins = ({ origin, origins }) ->
@@ -94,6 +94,19 @@ getCache = ( preset ) ->
       headers: [
           "Authorization"
           "Host"
+        ]
+      compress: true
+      queries: "none"
+
+    when "static-s3"
+      # static content so cache everything aggressively
+      # but allow for authorized content
+      ttl:
+        default: 86400 # 1 day
+        min: 1
+        max: 31536000 # 1 year
+      headers: [
+          "Authorization"
         ]
       compress: true
       queries: "none"

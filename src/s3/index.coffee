@@ -18,6 +18,8 @@ import {
   putObject
   deleteObject
   listObjects
+  putCORSConfig
+  deletePublicAccessBlock
 } from "@dashkite/dolores/bucket"
 
 import {
@@ -50,6 +52,13 @@ Presets =
     if bucket.public?
       presets.delete "private"
       presets.add "public"
+
+    if bucket.cloudfront?
+      presets.delete "private"
+      presets.add "cloudfront"
+
+    if bucket.cors?
+      presets.add "cors"
         
     presets
 
@@ -69,9 +78,12 @@ Presets =
     
   public: ( bucket ) ->
     await deleteBucketLifecycle bucket.domain
-    deleteBucketPolicy bucket.domain
+    await deletePublicAccessBlock bucket.domain
+    putBucketPolicy bucket.domain,
+      Templates.website { bucket }
 
   cloudfront: ( bucket ) ->
+    await deleteBucketLifecycle bucket.domain
     distribution = await getDistributionForDomain bucket.domain
     putBucketPolicy bucket.domain,
       Templates.cloudfront { bucket, distribution }
@@ -85,6 +97,18 @@ Presets =
   redirect: ( bucket ) ->
     await deleteBucketLifecycle bucket.domain
     putBucketRedirect bucket.domain, bucket.redirect
+
+  cors: ( bucket ) ->
+    params = 
+      Bucket: bucket.domain
+      CORSConfiguration:
+        CORSRules: [
+          AllowedHeaders: [ "*" ]
+          AllowedOrigins: [ "*" ]
+          AllowedMethods: [ "GET", "PUT", "POST", "DELETE" ]
+          MaxAgeSeconds: 7200
+        ]
+    putCORSConfig params
 
 configureBucket = ( bucket ) ->
 
