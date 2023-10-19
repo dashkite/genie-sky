@@ -32,6 +32,9 @@ dependencies:
   '@dashkite/masonry':
     specifier: link:../masonry
     version: link:../masonry
+  '@dashkite/masonry-module':
+    specifier: link:../masonry-module
+    version: link:../masonry-module
   '@dashkite/masonry-targets':
     specifier: link:../masonry-targets
     version: link:../masonry-targets

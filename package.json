@@ -58,6 +58,7 @@
     "@dashkite/joy": "link:../joy",
     "@dashkite/katana": "^0.4.8",
     "@dashkite/masonry": "link:../masonry",
+    "@dashkite/masonry-module": "link:../masonry-module",
     "@dashkite/masonry-targets": "link:../masonry-targets",
     "@dashkite/messages": "link:../messages",
     "@dashkite/name": "link:../name",

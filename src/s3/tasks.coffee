@@ -3,6 +3,7 @@ import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
 import M from "@dashkite/masonry"
 import W from "@dashkite/masonry-targets/watch"
+import { File } from "@dashkite/masonry-module"
 
 import {
   hasBucket
@@ -148,17 +149,21 @@ Tasks =
     
     Promise.all await do ->
 
-      for { publish, domain } in s3 when bucket.publish?
+      for bucket  in s3 when bucket.publish?
 
-        publish.encoding ?= "bytes"
+        { publish, domain, uri, drn } = bucket
 
-        domain ?= if bucket.uri?
+        drn ?= uri
+
+        domain ?= if uri?
           await DRN.resolve bucket.uri
         else
           throw new Error "missing bucket domain or DRN"
         
         log "s3", "publish", "publishing to bucket [ #{domain} ]"
             
+        publish.encoding ?= "bytes"
+
         Diff.diff
           source: Diff.FS.glob publish
           target: Diff.S3.glob { 
@@ -180,9 +185,14 @@ Tasks =
         W.glob bucket.publish
         W.match type: "file", name: [ "add", "change" ], [
           M.read
-          Item.publish bucket
+          File.hash
+          File.changed Fn.flow [
+            File.stamp
+            Item.publish bucket
+          ]
         ]
         W.match type: "file", name: "rm", [
+          File.evict
           Item.rm bucket
         ]
       ]

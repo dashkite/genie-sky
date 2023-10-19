@@ -10,6 +10,7 @@ import * as Diff from "@dashkite/diff"
 import LocalStorage from "@dashkite/sky-local-storage"
 import M from "@dashkite/masonry"
 import W from "@dashkite/masonry-targets/watch"
+import { File } from "@dashkite/masonry-module"
 
 resolve = ( dictionary ) ->
   resolved = {}
@@ -180,9 +181,15 @@ Tasks =
         W.glob collection.publish
         W.match type: "file", name: [ "add", "change" ], [
           M.read
-          Item.publish client, db, collection
+          File.hash
+          File.changed Fn.flow [
+            W.notify
+            File.stamp
+            Item.publish client, db, collection
+          ]
         ]
         W.match type: "file", name: "rm", [
+          File.evict
           Item.rm client, db, collection
         ]
       ]
