@@ -25,9 +25,7 @@ import {
   getTableARN
 } from "@dashkite/dolores/dynamodb"
 
-import {
-  getQueueARN
-} from "@dashkite/dolores/queue"
+import * as SQS from "@dashkite/dolores/sqs"
 
 import {
   log
@@ -228,7 +226,7 @@ mixinPolicyBuilders =
       Resource: [ arn, "#{ arn }/*" ]
     ]
 
-  queue: (mixin) ->
+  sqs: (mixin) ->
     [
       Effect: "Allow"
       Action: [
@@ -240,7 +238,7 @@ mixinPolicyBuilders =
         "sqs:SendMessage"
       ]
       Resource: if mixin.name?
-        await getQueueARN mixin.name
+        await SQS.getARN mixin.name
       else
         "arn:aws:sqs:*:*:*"
 
@@ -259,7 +257,8 @@ mixinPolicyBuilders =
     ]
 
 builders = mixinPolicyBuilders
-builders.sqs = builders.queue
+builders.queue = builders.sqs
+builders.topic = builders.sns
   
 
 buildMixinPolicy = (mixin, base) ->
@@ -301,11 +300,15 @@ Tasks =
 
       if mixins?
         for mixin in mixins
+          if mixin.drn
+            { type } = DRN.decode mixin.drn
+            name = await DRN.resolve mixin.drn
+            configuration = { name, type }
           if mixin.uri?
             description = DRN.decode mixin.uri
-            mixin = { description..., mixin... }
-          if ( builder = builders[ mixin.type ] )?
-            policies.push ( await builder mixin )...
+            configuration = { description..., mixin... }
+          if ( builder = builders[ configuration.type ] )?
+            policies.push ( await builder configuration )...
 
       await createRole drn, policies, options[ "managed-policies" ]
 
