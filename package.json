@@ -60,6 +60,7 @@
     "@dashkite/masonry": "link:../masonry",
     "@dashkite/masonry-module": "link:../masonry-module",
     "@dashkite/masonry-targets": "link:../masonry-targets",
+    "@dashkite/masonry-watch": "link:../masonry-watch",
     "@dashkite/messages": "link:../messages",
     "@dashkite/name": "link:../name",
     "@dashkite/polaris": "link:../polaris",

@@ -9,7 +9,7 @@ import Time from "@dashkite/joy/time"
 import * as Diff from "@dashkite/diff"
 import LocalStorage from "@dashkite/sky-local-storage"
 import M from "@dashkite/masonry"
-import W from "@dashkite/masonry-targets/watch"
+import W from "@dashkite/masonry-watch"
 import { File, Module } from "@dashkite/masonry-module"
 
 resolve = ( dictionary ) ->
