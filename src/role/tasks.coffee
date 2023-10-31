@@ -71,48 +71,29 @@ mixinPolicyBuilders =
           - "arn:aws:iam::618441030511:policy/WayboxManagerRole"
     ]
 
-  graphite: (mixin, base) ->
-    
-    region = mixin.region ? "us-east-1"
-
-    [
-      Effect: "Allow"
-      Action: [ "dynamodb:*" ]
-      Resource: do ->
-        resources = []
-        for table in mixin.tables
-          _table = "#{base}-#{table}"
-          resources.push "arn:aws:dynamodb:#{region}:*:table/#{_table}"
-          resources.push "arn:aws:dynamodb:#{region}:*:table/#{_table}/*"
-        resources
-    ]
-
-  secret: (mixin) ->
+  secret: ({ qname }) ->
     [
       Effect: "Allow"
       Action: [ "secretsmanager:GetSecretValue" ]
       Resource: await do ->
-        name = await DRN.resolve mixin.uri
         log "secrets", "build-policy", 
-          "authorize secret access for: #{ name }"
-        await getSecretARN name
+          "authorize secret access for: #{ qname }"
+        await getSecretARN qname
     ]
 
-  s3: (mixin) ->
-
+  s3: ({ domain }) ->
     [
       Effect: "Allow"
       Action: [ "s3:*" ]
       Resource: await do ->
         resources = []
-        domain = await DRN.resolve mixin.uri
         resources.push "arn:aws:s3:::#{domain}"
         resources.push "arn:aws:s3:::#{domain}/*"
         resources
     ]
 
 
-  kms: (mixin, base) ->
+  kms: ->
 
     # TODO allow for use of keys
     # see also: https://github.com/pandastrike/sky-mixin-kms/blob/master/src/policy.coffee#L4-L26
@@ -127,7 +108,7 @@ mixinPolicyBuilders =
 
     ]
 
-  lambda: (mixin) ->
+  lambda: ({ qname }) ->
     [
 
       Effect: "Allow"
@@ -135,12 +116,12 @@ mixinPolicyBuilders =
         "lambda:InvokeFunction"
       ]
       Resource: [
-        await getLambdaUnqualifiedARN await DRN.resolve mixin.uri
+        await getLambdaUnqualifiedARN qname
       ]
 
     ]
 
-  ses: (mixin) ->
+  ses: ->
     [
 
       Effect: "Allow"
@@ -153,7 +134,7 @@ mixinPolicyBuilders =
 
     ]
 
-  cloudfront: (mixin) ->
+  cloudfront: ->
     [
 
       Effect: "Allow"
@@ -186,13 +167,13 @@ mixinPolicyBuilders =
         Resource: '*'
     ]
 
-    (mixin) ->
+    ({ qname }) ->
       policies = [
         Effect: "Allow"
         Action: [ 
           "states:startExecution" 
         ]
-        Resource: [ await getStepFunctionARN mixin.name ]      
+        Resource: [ await getStepFunctionARN qname ]      
       ]
 
       if self == false
@@ -201,7 +182,7 @@ mixinPolicyBuilders =
 
       policies
 
-  bucket: (mixin) ->
+  bucket: ({ qname }) ->
     [
 
       Effect: "Allow"
@@ -210,15 +191,12 @@ mixinPolicyBuilders =
         "s3:PutObject"
         "s3:DeleteObject"
       ]
-      Resource: "#{ getBucketARN mixin.name }/*"
+      Resource: "#{ getBucketARN qname }/*"
 
     ]
 
-  table: (mixin) ->
-    arn = if mixin.uri?
-      getTableARN await DRN.resolve mixin.uri
-    else
-      getTableARN mixin.name
+  table: ({ qname }) ->
+    arn = getTableARN qname
 
     [
       Effect: "Allow"
@@ -226,7 +204,7 @@ mixinPolicyBuilders =
       Resource: [ arn, "#{ arn }/*" ]
     ]
 
-  sqs: (mixin) ->
+  sqs: ({ qname }) ->
     [
       Effect: "Allow"
       Action: [
@@ -237,14 +215,14 @@ mixinPolicyBuilders =
         "sqs:ReceiveMessage"
         "sqs:SendMessage"
       ]
-      Resource: if mixin.name?
-        await SQS.getARN mixin.name
+      Resource: if qname?
+        await SQS.getARN qname
       else
         "arn:aws:sqs:*:*:*"
 
     ]
 
-  sns: ( mixin ) ->
+  sns: ({ qname }) ->
     [
       Effect: "Allow"
       Action: [
@@ -253,7 +231,7 @@ mixinPolicyBuilders =
         "sns:Publish"
         "sns:Subscribe"
       ]
-      Resource: ( await getTopic mixin.name ).arn
+      Resource: ( await getTopic qname ).arn
     ]
 
 builders = mixinPolicyBuilders
@@ -275,11 +253,19 @@ Tasks =
       namespace
       lambda
       mixins
+      env
       secrets
       buckets
       tables
       queues
     } = options
+
+    mixins ?= if env?.drn?
+      for mixin in env.drn
+        if mixin.type?
+          mixin
+        else
+          drn: mixin
 
     # TODO add delete / teardown
     # TODO add support for multiple lambdas
@@ -300,13 +286,11 @@ Tasks =
 
       if mixins?
         for mixin in mixins
-          if mixin.drn
-            { type } = DRN.decode mixin.drn
-            name = await DRN.resolve mixin.drn
-            configuration = { name, type }
-          if mixin.uri?
-            description = DRN.decode mixin.uri
-            configuration = { description..., mixin... }
+          configuration = if mixin.drn?
+            description = DRN.decode mixin.drn
+            qname = await DRN.resolve mixin.drn
+            { qname, description..., mixin... }
+          else mixin
           if ( builder = builders[ configuration.type ] )?
             policies.push ( await builder configuration )...
 

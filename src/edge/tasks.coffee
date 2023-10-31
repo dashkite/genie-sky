@@ -117,7 +117,6 @@ getCache = ( preset ) ->
     else
       # let cloudfront do the caching
       "a53da372-fd09-496e-bd4a-4e04a9028770"
-      
       # ttl: cache.ttl ? 
       #   default: 0
       #   min: 0

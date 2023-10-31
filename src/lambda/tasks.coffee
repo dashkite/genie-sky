@@ -134,7 +134,8 @@ Tasks =
         context: await do ->
           dictionary = {}
           for uri in env.drn
-            dictionary[ uri ] = await DRN.resolve uri
+            unless uri.type?
+              dictionary[ uri ] = await DRN.resolve uri
           JSON.stringify dictionary
       }
 
