@@ -101,6 +101,9 @@ getCache = ( preset ) ->
       # compress: true
       # queries: "none"
 
+    when "static-s3"
+      "1d763f5c-4594-43b1-a269-07b9e23d6e7d"
+
     when "dynamic"
       # basically we handle the edge caching
       # so turn everything off
