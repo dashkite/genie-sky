@@ -156,9 +156,10 @@ Item =
 Tasks =
 
   deploy: ({ s3 }) ->
-    for { domain, drn, uri } in s3
-      domain ?= await DRN.resolve drn ? uri
-      await configureBucket { bucket..., name: domain } 
+    for bucket in s3
+      { domain, drn, uri } = bucket
+      bucket.domain ?= await DRN.resolve drn ? uri
+      await configureBucket bucket
       log "s3", "deploy", "configured bucket #{ domain }"
     
   undeploy: ({ s3 }) ->

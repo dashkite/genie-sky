@@ -20,6 +20,10 @@ import {
   getRoleARN
 } from "@dashkite/dolores/roles"
 
+import {
+  tail
+} from "@dashkite/dolores/cloudwatch"
+
 import { Runner } from "#helpers/runner"
 
 run = Runner.make -> import( "./tasks" )
@@ -125,6 +129,16 @@ verifyHandlers = ({ generate, verify }) ->
     throw new Error "API handlers mismatch"
 
 Tasks =
+
+  tail: ({ namespace, lambda }, name ) ->
+    name = await DRN.resolve {
+      type: "lambda"
+      namespace
+      name: name
+    }
+    tail "/aws/lambda/#{ name }"
+
+
 
   deploy: ( Genie, { namespace, lambda, env }) ->
       

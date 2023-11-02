@@ -5,7 +5,7 @@ Statement:
   Principal:
     Service: cloudfront.amazonaws.com
   Action: s3:GetObject
-  Resource: arn:aws:s3:::${ bucket.name }/*
+  Resource: arn:aws:s3:::${ bucket.domain }/*
   Condition:
     StringEquals:
       AWS:SourceArn: ${ distribution.arn }

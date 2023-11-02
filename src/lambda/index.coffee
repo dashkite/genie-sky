@@ -15,6 +15,8 @@ export default
 
     Genie.on "undeploy", "sky:lambda:undeploy"
     
+    Genie.on "tail", "sky:lambda:tail"
+
     Genie.define "sky:lambda:handlers", 
       run "handlers", options
 
@@ -32,3 +34,6 @@ export default
 
     Genie.define "sky:lambda:undeploy", 
       run "undeploy", options
+
+    Genie.define "sky:lambda:tail", 
+      run "tail", options
