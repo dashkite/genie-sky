@@ -28,6 +28,14 @@ import { Runner } from "#helpers/runner"
 
 run = Runner.make -> import( "./tasks" )
 
+isEdgeLambda = ( lambda ) ->
+  lambda.event in [
+    "origin-request"
+    "origin-response"
+    "viewer-request"
+    "viewer-response"
+  ]
+
 deployLambdas = ({ namespace, lambda, context }) ->
   
   mode = process.env.mode ? "development"
@@ -50,7 +58,18 @@ deployLambdas = ({ namespace, lambda, context }) ->
         handler.configurations?.default...
         ( handler.configurations?[ mode ] )...
       }
-      config.environment = { context, mode, config.environment... }
+
+      if isEdgeLambda handler
+        if config.environment?
+          console.warn "Environment variables not permitted
+            for Edge Lambdas"
+        config.environment = undefined
+      else
+        config.environment = { 
+          context
+          mode
+          config.environment... 
+        }
 
       # TODO get handler from config
       await publishLambda name, data, {
@@ -147,9 +166,10 @@ Tasks =
         lambda
         context: await do ->
           dictionary = {}
-          for uri in env.drn
-            unless uri.type?
-              dictionary[ uri ] = await DRN.resolve uri
+          if env?.drn?
+            for uri in env.drn
+              unless uri.type?
+                dictionary[ uri ] = await DRN.resolve uri
           JSON.stringify dictionary
       }
 
@@ -161,9 +181,12 @@ Tasks =
       if handler.generate? or handler.verify?
         await verifyHandlers handler
 
-  version: ({ namespace, lambda }, environment, name ) ->
-    # (environment, name)
-    versionLambda "#{namespace}-#{environment}-#{name}"
+  version: ({ namespace, lambda }, name ) ->
+    versionLambda await DRN.resolve { 
+        type: "lambda"
+        namespace
+        name
+      }
   
   delete: ({ namespace, lambda }) ->
     for handler in lambda?.handlers ? []

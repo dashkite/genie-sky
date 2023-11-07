@@ -32,6 +32,9 @@ dependencies:
   '@dashkite/masonry':
     specifier: link:../masonry
     version: link:../masonry
+  '@dashkite/masonry-export':
+    specifier: link:../masonry-export
+    version: link:../masonry-export
   '@dashkite/masonry-module':
     specifier: link:../masonry-module
     version: link:../masonry-module
@@ -41,6 +44,9 @@ dependencies:
   '@dashkite/masonry-watch':
     specifier: link:../masonry-watch
     version: link:../masonry-watch
+  '@dashkite/masonry-yaml':
+    specifier: link:../masonry-yaml
+    version: link:../masonry-yaml
   '@dashkite/messages':
     specifier: link:../messages
     version: link:../messages

@@ -47,10 +47,12 @@ Presets =
 
     if bucket.website?
       presets.delete "private"
+      presets.add "public"
       presets.add "website"
 
     if bucket.redirect?
       presets.delete "private"
+      presets.add "public"
       presets.add "redirect"
 
     if bucket.public?
@@ -59,6 +61,7 @@ Presets =
 
     if bucket.cloudfront?
       presets.delete "private"
+      presets.add "public"
       presets.add "cloudfront"
 
     if bucket.cors?
@@ -83,8 +86,6 @@ Presets =
   public: ( bucket ) ->
     await deleteBucketLifecycle bucket.domain
     await deletePublicAccessBlock bucket.domain
-    putBucketPolicy bucket.domain,
-      Templates.website { bucket }
   
   cloudfront: ( bucket ) ->
     await deleteBucketLifecycle bucket.domain
@@ -115,9 +116,7 @@ Presets =
     putCORSConfig params
 
 configureBucket = ( bucket ) ->
-
   await putBucket bucket.domain
-
   await Promise.all do ->
     for preset from Presets.get bucket
       Presets[ preset ] bucket
@@ -174,14 +173,14 @@ Tasks =
     
     Promise.all await do ->
 
-      for bucket  in s3 when bucket.publish?
+      for bucket in s3 when bucket.publish?
 
         { publish, domain, uri, drn } = bucket
 
         drn ?= uri
 
-        domain ?= if uri?
-          await DRN.resolve bucket.uri
+        domain ?= if drn?
+          await DRN.resolve drn
         else
           throw new Error "missing bucket domain or DRN"
         

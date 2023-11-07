@@ -131,12 +131,13 @@ getCache = ( preset ) ->
       #   ]
       # queries: "all"
 
-getHandlers = ({ namespace, handlers }) ->
-  for { name, event, body } in handlers 
-    lambda = await DRN.resolve { namespace, name }     
-    event: event ? name
-    includesBody: body ? false
-    arn: await getLatestLambdaARN lambda
+getHandlers = ({ namespace, lambda }) ->
+  if lambda?.handlers?
+    for { name, event, body } in lambda.handlers 
+      qname = await DRN.resolve { type: "lambda", namespace, name }     
+      event: event ? name
+      includesBody: body ? false
+      arn: await getLatestLambdaARN qname
 
 templates = Templates.create "#{__dirname}"
 templates._.h.registerHelper { awsCase }
@@ -151,7 +152,9 @@ Tasks =
     aliases = await getAliases edge.aliases
     origins = await getOrigins edge
     oac = hasOAC origins
-    edge.cache ?= if mode == "production" then "static" else "dynamic"
+    # TODO should be per origin
+    edge.cache ?= do ->
+      if mode == "production" then "static" else "dynamic"
     template = await templates.render "template.yaml",
       name: drn
       namespace: namespace
@@ -165,7 +168,7 @@ Tasks =
         verification: edge.certificate.verification
         aliases: await getCertificateAliases aliases
       origins: origins
-      handlers: if lambda?.handlers? then getHandlers lambda.handlers
+      handlers: await getHandlers { namespace, lambda }
     deployStack (await DRN.resolve uri), template      
     
   undeploy: ({ namespace, lambda, edge }) ->
