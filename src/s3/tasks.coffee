@@ -70,7 +70,7 @@ Presets =
     presets
 
   private: ( bucket ) ->
-    
+
     await deleteBucketWebsite bucket.domain
 
     putBucketLifecycle bucket.domain,
@@ -159,7 +159,7 @@ Tasks =
       { domain, drn, uri } = bucket
       bucket.domain ?= await DRN.resolve drn ? uri
       await configureBucket bucket
-      log "s3", "deploy", "configured bucket #{ domain }"
+      log "s3", "deploy", "configured bucket #{ bucket.domain }"
     
   undeploy: ({ s3 }) ->
     for { domain, drn, uri } in s3
