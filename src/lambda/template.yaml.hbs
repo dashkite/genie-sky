@@ -1,0 +1,192 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  {{{ description }}}
+Resources:
+  {{#each lambdas}}
+    Role{{{ awsCase ../name }}}:
+      Type: AWS::IAM::Role
+      Description: >-
+        Roles for Lambda [ {{{ ../name }}} ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+      Policies:
+      {{#each mixins}}
+        - PolicyName: {{type}}-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            {{#if equal type, 'secret'}}
+            - Effect: "Allow"
+              Action: [ "secretsmanager:GetSecretValue" ]
+              Resource: {{{arn}}}
+        {{else if equal type, ''}}
+
+  secret: ({ qname }) ->
+
+  s3: ({ qname }) ->
+
+    [
+      Effect: "Allow"
+      Action: [ "s3:*" ]
+      Resource: await do ->
+        resources = []
+        resources.push "arn:aws:s3:::#{ qname }"
+        resources.push "arn:aws:s3:::#{ qname }/*"
+        resources
+    ]
+
+
+  kms: ->
+
+    # TODO allow for use of keys
+    # see also: https://github.com/pandastrike/sky-mixin-kms/blob/master/src/policy.coffee#L4-L26
+
+    [
+
+      Effect: "Allow"
+      Action: [
+        "kms:GenerateRandom"
+      ]
+      Resource: ["*"]
+
+    ]
+
+  lambda: ({ qname }) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "lambda:InvokeFunction"
+      ]
+      Resource: [
+        await getLambdaUnqualifiedARN qname
+      ]
+
+    ]
+
+  ses: ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "ses:SendTemplatedEmail"
+      ]
+      Resource: [
+        "arn:aws:ses:us-west-2:618441030511:identity/dashkite.com"
+      ]
+
+    ]
+
+  cloudfront: ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "cloudfront:ListDistributions"
+        "cloudfront:CreateInvalidation"
+      ]
+      Resource: ["*"]
+
+    ]
+
+  "step-function": do (self = false, managed = null) ->
+    managed = [
+        Effect: "Allow"
+        Action:[
+          "events:PutTargets"
+          "events:PutRule"
+          "events:DescribeRule"
+        ]
+        Resource: [
+          "arn:aws:events:us-east-1:618441030511:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+        ]
+      ,
+        Effect: "Allow"
+        Action:[
+          "states:DescribeExecution"
+          "states:StopExecution"
+          "states:ListStateMachines"
+        ]
+        Resource: '*'
+    ]
+
+    ({ qname }) ->
+      policies = [
+        Effect: "Allow"
+        Action: [ 
+          "states:startExecution" 
+        ]
+        Resource: [ await getStepFunctionARN qname ]      
+      ]
+
+      if self == false
+        policies.push managed...
+        self = true
+
+      policies
+
+  bucket: ({ qname }) ->
+    [
+
+      Effect: "Allow"
+      Action: [
+        "s3:GetObject"
+        "s3:PutObject"
+        "s3:DeleteObject"
+      ]
+      Resource: "#{ getBucketARN qname }/*"
+
+    ]
+
+  table: ({ qname }) ->
+    arn = getTableARN qname
+
+    [
+      Effect: "Allow"
+      Action: [ "dynamodb:*" ]
+      Resource: [ arn, "#{ arn }/*" ]
+    ]
+
+  sqs: ({ qname }) ->
+    [
+      Effect: "Allow"
+      Action: [
+        "sqs:CreateQueue"
+        "sqs:DeleteQueue"
+        "sqs:GetQueueUrl"
+        "sqs:DeleteMessage"
+        "sqs:ReceiveMessage"
+        "sqs:SendMessage"
+      ]
+      Resource: if qname?
+        await SQS.getARN qname
+      else
+        "arn:aws:sqs:*:*:*"
+
+    ]
+
+  sns: ({ qname }) ->
+    [
+      Effect: "Allow"
+      Action: [
+        "sns:CreateTopic"
+        "sns:DeleteTopic"
+        "sns:Publish"
+        "sns:Subscribe"
+      ]
+      Resource: ( await getTopic qname ).arn
+    ]
+  Lambda:
+    Type: AWS::Lambda::Function
+    Description: >-
+      {{{ description }}}
+  {{/each}}

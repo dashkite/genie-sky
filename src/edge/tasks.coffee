@@ -64,14 +64,17 @@ getOrigins = ({ origin, origins }) ->
   origins ?= [ origin ]
   for origin in origins
     domain = await DRN.resolve origin.domain
+    { type, scope } = DRN.decode origin.domain
     result = 
-      switch origin.type
+      switch type
         when "s3"
-          s3: private: true
-          domain: domain
-        when "s3-website"
-          s3: website: true
-          domain: domain
+          switch scope
+            when "global", "regional"
+              s3: private: true
+              domain: domain
+            when "website"
+              s3: website: true
+              domain: domain
         else
           { domain }
     if origin.headers?
@@ -85,6 +88,9 @@ hasOAC = ( origins ) ->
 getCache = ( preset ) ->
 
   switch preset
+
+    when "disabled"
+      "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
 
     when "static"
       # static content so cache everything aggressively

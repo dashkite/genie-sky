@@ -81,14 +81,15 @@ mixinPolicyBuilders =
         await getSecretARN qname
     ]
 
-  s3: ({ domain }) ->
+  s3: ({ qname }) ->
+
     [
       Effect: "Allow"
       Action: [ "s3:*" ]
       Resource: await do ->
         resources = []
-        resources.push "arn:aws:s3:::#{domain}"
-        resources.push "arn:aws:s3:::#{domain}/*"
+        resources.push "arn:aws:s3:::#{ qname }"
+        resources.push "arn:aws:s3:::#{ qname }/*"
         resources
     ]
 
