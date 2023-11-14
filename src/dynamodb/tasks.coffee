@@ -14,24 +14,22 @@ getTableDetail = ( path ) ->
 
 Tasks =
 
-  deploy: ({ namespace, dynamodb, tables }) ->
+  deploy: ({ dynamodb }) ->
     updated = false
-    for table in tables
-      drn = await DRN.resolve table.uri
-
-      if !( await hasTable drn )
+    for { name, path, pitr } in dynamodb.tables
+      detail = await getTableDetail path
+      if !( await hasTable name )
         await createTable {
-          TableName: drn
-          ( await getTableDetail table.path )...
-        }, { pitr: table.pitr ? false }
-        console.log "created table: #{drn}"
+          TableName: name
+          detail...
+        }, { pitr: pitr ? false }
+        console.log "created table: [ #{ name } ]"
 
-  undeploy: ({ namespace, dynamodb, tables }) ->
+  undeploy: ({ dynamodb }) ->
     updated = false
-    for table in tables
-      drn = await DRN.resolve table.uri
-      if await hasTable drn
-        await deleteTable drn
-        console.log "deleted table: #{drn}"
+    for { name } in dynamodb.tables
+      if await hasTable name
+        await deleteTable name
+        console.log "deleted table: [ #{ name } ]"
 
 export default Tasks

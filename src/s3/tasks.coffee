@@ -123,32 +123,13 @@ configureBucket = ( bucket ) ->
 
 Item =
 
-  publish: ({ publish, domain, drn, uri }) ->
-
+  publish: ({ publish, domain }) ->
     ( context ) ->
-
       publish.encoding ?= "bytes"
-
-      drn ?= uri
-
-      domain ?= if drn?
-        await DRN.resolve drn 
-      else
-        throw new Error "missing bucket domain or DRN"
-
       putObject domain, context.source.path, context.input
   
-  rm: ( bucket ) ->
-
-    ({ domain, drn, uri }) ->
-
-      drn ?= uri
-
-      domain ?= if drn?
-        await DRN.resolve drn 
-      else
-        throw new Error "missing bucket domain or DRN"
-
+  rm: ({ domain }) ->
+    ( context ) ->
       deleteObject domain, context.source.path
 
 
@@ -156,18 +137,15 @@ Tasks =
 
   deploy: ({ s3 }) ->
     for bucket in s3
-      { domain, drn, uri } = bucket
-      bucket.domain ?= await DRN.resolve drn ? uri
       await configureBucket bucket
-      log "s3", "deploy", "configured bucket #{ bucket.domain }"
+      console.log "Configured bucket #{ bucket.domain }"
     
   undeploy: ({ s3 }) ->
-    for { domain, drn, uri } in s3
-      domain ?= await DRN.resolve drn ? uri
+    for { domain } in s3
       if await hasBucket domain
         await emptyBucket domain
         await deleteBucket domain
-        log "s3", "undeploy", "deleted bucket #{ domain }"
+        console.log "Deleted bucket #{ domain }"
 
   publish: ({ s3 }) ->
     
@@ -175,16 +153,9 @@ Tasks =
 
       for bucket in s3 when bucket.publish?
 
-        { publish, domain, uri, drn } = bucket
+        { publish, domain } = bucket
 
-        drn ?= uri
-
-        domain ?= if drn?
-          await DRN.resolve drn
-        else
-          throw new Error "missing bucket domain or DRN"
-        
-        log "s3", "publish", "publishing to bucket [ #{domain} ]"
+        console.log "Publishing to bucket [ #{domain} ]"
             
         publish.encoding ?= "bytes"
 
@@ -196,8 +167,7 @@ Tasks =
           }
           patch: Fn.pipe [
             Fn.tee ({ action, key }) ->
-              log "s3", "publish", "... #{ action } [ #{ key } ]"
-              undefined # avoid returning a promise
+              console.log "... #{ action } [ #{ key } ]"
             Diff.S3.patch { domain }
           ]
 

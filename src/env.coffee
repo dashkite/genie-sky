@@ -1,7 +1,6 @@
 import Coffee from "coffeescript"
 import * as cheerio from "cheerio"
 import * as Fn from "@dashkite/joy"
-import * as DRN from "@dashkite/drn-sky"
 import M from "@dashkite/masonry"
 import W from "@dashkite/masonry-watch"
 import { Module } from "@dashkite/masonry-module"
@@ -17,11 +16,9 @@ inject = ({ html, module, env }) ->
   if ( $ "script[name='env']").length == 0
     $ "head"
       .append do ->
+        # TODO put this in a module
         $ "<script name='env' type='module'>"
           .text coffee """
-            import Registry from "@dashkite/helium"
-            Registry.set #{ json }
-
             do ({ get, flush, listen, event } = {}) ->
               
               get = do ({ response } = {}) -> ->
@@ -66,15 +63,9 @@ inject = ({ html, module, env }) ->
 
 build = ( options ) ->
   ({ module, input }) ->
-    mode = process.env.mode ? "development"
-    dictionary = {}
-    if options.env?.drn?
-      for drn in options.env.drn
-        dictionary[ drn ] = await DRN.resolve drn
     inject 
       html: input
       module: module.name
-      env: sky: env: { mode, drn: { dictionary }}
 
 changed = ( f ) ->
   do ( cache = {} ) ->
@@ -88,16 +79,12 @@ export default ( Genie ) ->
 
   options = Genie.get "sky"
 
-  if options.mixins? && options.env?
-    console.warn "found [ mixins ] without [ env ] in genie.yaml:
-      do you need to migrate to the [ env ] stanza?"
-
-  if options.env?
+  if options.reload?
   
-    target = options.env.target ?
+    target = options.reload.target ?
       "build/browser/src/index.html"
 
-    Genie.define "sky:env", M.start [
+    Genie.define "sky:reload", M.start [
       M.glob target
       M.read
       Module.data
@@ -105,9 +92,9 @@ export default ( Genie ) ->
       M.write "."
     ]
 
-    Genie.after "build", "sky:env"
+    Genie.after "build", "sky:reload"
 
-    Genie.define "sky:env:watch", M.start [
+    Genie.define "sky:reload:watch", M.start [
       W.glob glob: target
       M.read
       changed Fn.flow [
@@ -117,4 +104,4 @@ export default ( Genie ) ->
       ]
     ]
     
-    Genie.on "watch", "sky:env:watch&"
+    Genie.on "watch", "sky:reload:watch&"

@@ -21,27 +21,18 @@ Templates =
 
 Tasks =
 
-  deploy: ({ namespace, ses }) ->
-    templates = ses?.templates ? []
-    root = ses?.root ? Path.join "build", "email"
-    for template in templates
-      name = await DRN.resolve {
-        type: "ses"
-        namespace
-        name: template.name 
-      }
-      { html, text } = await Templates.load root, template.name
-      log "ses", "deploy", "Publishing template: #{ name }"
-      await publishTemplate { template..., name, html, text }
+  deploy: ({ ses }) ->
+    if ses.templates?
+      root = ses?.root ? Path.join "build", "email"
+      for template in ses.templates
+        { html, text } = await Templates.load root, template.name
+        console.log "Publishing template: #{ template.name }"
+        await publishTemplate { template..., html, text }
 
-  undeploy: ({ namespace, ses }) ->
-    for template in ses?.templates ? []
-      name = await DRN.resolve {
-        type: "ses"
-        namespace
-        name: template.name 
-      }
-      log "ses", "undeploy", "Deleting template: #{ name }"
-      await deleteTemplate name
+  undeploy: ({  ses }) ->
+    if ses.templates?
+      for { name } in ses.templates
+        console.log "Deleting template: #{ name }"
+        await deleteTemplate name
 
 export default Tasks

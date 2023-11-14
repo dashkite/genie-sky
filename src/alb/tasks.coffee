@@ -22,19 +22,6 @@ getTLD = Fn.pipe [
   It.join "."
 ]
 
-getRules = ({ rules, namespace }) ->
-  for rule in rules
-    rule.domains = 
-      for domain in rule.domains
-        await DRN.resolve domain
-    name = await DRN.resolve {
-      type: "lambda"
-      namespace
-      name: rule.handler
-    }
-    handler = await getLambda name
-    { rule..., handler }
-
 getHeaders = ( headers ) ->
   for { name, value } in headers
     if value.startsWith "$"
@@ -59,32 +46,23 @@ templates._.h.registerHelper { awsCase, increment }
 
 Tasks =
 
-  deploy: ({ namespace, alb, lambda }) ->
-    domain = await DRN.resolve alb.domain
-    resources =
-      alb: { type: "alb", namespace, name: alb.name }
-      lambda: { type: "lambda", namespace, name: alb.handler }
+  deploy: ({ alb }) ->
     context =
-      name: await DRN.resolve resources.alb
-      description: alb.description ? 
-        await DRN.describe resources.alb
-      zone: id: await getHostedZoneID getTLD domain
-      domain: domain
+      name: alb.name
+      description: alb.description ? "ALB #{ alb.name }"
+      zone: id: await getHostedZoneID getTLD alb.domain
+      domain: alb.domain
       subnets: await VPC.Subnets.list alb.vpc ? "default"
       security:
         groups: await VPC.SecurityGroups.list alb.vpc
-      certificate: arn: await getCertificateARN getTLD domain
-      handler: await getLambda await DRN.resolve resources.lambda
-      rules: await getRules { rules: alb.rules, namespace }
+      certificate: arn: await getCertificateARN getTLD alb.domain
+      handler: await getLambda alb.lambda
+      rules: alb.rules
       headers: if alb.headers? then await getHeaders alb.headers  
     deployStack context.name,
       await templates.render "template.yaml", context
 
-  undeploy: ({ namespace, alb }) ->
-    deleteStack await DRN.resolve { 
-      type: "alb"
-      namespace
-      name: alb.name 
-    }
+  undeploy: ({ alb }) ->
+    deleteStack: alb.name 
 
 export default Tasks

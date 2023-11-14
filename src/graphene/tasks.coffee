@@ -12,138 +12,103 @@ import M from "@dashkite/masonry"
 import W from "@dashkite/masonry-watch"
 import { File, Module } from "@dashkite/masonry-module"
 
-resolve = ( dictionary ) ->
-  resolved = {}
-  for key, value of dictionary
-    resolved[ key ] = await DRN.resolve value
-  resolved
-
 Client =
 
-  make: ({ tables }) ->
-    Graphene.Client.create 
-      tables: await resolve tables
+  make: ({ client }) ->
+    Graphene.Client.create tables: client
 
 Log =
 
-  DB:
-
-    found: ({ drn, address }) ->
-      log "graphene", "deploy", 
-        "found db: #{ address } for: #{ drn }."
-
-    create: ({ drn, address }) ->
-      log "graphene", "deploy", 
-        "Created db: #{ address } for: #{ drn }."
-
-    undeploy: ({ drn, address }) ->
-      log "graphene", "undeploy", 
-        "Deleted db: #{ address } for: #{ drn }."
-
   Collection:
 
-    create: ({ address, byname }) ->
-      log "graphene", "deploy", "Created collection: 
-        #{ byname } for database: #{ address }"
-
-    publish: ({ address, byname }) ->
-      log "graphene", "publish", 
-        "publishing collection:
-          #{byname} for database: #{ address }."
-
     action: Fn.tee ({ action, key }) ->
-      log "graphene", "publish", 
-        "... #{ action } [ #{ key } ]"
-      undefined # avoid returning a promise
+      console.log "... #{ action } [ #{ key } ]"
 
 DB =
-  
-  resolve: ({ drn, uri }) ->
-    DRN.resolve drn ? uri
 
-  deploy: ( client, { drn, uri }) ->
-    drn ?= uri
+  resolve: ( db ) -> await DRN.resolve DRN.from db.address
+  
+  deploy: ( client, { db }) ->
     try
-      address = await DRN.resolve drn
-      Log.DB.found { drn, address }
+      address = await DB.resolve db
+      console.log "Found db [ #{ address } ] for [ #{ db.name } ]."
     catch error
-      if error.message.startsWith "No address found"      
-        { address } = await client.db.create { name }
+      if error.message.startsWith "No address found"
+        { address } = await client.db.create name: db.name
         await DRN.store drn, { address }
-        Log.DB.create { drn, address }
+        console.log "Created db [ #{ address } ] for [ #{ db.name } ]."
       else
         throw error
 
-  delete: ( client, { drn, uri }) ->
-    drn ?= uri
-    address = await DRN.resolve drn
+  delete: ( client, { db }) ->
+    address = await DB.resolve db
     await client.db.delete address
-    await DRN.remove drn
-    Log.DB.undeploy { drn, address }
+    await DRN.remove DRN.from db
+    console.log "Deleted db: [ #{ address } ] for [ #{ db.name } ]."
 
 Collection =
 
-  resolve: ({ byname, drn, uri }) ->
-    drn ?= uri
-    if ( byname ?= await DRN.resolve drn )?
-      byname
-    else
-      throw new Error "No byname or DRN 
-        specified for collection"
-
-  deploy: ( client, db, { byname, uri }) ->
-    byname = await Collection.resolve { uri, byname }
+  deploy: ( client, { db, collection }) ->
+    { byname } = collection
     db = client.db await DB.resolve db
-    if !( collection = await db.collection.get byname )?
+    if !( collection = await db.collection.get { byname } )?
       await db.collection.create { byname }
       loop
         response = await db.collection.getStatus byname
         break if response.status == "ready"
         await Time.sleep 1000
-      Log.Collection.deploy { address, byname }
+      console.log "Created collection:
+        #{ byname } for database: #{ address }"
 
-  publish: ( client, db, { glob, publish, collection... }) ->
+  patch: ( collection ) ->
+    Fn.pipe [
+      Fn.tee ({ action, key }) ->
+        console.log "... #{ action } [ #{ key } ]"
+      Diff.Graphene.patch { collection }
+    ]
+
+  publish: ( client, options ) ->
+    { db, collection } = options
+    { byname, glob, publish } = collection
     address = await DB.resolve db
     glob ?= "**"
     publish.encoding ?= "utf8"
-    byname = await Collection.resolve collection
     collection = client.collection { 
       db: address
       collection: byname
     }
-    Log.Collection.publish { address, byname }
+    console.log "publishing collection:
+      #{byname} for database: #{ address }."
     Diff.diff
       source: Diff.FS.glob publish
       target: Diff.Graphene.glob { glob, collection }
-      patch: Fn.pipe [
-        Log.Collection.action
-        Diff.Graphene.patch { collection }
-      ]
+      patch: Collection.patch collection
+
 
 Item =
 
-  publish: ( client, db, collection ) ->
-    do ({ address, byname, _collection } = {}) ->
+  publish: ( client, { db, collection }) ->
+    do ({ address  } = {}) ->
       Fn.tee ( context ) ->
         address ?= await DB.resolve db
-        byname ?= await Collection.resolve collection
-        _collection ?= client.collection { 
+        { byname } = collection
+        collection = client.collection { 
           db: address
           collection: byname
         }
-        _collection.put context.source.path, context.input
+        collection.put context.source.path, context.input
 
 
-  rm: ( client, db, collection ) ->
-    do ({ address, byname, _collection } = {}) ->
+  rm: ( client, { db, collection }) ->
+    do ({ address } = {}) ->
       Fn.tee ( context ) ->
         address ?= await DB.resolve db
-        byname ?= await Collection.resolve collection
-        _collection ?= client.collection { 
+        { byname } = collection
+        collection = client.collection { 
           db: address
           collection: byname
         }
-        _collection.delete context.source.path
+        collection.delete context.source.path
 
 
 Tasks =
@@ -152,26 +117,26 @@ Tasks =
     client = await Client.make graphene
     Promise.all await do ->
       for { collections, db... } in graphene.databases
-        await DB.deploy client, db
+        await DB.deploy client, { db }
         Promise.all do ->
           for collection in collections
-            Collection.deploy client, db, collection
+            Collection.deploy client, { namespace, db, collection }
   
-  undeploy: ({ graphene }) ->
+  undeploy: ({ namespace, graphene }) ->
     client = await Client.make graphene
     Promise.all do ->
       for db in graphene.databases
-        DB.delete client, db
+        DB.delete client, { db }
 
-  publish: ({ graphene }) ->
+  publish: ({ namespace, graphene }) ->
     client = await Client.make graphene
     Promise.all do ->
       for { collections, db... } in graphene.databases
         Promise.all do ->
           for collection in collections
-            Collection.publish client, db, collection
+            Collection.publish client, { namespace, db, collection }
 
-  watch: ({ graphene }) ->
+  watch: ({ namespace, graphene }) ->
 
     client = await Client.make graphene
 
@@ -184,14 +149,14 @@ Tasks =
           File.hash
           File.changed Fn.flow [
             Module.data
-            Item.publish client, db, collection
+            Item.publish client, { db, collection }
             File.stamp
             W.notify
           ]
         ]
         W.match type: "file", name: "rm", [
           File.evict
-          Item.rm client, db, collection
+          Item.rm client, { db, collection }
         ]
       ]
 

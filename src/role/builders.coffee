@@ -1,51 +1,78 @@
-{{!-- WIP: currently unused --}}
+import {
+  getSecretARN
+  getWildcardARN
+} from "@dashkite/dolores/secrets"
 
-AWSTemplateFormatVersion: "2010-09-09"
-Description: >-
-  {{{ description }}}
-Resources:
-  {{#each lambdas}}
-    Role{{{ awsCase ../name }}}:
-      Type: AWS::IAM::Role
-      Description: >-
-        Roles for Lambda [ {{{ ../name }}} ]
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-                - edgelambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      ManagedPolicyArns:
-      Policies:
-      {{#each mixins}}
-        - PolicyName: {{type}}-policy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-            {{#if equal type, 'secret'}}
-            - Effect: "Allow"
-              Action: [ "secretsmanager:GetSecretValue" ]
-              Resource: {{{arn}}}
-        {{else if equal type, ''}}
+import { 
+  createRole
+} from "@dashkite/dolores/roles"
 
-  secret: ({ qname }) ->
+import {
+  getLambdaUnqualifiedARN
+} from "@dashkite/dolores/lambda"
 
-  s3: ({ qname }) ->
+import {
+  getStepFunctionARN
+} from "@dashkite/dolores/step-function"
+
+import {
+  getBucketARN
+} from "@dashkite/dolores/bucket"
+
+import {
+  getTableARN
+} from "@dashkite/dolores/dynamodb"
+
+import * as SQS from "@dashkite/dolores/sqs"
+
+import {
+  log
+} from "@dashkite/dolores/logger"
+
+import {
+  create as getTopic
+} from "@dashkite/dolores/sns"
+
+builders =
+
+  cloudwatch: ({ name, region }) ->
+    region = handler.region ? "us-east-1"
+    [
+      Effect: "Allow"
+      Action: [
+        "logs:CreateLogGroup"
+        "logs:CreateLogStream"
+        "logs:PutLogEvents"
+      ]
+      Resource: [ 
+        "arn:aws:logs:*:*:log-group:/aws/lambda/#{ name }:*" 
+        "arn:aws:logs:*:*:log-group:/aws/lambda/#{ region }.#{ name }:*" 
+    ]
+]
+  # TODO re-implement wildcard secret support
+  #      maybe via DRN subtype?
+  secret: ({ name }) ->
+    [
+      Effect: "Allow"
+      Action: [ "secretsmanager:GetSecretValue" ]
+      Resource: await do ->
+        console.log "Authorize secret access for: #{ name }"
+        await getSecretARN qname
+    ]
+
+  "s3:domain": _s3 = ({ name }) ->
 
     [
       Effect: "Allow"
       Action: [ "s3:*" ]
       Resource: await do ->
         resources = []
-        resources.push "arn:aws:s3:::#{ qname }"
-        resources.push "arn:aws:s3:::#{ qname }/*"
+        resources.push "arn:aws:s3:::#{ name }"
+        resources.push "arn:aws:s3:::#{ name }/*"
         resources
     ]
 
+  "s3:regional:domain": _s3
 
   kms: ->
 
@@ -58,11 +85,11 @@ Resources:
       Action: [
         "kms:GenerateRandom"
       ]
-      Resource: ["*"]
+      Resource: [ "*" ]
 
     ]
 
-  lambda: ({ qname }) ->
+  lambda: ({ name }) ->
     [
 
       Effect: "Allow"
@@ -70,7 +97,7 @@ Resources:
         "lambda:InvokeFunction"
       ]
       Resource: [
-        await getLambdaUnqualifiedARN qname
+        await getLambdaUnqualifiedARN name
       ]
 
     ]
@@ -96,14 +123,14 @@ Resources:
         "cloudfront:ListDistributions"
         "cloudfront:CreateInvalidation"
       ]
-      Resource: ["*"]
+      Resource: [ "*" ]
 
     ]
 
   "step-function": do (self = false, managed = null) ->
     managed = [
         Effect: "Allow"
-        Action:[
+        Action: [
           "events:PutTargets"
           "events:PutRule"
           "events:DescribeRule"
@@ -118,16 +145,16 @@ Resources:
           "states:StopExecution"
           "states:ListStateMachines"
         ]
-        Resource: '*'
+        Resource: "*"
     ]
 
-    ({ qname }) ->
+    ({ name }) ->
       policies = [
         Effect: "Allow"
         Action: [ 
           "states:startExecution" 
         ]
-        Resource: [ await getStepFunctionARN qname ]      
+        Resource: [ await getStepFunctionARN name ]      
       ]
 
       if self == false
@@ -136,21 +163,9 @@ Resources:
 
       policies
 
-  bucket: ({ qname }) ->
-    [
+  "dynamodb:table": ({ name }) ->
 
-      Effect: "Allow"
-      Action: [
-        "s3:GetObject"
-        "s3:PutObject"
-        "s3:DeleteObject"
-      ]
-      Resource: "#{ getBucketARN qname }/*"
-
-    ]
-
-  table: ({ qname }) ->
-    arn = getTableARN qname
+    arn = getTableARN name
 
     [
       Effect: "Allow"
@@ -158,7 +173,7 @@ Resources:
       Resource: [ arn, "#{ arn }/*" ]
     ]
 
-  sqs: ({ qname }) ->
+  sqs: ({ name }) ->
     [
       Effect: "Allow"
       Action: [
@@ -169,14 +184,11 @@ Resources:
         "sqs:ReceiveMessage"
         "sqs:SendMessage"
       ]
-      Resource: if qname?
-        await SQS.getARN qname
-      else
-        "arn:aws:sqs:*:*:*"
+      Resource: await SQS.getARN qname
 
     ]
 
-  sns: ({ qname }) ->
+  sns: ({ name }) ->
     [
       Effect: "Allow"
       Action: [
@@ -185,10 +197,11 @@ Resources:
         "sns:Publish"
         "sns:Subscribe"
       ]
-      Resource: ( await getTopic qname ).arn
+      Resource: ( await getTopic name ).arn
     ]
-  Lambda:
-    Type: AWS::Lambda::Function
-    Description: >-
-      {{{ description }}}
-  {{/each}}
+
+# aliases
+builders.queue = builders.sqs
+builders.topic = builders.sns
+
+export default builders

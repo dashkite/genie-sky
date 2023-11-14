@@ -1,6 +1,7 @@
 import { generic } from "@dashkite/joy/generic"
 import * as Type from "@dashkite/joy/type"
 import * as Logger from "@dashkite/dolores/logger"
+import resolve from "#helpers/resolve"
 
 Logger.configure root: ".sky/log"
 
@@ -34,6 +35,9 @@ generic Preset.install, Type.isArray, ( installers ) ->
 export default ( genie ) ->
   
   if ( options = genie.get "sky" )?
+
+    options = await resolve options
+    console.log JSON.stringify options, null, 2
 
     generic Preset.install, Type.isFunction, ( install ) ->
       install genie, options
