@@ -68,7 +68,7 @@ DB =
       Log.DB.found { drn, address }
     catch error
       if error.message.startsWith "No address found"      
-        { address } = await client.db.create { name }
+        { address } = await client.db.create { name: drn }
         await DRN.store drn, { address }
         Log.DB.create { drn, address }
       else
@@ -100,7 +100,7 @@ Collection =
         response = await db.collection.getStatus byname
         break if response.status == "ready"
         await Time.sleep 1000
-      Log.Collection.deploy { address, byname }
+      Log.Collection.deploy { address: db.address, byname }
 
   publish: ( client, db, { glob, publish, collection... }) ->
     address = await DB.resolve db
