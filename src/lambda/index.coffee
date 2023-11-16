@@ -27,7 +27,7 @@ export default
         "sky:lambda:handlers"
         "build"
         "sky:zip" 
-      ], run "deploy", Genie, options
+      ], run "deploy", options
 
     Genie.define "sky:lambda:version", 
       run "version", options

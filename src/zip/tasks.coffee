@@ -30,6 +30,10 @@ exists = ( path ) ->
   catch
     false
 
+extension = ( extension, path ) ->
+  Path.join ( Path.dirname path ),
+    ( Path.basename path, Path.extname path ) + extension
+
 choose = ( paths ) ->
   for path in paths
     if await exists Path.join path, "package.json"
@@ -89,12 +93,13 @@ Paths =
 bundle = ({ name, path }) ->
 
   Paths.zip.file = Path.join Paths.zip.directory, "#{ name }.zip"
-  Paths.build = Path.resolve "build", "node", Path.dirname path
+  Paths.entry = Path.join "build", "node", ( extension ".js", path )
+  Paths.build = Path.resolve Path.dirname Paths.entry
 
   zip = new JSZip
 
   { metafile } = await esbuild.build
-    entryPoints: [ "build/node/src/index.js" ]
+    entryPoints: [ Paths.entry ]
     bundle: true
     sourcemap: false
     platform: "node"
@@ -125,8 +130,7 @@ bundle = ({ name, path }) ->
 Tasks =
 
   zip: ({ lambda }) ->
-    # await Time.sleep 1000
-    for handler in lambda.handlers
+    for handler in lambda
       await bundle handler
 
   clean: ->

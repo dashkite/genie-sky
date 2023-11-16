@@ -37,7 +37,6 @@ export default ( genie ) ->
   if ( options = genie.get "sky" )?
 
     options = await resolve options
-    console.log JSON.stringify options, null, 2
 
     generic Preset.install, Type.isFunction, ( install ) ->
       install genie, options

@@ -28,6 +28,9 @@ import { Runner } from "#helpers/runner"
 
 run = Runner.make -> import( "./tasks" )
 
+basename = ( path ) ->
+  Path.basename path, Path.extname path
+
 Lambda =
 
   publish: publishLambda
@@ -74,11 +77,11 @@ Lambda =
     if data?
       role = await getRoleARN lambda.name
 
-      configuration = Lamda.configure lambda
+      configuration = Lambda.configure lambda
 
       # TODO get lambda from configuration
       await Lambda.publish lambda.name, data, {
-        handler: "index.handler"
+        handler: "#{ basename lambda.path }.handler"
         configuration...
         role
       }
@@ -176,8 +179,16 @@ Tasks =
       if specifier.generate? or specifier.verify?
         await Handlers.verify specifier
 
-  version: ( _, name ) ->
-    Lambda.version name
+  version: ({ lambda }, pattern ) ->
+    re = ///#{ pattern }///i
+    handlers = lambda.filter ( handler ) -> re.test handler.name
+    switch handlers.length
+      when 1
+        Lambda.version handlers[ 0 ].name
+      when 0
+        throw new Error "No match for pattern: [ #{ pattern } ]"
+      else
+        throw new Error "Ambiguous pattern: [ #{ pattern } ]"
   
   delete: ({ lambda }) ->
     Promise.all do ->

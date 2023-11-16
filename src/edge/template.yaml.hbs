@@ -102,7 +102,7 @@ Resources:
       DistributionConfig:
         Aliases:
         {{#each aliases}}
-          - '{{{ domain }}}'
+          - '{{{ . }}}'
         {{/each}}
         Comment: {{{ description }}}
         DefaultCacheBehavior:
@@ -167,11 +167,11 @@ Resources:
           AcmCertificateArn: !Ref Certificate
           MinimumProtocolVersion: "TLSv1.2_2021"
           SslSupportMethod: "sni-only"
-      Tags:
+      {{!-- Tags:
         - Key: component
           Value: {{{ namespace }}}
         - Key: environment
-          Value: {{{ environment }}}
+          Value: {{{ environment }}} --}}
 
   {{#if dns}}
   {{#each dns}}

@@ -3,10 +3,6 @@ import {
   getWildcardARN
 } from "@dashkite/dolores/secrets"
 
-import { 
-  createRole
-} from "@dashkite/dolores/roles"
-
 import {
   getLambdaUnqualifiedARN
 } from "@dashkite/dolores/lambda"
@@ -33,10 +29,10 @@ import {
   create as getTopic
 } from "@dashkite/dolores/sns"
 
-builders =
+Builders =
 
   cloudwatch: ({ name, region }) ->
-    region = handler.region ? "us-east-1"
+    region ?= "us-east-1"
     [
       Effect: "Allow"
       Action: [
@@ -201,7 +197,7 @@ builders =
     ]
 
 # aliases
-builders.queue = builders.sqs
-builders.topic = builders.sns
+Builders.queue = Builders.sqs
+Builders.topic = Builders.sns
 
-export default builders
+export default Builders

@@ -2,6 +2,10 @@ import * as Fn from "@dashkite/joy/function"
 import { generic } from "@dashkite/joy/generic"
 import * as Type from "@dashkite/joy/type"
 import * as DRN from "@dashkite/drn-sky"
+import { 
+  createRole
+} from "@dashkite/dolores/roles"
+import Builders from "./builders"
 
 Mixin =
 
@@ -25,7 +29,9 @@ Mixin =
 Policy =
 
   # build a policy from a list of mixins
-  build: ( mixins = []) ->
+  build: ({ name, mixins }) ->
+
+    mixins ?= []
     
     # automatic mixins
     mixins.push {
@@ -40,7 +46,7 @@ Policy =
       { name, specifier } = if Type.isString mixin
         await Mixin.resolve mixin                
       else mixin
-      if ( builder = builders[ specifier.type ] )?
+      if ( builder = Builders[ specifier.type ] )?
         statements = await builder { 
           mixin...
           name
@@ -55,10 +61,10 @@ Policy =
 Tasks =
 
   deploy: ( options ) ->
-    Promise.all do ->
+    Promise.all await do ->
       for specifier in options.lambda
-        await createRole specifier.name,
-          ( await Policy.build specifier.mixins ), 
+        createRole specifier.name,
+          ( await Policy.build specifier ), 
           options[ "managed-policies" ]
 
   undeploy: ({ lambda }) ->

@@ -12,6 +12,8 @@ import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
 
+mode = process.env.mode? "development"
+
 getRootDomain = ( domain ) ->
   ( domain.split "." )[-2..].join "."
 
@@ -67,7 +69,7 @@ getCache = ( preset ) ->
     when "static-s3"
       "1d763f5c-4594-43b1-a269-07b9e23d6e7d"
     when "dynamic"
-      "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+      "54919481-e976-4e15-b112-eda3b6c7ede9"
     else
       "a53da372-fd09-496e-bd4a-4e04a9028770"
 
@@ -81,7 +83,7 @@ getHandlers = ({ lambda }) ->
 
 getDescription = ({ edge }) ->
   edge.description ? 
-    "Distribution #{ edge.name }"
+    "Distribution [ #{ edge.name } ]"
 
 
 templates = Templates.create "#{__dirname}"
@@ -98,17 +100,17 @@ Tasks =
       description: await getDescription { edge }
       oac: oac
       aliases: edge.aliases
-      dns: await getDNSEntries aliases
+      dns: await getDNSEntries edge.aliases
       # TODO should be per origin
       cache: getCache edge.cache
       certificate:
         verification: edge.certificate.verification
-        aliases: await getCertificateAliases aliases
+        aliases: await getCertificateAliases edge.aliases
       origins: origins
-      handlers: await getHandlers { namespace, lambda }
+      handlers: await getHandlers { lambda }
     deployStack edge.name, template      
     
-  undeploy: ({ namespace, lambda, edge }) ->
+  undeploy: ({ lambda, edge }) ->
     deleteStack edge.name
 
 
