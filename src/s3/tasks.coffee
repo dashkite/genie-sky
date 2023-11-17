@@ -2,7 +2,6 @@ import FS from "node:fs/promises"
 import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
 import M from "@dashkite/masonry"
-import W from "@dashkite/masonry-watch"
 import { File } from "@dashkite/masonry-module"
 
 import {
@@ -172,6 +171,7 @@ Tasks =
           ]
 
   watch: ({ s3 }) ->
+    W = await import( "@dashkite/masonry-watch" )
 
     watch = ( bucket ) ->
       
