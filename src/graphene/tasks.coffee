@@ -57,8 +57,12 @@ Collection =
         response = await db.collection.getStatus byname
         break if response.status == "ready"
         await Time.sleep 1000
+<<<<<<< HEAD
       console.log "Created collection:
         #{ byname } for database: #{ address }"
+=======
+      Log.Collection.deploy { address: db.address, byname }
+>>>>>>> sites
 
   patch: ( collection ) ->
     Fn.pipe [
