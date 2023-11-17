@@ -9,7 +9,6 @@ import Time from "@dashkite/joy/time"
 import * as Diff from "@dashkite/diff"
 import LocalStorage from "@dashkite/sky-local-storage"
 import M from "@dashkite/masonry"
-import W from "@dashkite/masonry-watch"
 import { File, Module } from "@dashkite/masonry-module"
 
 Client =
@@ -26,7 +25,7 @@ Log =
 
 DB =
 
-  resolve: ( db ) -> await DRN.resolve DRN.from db.address
+  resolve: ( db ) -> DRN.resolve DRN.from db.address
   
   deploy: ( client, { db }) ->
     try
@@ -120,23 +119,25 @@ Tasks =
         await DB.deploy client, { db }
         Promise.all do ->
           for collection in collections
-            Collection.deploy client, { namespace, db, collection }
+            Collection.deploy client, { db, collection }
   
-  undeploy: ({ namespace, graphene }) ->
+  undeploy: ({ graphene }) ->
     client = await Client.make graphene
     Promise.all do ->
       for db in graphene.databases
         DB.delete client, { db }
 
-  publish: ({ namespace, graphene }) ->
+  publish: ({ graphene }) ->
     client = await Client.make graphene
     Promise.all do ->
       for { collections, db... } in graphene.databases
         Promise.all do ->
           for collection in collections
-            Collection.publish client, { namespace, db, collection }
+            Collection.publish client, { db, collection }
 
-  watch: ({ namespace, graphene }) ->
+  watch: ({ graphene }) ->
+  
+    W = await import( "@dashkite/masonry-watch" )
 
     client = await Client.make graphene
 

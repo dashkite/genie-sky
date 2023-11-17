@@ -2,8 +2,8 @@ import Coffee from "coffeescript"
 import * as cheerio from "cheerio"
 import * as Fn from "@dashkite/joy"
 import M from "@dashkite/masonry"
-import W from "@dashkite/masonry-watch"
-import { Module } from "@dashkite/masonry-module"
+# import W from "@dashkite/masonry-watch"
+# import { Module } from "@dashkite/masonry-module"
 
 coffee = ( code ) ->
   Coffee.compile code,
@@ -75,9 +75,7 @@ changed = ( f ) ->
         cache[ context.source.path ] = _context.output
         _context
 
-export default ( Genie ) ->
-
-  options = Genie.get "sky"
+export default ( Genie, options ) ->
 
   if options.reload?
   

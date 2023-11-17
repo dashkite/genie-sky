@@ -1,9 +1,17 @@
+import FS from "node:fs/promises"
 import { generic } from "@dashkite/joy/generic"
 import * as Type from "@dashkite/joy/type"
 import * as Logger from "@dashkite/dolores/logger"
 import resolve from "#helpers/resolve"
 
 Logger.configure root: ".sky/log"
+
+exist = ( path ) ->
+  try 
+    await FS.readFile path
+    true
+  catch 
+    false
 
 Preset =
   
@@ -14,18 +22,24 @@ Preset =
   
 generic Preset.install, Type.isString, ( name ) ->
   unless name in Preset.imported
+    paths = [
+      "#{ __dirname }/#{ name }.js"
+      "#{ __dirname }/#{ name }/index.js"
+    ]
     try
-      installer = ( await import( "./#{ name }" ) ).default
-      Preset.install installer
+      for path in paths        
+        if await exist path
+          installer = ( await import(path) ).default
+          Preset.install installer
+          break
     catch error
-      if error.code != "MODULE_NOT_FOUND"
-        console.log error
+      console.log error
 
 generic Preset.install, Type.isObject, ( installer ) ->
   Promise.all [
     Preset.install installer.import
     Preset.install installer.install
-  ]  
+  ]
 
 generic Preset.install, Type.isArray, ( installers ) ->
   Promise.all do ->

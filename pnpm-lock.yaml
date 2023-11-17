@@ -83,6 +83,9 @@ dependencies:
   coffee-loader:
     specifier: ^3.0.0
     version: 3.0.0(coffeescript@2.7.0)(webpack@5.89.0)
+  coffeescript:
+    specifier: ^2.7.0
+    version: 2.7.0
   css-loader:
     specifier: ^6.6.0
     version: 6.8.1(webpack@5.89.0)
