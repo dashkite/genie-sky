@@ -3,7 +3,6 @@ import * as M from "@dashkite/masonry"
 import YAML from "js-yaml"
 import modularize from "@dashkite/masonry-export"
 import T from "@dashkite/masonry-targets"
-import W from "@dashkite/masonry-watch"
 import resolve from "#helpers/resolve"
 
 defaults =
@@ -43,6 +42,7 @@ Tasks =
     ]
 
   watch: ( options ) ->
+    W = await import("@dashkite/masonry-watch")
     options = { defaults..., options.yaml... }
     do M.start [
       W.glob options.targets
