@@ -28,6 +28,8 @@ import { Runner } from "#helpers/runner"
 
 run = Runner.make -> import( "./tasks" )
 
+mode = process.env.mode ? "development"
+
 basename = ( path ) ->
   Path.basename path, Path.extname path
 
@@ -60,7 +62,6 @@ Lambda =
       configuration.environment = undefined
     else
       configuration.environment = { 
-        mode
         NODE_OPTIONS: "--enable-source-maps"
         configuration.environment... 
       }
@@ -68,8 +69,6 @@ Lambda =
     configuration
 
   deploy: ( lambda ) ->
-  
-    mode = process.env.mode ? "development"
 
     try
       data = await FS.readFile ".sky/build/#{ lambda.name }.zip"

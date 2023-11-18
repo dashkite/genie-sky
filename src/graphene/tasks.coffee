@@ -11,11 +11,6 @@ import LocalStorage from "@dashkite/sky-local-storage"
 import M from "@dashkite/masonry"
 import { File, Module } from "@dashkite/masonry-module"
 
-Client =
-
-  make: ({ client }) ->
-    Graphene.Client.create tables: client
-
 Log =
 
   Collection:
@@ -34,7 +29,7 @@ DB =
     catch error
       if error.message.startsWith "No address found"
         { address } = await client.db.create name: db.name
-        await DRN.store drn, { address }
+        await DRN.store ( DRN.from db.address ), { address }
         console.log "Created db [ #{ address } ] for [ #{ db.name } ]."
       else
         throw error
@@ -42,22 +37,22 @@ DB =
   delete: ( client, { db }) ->
     address = await DB.resolve db
     await client.db.delete address
-    await DRN.remove DRN.from db
+    await DRN.remove DRN.from db.address
     console.log "Deleted db: [ #{ address } ] for [ #{ db.name } ]."
 
 Collection =
 
   deploy: ( client, { db, collection }) ->
-    { byname } = collection
-    db = client.db await DB.resolve db
-    if !( collection = await db.collection.get { byname } )?
-      await db.collection.create { byname }
-      loop
-        response = await db.collection.getStatus byname
-        break if response.status == "ready"
-        await Time.sleep 1000
-      console.log "Created collection:
-        #{ byname } for database: #{ address }"
+    do ({ byname, address } = {}) ->
+      { byname } = collection
+      address = await DB.resolve db
+      db = client.db address
+      if !( collection = await db.collection.get byname )?
+        console.log "Creating collection #{ byname }
+          for database #{ address }"
+        await db.collection.create { byname }
+        console.log "Collection #{ byname } for 
+          database #{ address } created"
 
   patch: ( collection ) ->
     Fn.pipe [
@@ -109,26 +104,25 @@ Item =
         }
         collection.delete context.source.path
 
-
 Tasks =
 
   deploy: ({ graphene })  ->
-    client = await Client.make graphene
+    client = await Graphene.Client.create graphene
     Promise.all await do ->
       for { collections, db... } in graphene.databases
         await DB.deploy client, { db }
         Promise.all do ->
-          for collection in collections
+          for collection in collections              
             Collection.deploy client, { db, collection }
   
   undeploy: ({ graphene }) ->
-    client = await Client.make graphene
+    client = await Graphene.Client.create graphene
     Promise.all do ->
       for db in graphene.databases
         DB.delete client, { db }
 
   publish: ({ graphene }) ->
-    client = await Client.make graphene
+    client = await Graphene.Client.create graphene
     Promise.all do ->
       for { collections, db... } in graphene.databases
         Promise.all do ->
@@ -139,7 +133,7 @@ Tasks =
   
     W = await import( "@dashkite/masonry-watch" )
 
-    client = await Client.make graphene
+    client = await Graphene.Client.create graphene
 
     watch = ( db, collection ) ->
       
