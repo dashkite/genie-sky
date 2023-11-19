@@ -15,8 +15,9 @@ Mixin =
 
     resolve = generic name: "resolve"
 
-    generic resolve, Type.isString, ( drn ) ->
-      if drn.startsWith "urn:drn:"
+    generic resolve, Type.isString, ( urn ) ->
+      if urn.startsWith "urn:drn:"
+        drn = DRN.from urn
         specifier: DRN.decode drn
         name: await DRN.resolve drn
       else
@@ -29,7 +30,7 @@ Mixin =
 Policy =
 
   # build a policy from a list of mixins
-  build: ({ name, mixins }) ->
+  build: ({ name, url, mixins }) ->
 
     mixins ?= []
     
@@ -54,7 +55,7 @@ Policy =
         }
         policies.push statements...
       else
-        throw new Error "Unknown type for mixin [ #{ name }]"
+        throw new Error "Unknown type for mixin [ #{ name } ]"
     
     policies
 

@@ -14,6 +14,9 @@ import {
   publishLambda
   versionLambda
   deleteLambda
+  createFunctionURL
+  updateFunctionURL
+  hasFunctionURL
 } from "@dashkite/dolores/lambda"
 
 import { 
@@ -38,6 +41,11 @@ Lambda =
   publish: publishLambda
   version: versionLambda
   delete: deleteLambda
+
+  FunctionURL:
+    create: createFunctionURL
+    update: updateFunctionURL
+    has: hasFunctionURL
 
   isEdge: ( lambda ) ->
     lambda.event in [
@@ -66,6 +74,16 @@ Lambda =
         configuration.environment... 
       }
 
+    if lambda.url?.open == true
+      # TODO handle case where there's already a policy
+      configuration.permissions = [
+        StatementId: "public-access"
+        FunctionName: lambda.name
+        Principal: "*"
+        Action: "lambda:InvokeFunctionUrl"
+        FunctionUrlAuthType: "NONE"
+      ]
+
     configuration
 
   deploy: ( lambda ) ->
@@ -87,6 +105,13 @@ Lambda =
 
       if lambda.version == true
         await Lambda.version lambda.name
+
+      if lambda.url?
+        url = if lambda.url == true then {} else lambda.url
+        if await Lambda.FunctionURL.has lambda.name
+          await Lambda.FunctionURL.update { name: lambda.name, url... }
+        else 
+          await Lambda.FunctionURL.create { name: lambda.name, url... }
 
 
 Handlers =

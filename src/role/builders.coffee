@@ -43,8 +43,8 @@ Builders =
       Resource: [ 
         "arn:aws:logs:*:*:log-group:/aws/lambda/#{ name }:*" 
         "arn:aws:logs:*:*:log-group:/aws/lambda/#{ region }.#{ name }:*" 
+      ]
     ]
-]
   # TODO re-implement wildcard secret support
   #      maybe via DRN subtype?
   secret: ({ name }) ->
@@ -106,7 +106,7 @@ Builders =
         "ses:SendTemplatedEmail"
       ]
       Resource: [
-        "arn:aws:ses:us-west-2:618441030511:identity/dashkite.com"
+        "arn:aws:ses:*:*:identity/dashkite.com"
       ]
 
     ]
@@ -132,7 +132,7 @@ Builders =
           "events:DescribeRule"
         ]
         Resource: [
-          "arn:aws:events:us-east-1:618441030511:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+          "arn:aws:events:*:*:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
         ]
       ,
         Effect: "Allow"
@@ -195,7 +195,7 @@ Builders =
       ]
       Resource: ( await getTopic name ).arn
     ]
-
+    
 # aliases
 Builders.queue = Builders.sqs
 Builders.topic = Builders.sns
