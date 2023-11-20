@@ -4,6 +4,10 @@ run = Runner.make -> import( "./tasks" )
 
 export default ( Genie, options ) ->
 
+  if options.lambda?
+    Genie.before "sky:lambda:deploy", "sky:secrets:put"
+  else
+    Genie.on "deploy", "sky:secrets:put"
 
   # verify that all secrets in config exist
   Genie.define "sky:secrets:check", run "check", options

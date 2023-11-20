@@ -214,6 +214,11 @@ Tasks =
       else
         throw new Error "Ambiguous pattern: [ #{ pattern } ]"
   
+  versionAll: ({ lambda }) ->
+    Promise.all do ->
+      for handler in lambda
+        Lambda.version handler.name
+  
   delete: ({ lambda }) ->
     Promise.all do ->
       for { name } in lambda

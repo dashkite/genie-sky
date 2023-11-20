@@ -53,7 +53,7 @@ Builders =
       Action: [ "secretsmanager:GetSecretValue" ]
       Resource: await do ->
         console.log "Authorize secret access for: #{ name }"
-        await getSecretARN qname
+        await getSecretARN name
     ]
 
   "s3:domain": _s3 = ({ name }) ->
@@ -95,8 +95,8 @@ Builders =
       Resource: [
         await getLambdaUnqualifiedARN name
       ]
-
     ]
+  
 
   ses: ->
     [
@@ -195,7 +195,7 @@ Builders =
       ]
       Resource: ( await getTopic name ).arn
     ]
-    
+
 # aliases
 Builders.queue = Builders.sqs
 Builders.topic = Builders.sns

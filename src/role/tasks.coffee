@@ -48,14 +48,20 @@ Policy =
         await Mixin.resolve mixin                
       else mixin
       if ( builder = Builders[ specifier.type ] )?
-        statements = await builder { 
-          mixin...
-          name
-          specifier...
-        }
-        policies.push statements...
+        try
+          statements = await builder { 
+            mixin...
+            name
+            specifier
+          }
+          policies.push statements...
+        catch error
+          # tell the nice people which mixin is causing the problem
+          console.error "Unable to build policy for 
+            mixin [ #{ mixin } ]"
+          throw error
       else
-        throw new Error "Unknown type for mixin [ #{ name } ]"
+        throw new Error "Unknown type for mixin [ #{ mixin } ]"
     
     policies
 
