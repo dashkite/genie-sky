@@ -48,7 +48,7 @@ Tasks =
       W.glob options.targets
       W.match type: "file", name: [ "add", "change" ], [
         M.read
-        M.tr yaml
+        M.tr [ yaml, drn, json, modularize ]
         T.extension ".${ build.preset }"
         T.write "build/${ build.target }"
       ]

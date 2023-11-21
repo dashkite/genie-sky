@@ -2,6 +2,7 @@ import FS from "node:fs/promises"
 import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
 import M from "@dashkite/masonry"
+import W from "@dashkite/masonry-watch"
 import { File } from "@dashkite/masonry-module"
 
 import {
@@ -27,7 +28,10 @@ import {
   getDistributionForDomain
 } from "@dashkite/dolores/cloudfront"
 
-import { log } from "@dashkite/dolores/logger"
+import * as TK from "terminal-kit"
+
+log = ( text ) ->
+  TK.terminal.green "genie-sky/s3: #{ text }\n"
 
 import * as Diff from "@dashkite/diff"
 
@@ -123,12 +127,14 @@ configureBucket = ( bucket ) ->
 Item =
 
   publish: ({ publish, domain }) ->
-    ( context ) ->
+    Fn.tee ( context ) ->
       publish.encoding ?= "bytes"
+      log "publishing #{ context.source.path }"
       putObject domain, context.source.path, context.input
   
   rm: ({ domain }) ->
-    ( context ) ->
+    Fn.tee ( context ) ->
+      log "delete #{ context.source.path }"
       deleteObject domain, context.source.path
 
 
@@ -171,10 +177,8 @@ Tasks =
           ]
 
   watch: ({ s3 }) ->
-    W = await import( "@dashkite/masonry-watch" )
 
     watch = ( bucket ) ->
-      
       do M.start [
         W.glob bucket.publish
         W.match type: "file", name: [ "add", "change" ], [
@@ -183,6 +187,7 @@ Tasks =
           File.changed Fn.flow [
             File.stamp
             Item.publish bucket
+            W.notify
           ]
         ]
         W.match type: "file", name: "rm", [

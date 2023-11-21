@@ -71,6 +71,9 @@ Lambda =
     else
       configuration.environment = { 
         NODE_OPTIONS: "--enable-source-maps"
+        # placeholder for backward compat
+        # remove please future dashkitians
+        context: "{}"
         configuration.environment... 
       }
 

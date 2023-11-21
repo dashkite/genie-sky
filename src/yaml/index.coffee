@@ -8,5 +8,5 @@ export default ( Genie, options ) ->
   Genie.define "sky:yaml:watch", run "watch", options
 
   Genie.on "build", "sky:yaml:build"
-  Genie.on "watch", "sky:yaml:watch"
+  Genie.on "watch", "sky:yaml:watch&"
 

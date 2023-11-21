@@ -11,5 +11,5 @@ export default ( Genie, options ) ->
 
   Genie.on "deploy", "sky:s3:deploy"
   Genie.on "publish", "sky:s3:publish"
-  Genie.on "watch", "sky:s3:watch"
+  Genie.on "watch", "sky:s3:watch&"
 

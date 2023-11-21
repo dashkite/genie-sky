@@ -18,22 +18,18 @@ Preset =
   imported: []
   
   install: generic name: "install" 
-  
-  
+
 generic Preset.install, Type.isString, ( name ) ->
   unless name in Preset.imported
     paths = [
-      "#{ __dirname }/#{ name }.js"
       "#{ __dirname }/#{ name }/index.js"
+      "#{ __dirname }/#{ name }.js"
     ]
-    try
-      for path in paths        
-        if await exist path
-          installer = ( await import(path) ).default
-          Preset.install installer
-          break
-    catch error
-      console.log error
+    for path in paths   
+      if await exist path
+        installer = ( require path ).default
+        Preset.install installer
+        break
 
 generic Preset.install, Type.isObject, ( installer ) ->
   Promise.all [
