@@ -222,7 +222,7 @@ Tasks =
       for handler in lambda
         Lambda.version handler.name
   
-  delete: ({ lambda }) ->
+  undeploy: ({ lambda }) ->
     Promise.all do ->
       for { name } in lambda
         Lambda.delete name          
