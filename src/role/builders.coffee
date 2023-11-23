@@ -180,7 +180,7 @@ Builders =
         "sqs:ReceiveMessage"
         "sqs:SendMessage"
       ]
-      Resource: await SQS.getARN qname
+      Resource: await SQS.getARN name
 
     ]
 

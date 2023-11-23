@@ -3,7 +3,7 @@ import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
 import M from "@dashkite/masonry"
 import W from "@dashkite/masonry-watch"
-import { File } from "@dashkite/masonry-module"
+import { Module, File } from "@dashkite/masonry-module"
 
 import {
   hasBucket
@@ -187,6 +187,7 @@ Tasks =
           File.changed Fn.flow [
             File.stamp
             Item.publish bucket
+            Module.data
             W.notify
           ]
         ]

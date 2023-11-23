@@ -52,6 +52,6 @@ export default ( genie ) ->
       install genie, options
     
     Promise.all [
-      Preset.install [ "clean", "env" ]
+      Preset.install [ "clean" ]
       Preset.install ( Object.keys options )
     ]

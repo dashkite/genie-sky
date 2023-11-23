@@ -32,9 +32,9 @@ Resources:
       ResponseHeadersPolicyConfig:
         Name: {{{ name }}}-response-headers-policy
         CorsConfig: 
-          AccessControlAllowCredentials: true
+          AccessControlAllowCredentials: false
           AccessControlAllowHeaders:
-            Items: [ authorization ]
+            Items: [ "*" ]
           AccessControlAllowMethods: 
             Items: [ GET, HEAD, PUT, POST, PATCH, DELETE, OPTIONS ]
           AccessControlAllowOrigins: 
@@ -79,7 +79,7 @@ Resources:
           Enabled: false
   {{!--
     Commenting out for now because I can't this to work.
-    I've hardocded the ID below...
+    I've hardcoded the ID below...
 
     {{#if oac}}
     OriginAccessControl:
