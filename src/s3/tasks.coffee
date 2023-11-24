@@ -201,4 +201,8 @@ Tasks =
       for bucket in s3 when bucket.publish?
         watch bucket
 
+  ls: ({ s3 }) ->
+    for bucket in s3
+      console.log bucket.domain
+
 export default Tasks
