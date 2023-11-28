@@ -1,5 +1,3 @@
-import { guard } from "./helpers"
-
 import {
   getLambdaARN
 } from "@dashkite/dolores/lambda"
@@ -23,7 +21,7 @@ export default (genie, { namespace, bridge, lambda }) ->
       "sky:roles:publish:*"
       "sky:lambda:publish:*" 
     ], 
-    guard (environment) ->
+   (environment) ->
       { name } = lambda.handlers[0] 
       await createRule {
         name: "#{namespace}-#{environment}-#{bridge.name}-bridge"
@@ -31,5 +29,5 @@ export default (genie, { namespace, bridge, lambda }) ->
         schedule: bridge.schedule
       }    
     
-  genie.define "sky:bridge:delete", guard (environment) ->
+  genie.define "sky:bridge:delete", (environment) ->
     deleteRule "#{namespace}-#{environment}-#{bridge.name}-bridge"

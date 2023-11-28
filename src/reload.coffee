@@ -2,8 +2,6 @@ import Coffee from "coffeescript"
 import * as cheerio from "cheerio"
 import * as Fn from "@dashkite/joy"
 import M from "@dashkite/masonry"
-import W from "@dashkite/masonry-watch"
-import { Module } from "@dashkite/masonry-module"
 
 coffee = ( code ) ->
   Coffee.compile code,
@@ -43,28 +41,38 @@ changed = ( f ) ->
 export default ( Genie, options ) ->
 
   if options.reload?
-  
+
     target = options.reload.target ?
       "build/browser/src/index.html"
 
-    Genie.define "sky:reload", M.start [
-      M.glob target
-      M.read
-      Module.data
-      M.tr build options.reload
-      M.write "."
-    ]
+    Genie.define "sky:reload", ->
 
-    Genie.after "build", "sky:reload"
-
-    Genie.define "sky:reload:watch", M.start [
-      W.glob glob: target
-      M.read
-      changed Fn.flow [
+      W = await import( "@dashkite/masonry-watch" )
+      { Module } = await import( "@dashkite/masonry-module" )
+  
+      do M.start [
+        M.glob target
+        M.read
         Module.data
         M.tr build options.reload
         M.write "."
       ]
-    ]
+
+    Genie.after "build", "sky:reload"
+
+    Genie.define "sky:reload:watch", ->
+
+      W = await import( "@dashkite/masonry-watch" )
+      { Module } = await import( "@dashkite/masonry-module" )
+
+      do M.start [
+        W.glob glob: target
+        M.read
+        changed Fn.flow [
+          Module.data
+          M.tr build options.reload
+          M.write "."
+        ]
+      ]
     
     Genie.on "watch", "sky:reload:watch&"

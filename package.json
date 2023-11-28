@@ -55,7 +55,7 @@
     "@dashkite/drn-sky": "link:../drn-sky",
     "@dashkite/enchant": "link:../enchant",
     "@dashkite/graphene-core": "link:../graphene-core",
-    "@dashkite/joy": "link:../joy",
+    "@dashkite/joy": "^0.3.16",
     "@dashkite/katana": "^0.4.8",
     "@dashkite/masonry": "link:../masonry",
     "@dashkite/masonry-export": "link:../masonry-export",

@@ -24,8 +24,8 @@ dependencies:
     specifier: link:../graphene-core
     version: link:../graphene-core
   '@dashkite/joy':
-    specifier: link:../joy
-    version: link:../joy
+    specifier: ^0.3.16
+    version: 0.3.16
   '@dashkite/katana':
     specifier: ^0.4.8
     version: 0.4.8
