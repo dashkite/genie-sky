@@ -28,7 +28,7 @@ generic Preset.install, Type.isString, ( name ) ->
     for path in paths   
       if await exist path
         installer = ( require path ).default
-        Preset.install installer
+        await Preset.install installer
         break
 
 generic Preset.install, Type.isObject, ( installer ) ->

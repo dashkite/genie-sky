@@ -67,7 +67,7 @@ getCache = ( preset ) ->
     when "static"
       "8fe497a6-f90b-4207-8fb9-eb4214a4f31f"
     when "static-s3"
-      "1d763f5c-4594-43b1-a269-07b9e23d6e7d"
+      "022c7607-ce65-4003-b8ca-95ba4bddf787"
     when "dynamic"
       "54919481-e976-4e15-b112-eda3b6c7ede9"
     else
@@ -84,7 +84,6 @@ getHandlers = ({ lambda }) ->
 getDescription = ({ edge }) ->
   edge.description ? 
     "Distribution [ #{ edge.name } ]"
-
 
 templates = Templates.create "#{__dirname}"
 templates._.h.registerHelper { awsCase }

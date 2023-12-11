@@ -6,7 +6,6 @@ import {
   deleteTemplate 
 } from "@dashkite/dolores/ses"
 import { log } from "@dashkite/dolores/logger"
-import * as DRN from "@dashkite/drn-sky"
 
 read = ( path ) -> FS.readFile path, "utf8"
 
@@ -23,9 +22,9 @@ Tasks =
 
   deploy: ({ ses }) ->
     if ses.templates?
-      root = ses?.root ? Path.join "build", "email"
+      root = ses?.root
       for template in ses.templates
-        { html, text } = await Templates.load root, template.name
+        { html, text } = await Templates.load root, template.basename
         console.log "Publishing template: #{ template.name }"
         await publishTemplate { template..., html, text }
 
