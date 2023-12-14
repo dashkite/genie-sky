@@ -189,9 +189,23 @@ Handlers =
 Tasks =
 
   # WIP
-  tail: ( _ , name ) ->
-    tail "/aws/lambda/#{ name }"
-
+  tail: ({ lambda }, name ) ->b
+    handler = if name?
+      lambda.find ( specifier ) -> name == specifier.name
+    else
+      lambda[0]
+    if handler?
+      events = tail "/aws/lambda/#{ handler.name }"
+      for await event from events
+        if /^[A-Z]/.test event.message
+          console.log JSON.stringify message: event.message
+        else
+          [ timestamp, request, level, message ] = event.message.split "\t"
+          try
+            json = JSON.parse message
+            console.log JSON.stringify { timestamp, request, level, message, json }
+          catch
+            console.log JSON.stringify { timestamp, request, level, message }
 
   deploy: ({ lambda }) ->
     Promise.all do ->
