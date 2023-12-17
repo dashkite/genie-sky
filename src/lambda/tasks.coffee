@@ -1,6 +1,8 @@
 import FS from "node:fs/promises"
 import Path from "node:path"
 import * as Fn from "@dashkite/joy/function"
+import { generic } from "@dashkite/joy/generic"
+import * as Type from "@dashkite/joy/type"
 import * as Text from "@dashkite/joy/text"
 import * as Pred from "@dashkite/joy/predicate"
 import * as Value from "@dashkite/joy/value"
@@ -186,10 +188,69 @@ Handlers =
         console.error error
       throw new Error "API handlers mismatch"
 
+
+LogEvent =
+
+  System:
+
+    Dictionary:
+      "platform.initStart": "initialize"
+      "platform.initRuntimeDone": "ready"
+      "platform.start": "start"
+      "platform.runtimeDone": "finish"
+
+  make: do ({ make } = {}) ->
+
+    make = generic name: "LogEvent.make"
+      
+    # original AWS event
+    generic make,
+      ({ timestamp, message }) -> timestamp? && message?
+      ({ message }) -> LogEvent.make JSON.parse message
+
+    # system event
+    generic make,
+      ({ type }) -> type?
+      ({ time, type, record }) ->
+        {
+          timestamp: time
+          request: record.requestId
+          type: "system"
+          data: LogEvent.System.Dictionary[ type ] ? type
+        }
+
+    # application event
+    generic make,
+      ({ requestId }) -> requestId?
+      ({ timestamp, requestId, level, message }) ->
+        {
+          timestamp
+          request: requestId
+          type: "application"
+          level: Text.toLowerCase level
+          data: message
+        }
+
+    # kaiko event
+    generic make,
+      ({ message }) -> message?.data?
+      ({ timestamp, requestId, message }) ->
+        {
+          timestamp
+          request: requestId
+          type: "application"
+          elapsed: message.timestamp
+          context: message.context
+          level: message.level
+          data: message.data
+        }
+
+    make
+
 Tasks =
 
   # WIP
-  tail: ({ lambda }, name ) ->b
+  tail: ({ lambda }, name ) ->
     handler = if name?
       lambda.find ( specifier ) -> name == specifier.name
     else
@@ -197,15 +258,7 @@ Tasks =
     if handler?
       events = tail "/aws/lambda/#{ handler.name }"
       for await event from events
-        if /^[A-Z]/.test event.message
-          console.log JSON.stringify message: event.message
-        else
-          [ timestamp, request, level, message ] = event.message.split "\t"
-          try
-            json = JSON.parse message
-            console.log JSON.stringify { timestamp, request, level, message, json }
-          catch
-            console.log JSON.stringify { timestamp, request, level, message }
+        console.log JSON.stringify LogEvent.make event
 
   deploy: ({ lambda }) ->
     Promise.all do ->
