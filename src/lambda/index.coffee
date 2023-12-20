@@ -17,7 +17,8 @@ export default
 
     Genie.on "deploy", "sky:lambda:deploy"
 
-    Genie.on "undeploy", "sky:lambda:undeploy"
+    if !options.edge?
+      Genie.on "undeploy", "sky:lambda:undeploy"
     
     Genie.on "tail", "sky:lambda:tail"
 

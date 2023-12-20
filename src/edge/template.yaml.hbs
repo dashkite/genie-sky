@@ -14,89 +14,10 @@ Resources:
         {{/each}}
       {{/if}}
 
-  OriginRequestPolicy:
-    Type: "AWS::CloudFront::OriginRequestPolicy"
-    Properties:
-      OriginRequestPolicyConfig:
-        Name: {{{ name }}}-origin-request-policy
-        CookiesConfig: 
-          CookieBehavior: none
-        HeadersConfig: 
-          HeaderBehavior: allViewer
-        QueryStringsConfig:
-          QueryStringBehavior: all
 
-  ResponseHeadersPolicy:
-    Type: "AWS::CloudFront::ResponseHeadersPolicy"
-    Properties:
-      ResponseHeadersPolicyConfig:
-        Name: {{{ name }}}-response-headers-policy
-        CorsConfig: 
-          AccessControlAllowCredentials: false
-          AccessControlAllowHeaders:
-            Items: [ "*" ]
-          AccessControlAllowMethods: 
-            Items: [ GET, HEAD, PUT, POST, PATCH, DELETE, OPTIONS ]
-          AccessControlAllowOrigins: 
-            {{!-- TODO use the list of aliases here? --}}
-            Items: [ "*" ]
-          AccessControlExposeHeaders: 
-            Items:
-              - www-authenticate
-              - location
-              - credentials
-          {{!-- 
-
-            Chrome max is 7200
-            https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age#directives
-          
-          --}}
-          AccessControlMaxAgeSec: 7200
-          OriginOverride: false
-        CustomHeadersConfig:
-          Items: []
-        SecurityHeadersConfig: 
-          ContentSecurityPolicy: 
-            ContentSecurityPolicy: >-
-              default-src https: ;
-              script-src https: blob: 'unsafe-inline' 'unsafe-eval' ;
-              style-src https: 'unsafe-inline' ;
-            Override: false
-          ContentTypeOptions: 
-            Override: true
-          FrameOptions: 
-            FrameOption: DENY
-            Override: true
-          ReferrerPolicy: 
-            Override: true
-            ReferrerPolicy: no-referrer
-          StrictTransportSecurity: 
-            AccessControlMaxAgeSec: 63072000
-            IncludeSubdomains: true
-            Preload: true
-            Override: true
-        ServerTimingHeadersConfig: 
-          Enabled: false
-  {{!--
-    Commenting out for now because I can't this to work.
-    I've hardcoded the ID below...
-
-    {{#if oac}}
-    OriginAccessControl:
-      Type: AWS::CloudFront::OriginAccessControl
-      Properties: 
-        OriginAccessControlConfig: 
-            Name: {{{ @root.namespace }}}-{{{ @root.name }}}-s3
-            OriginAccessControlOriginType: s3
-            SigningBehavior: always
-            SigningProtocol: sigv4
-    {{/if}}
-  --}}
   Distribution:
     Type: "AWS::CloudFront::Distribution"
     DependsOn:
-      - OriginRequestPolicy
-      - ResponseHeadersPolicy
       - Certificate
     Properties:
       DistributionConfig:
@@ -111,8 +32,10 @@ Resources:
           CachedMethods: [ GET, HEAD, OPTIONS ]
           Compress: true
           CachePolicyId: {{{ cache }}}
-          OriginRequestPolicyId: !Ref OriginRequestPolicy
-          ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+          {{!-- api-origin-request-policy --}}
+          OriginRequestPolicyId: 5cb4eb03-742c-41ae-876b-7f01b1466976
+          {{!-- Managed-CORS-with-preflight-and-SecurityHeadersPolicy --}}
+          ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63
           ViewerProtocolPolicy: redirect-to-https
           {{#if handlers }}
           LambdaFunctionAssociations:

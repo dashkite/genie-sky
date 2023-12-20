@@ -35,10 +35,13 @@ DB =
         throw error
 
   delete: ( client, { db }) ->
-    address = await DB.resolve db
-    await client.db.delete address
-    await DRN.remove DRN.from db.address
-    console.log "Deleted db: [ #{ address } ] for [ #{ db.name } ]."
+    try
+      address = await DB.resolve db
+      await client.db.delete address
+      await DRN.remove DRN.from db.address
+      console.log "Deleted db: [ #{ address } ] for [ #{ db.name } ]."
+    catch error
+      console.warn error.message
 
 Collection =
 

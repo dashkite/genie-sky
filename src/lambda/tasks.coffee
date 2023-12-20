@@ -292,6 +292,10 @@ Tasks =
   undeploy: ({ lambda }) ->
     Promise.all do ->
       for { name } in lambda
-        Lambda.delete name          
+        do ( name ) ->
+          try
+            await Lambda.delete name          
+          catch error
+            console.warn error.message
 
 export default Tasks

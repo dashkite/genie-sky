@@ -82,8 +82,7 @@ getHandlers = ({ lambda }) ->
       arn: await getLatestLambdaARN name
 
 getDescription = ({ edge }) ->
-  edge.description ? 
-    "Distribution [ #{ edge.name } ]"
+  edge.description ? edge.name
 
 templates = Templates.create "#{__dirname}"
 templates._.h.registerHelper { awsCase }
@@ -107,10 +106,10 @@ Tasks =
         aliases: await getCertificateAliases edge.aliases
       origins: origins
       handlers: await getHandlers { lambda }
-    deployStack edge.name, template      
+    deployStack "edge-#{ edge.name }", template      
     
   undeploy: ({ lambda, edge }) ->
-    deleteStack edge.name
+    deleteStack "edge-#{ edge.name }"
 
 
 export default Tasks

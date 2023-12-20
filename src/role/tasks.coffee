@@ -4,6 +4,7 @@ import * as Type from "@dashkite/joy/type"
 import * as DRN from "@dashkite/drn-sky"
 import { 
   createRole
+  deleteRole
 } from "@dashkite/dolores/roles"
 import Builders from "./builders"
 

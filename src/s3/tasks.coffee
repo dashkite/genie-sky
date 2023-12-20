@@ -185,8 +185,8 @@ Tasks =
           M.read
           File.hash
           File.changed Fn.flow [
-            File.stamp
             Item.publish bucket
+            File.stamp
             Module.data
             W.notify
           ]
