@@ -6,7 +6,7 @@ fail = ( message ) -> throw new Error "sky-presets: #{ message }"
 
 load = ( type ) ->
   switch type
-    when "api" then import( "@dashkite/sky-api-description/schema" )
+    when "api" then import( "@dashkite/scout/json-schema" )
     when "policy" then import( "@dashkite/enchant/schema" )
     when "rune" then import( "@dashkite/runes/schema" )
     else fail "invalid schema type [ #{ type } ]"
