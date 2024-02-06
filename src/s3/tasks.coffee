@@ -124,20 +124,6 @@ configureBucket = ( bucket ) ->
     for preset from Presets.get bucket
       Presets[ preset ] bucket
 
-Item =
-
-  publish: ({ publish, domain }) ->
-    Fn.tee ( context ) ->
-      publish.encoding ?= "bytes"
-      log "publishing #{ context.source.path }"
-      putObject domain, context.source.path, context.input
-  
-  rm: ({ domain }) ->
-    Fn.tee ( context ) ->
-      log "delete #{ context.source.path }"
-      deleteObject domain, context.source.path
-
-
 Tasks =
 
   deploy: ({ s3 }) ->
@@ -152,54 +138,66 @@ Tasks =
         await deleteBucket domain
         console.log "Deleted bucket #{ domain }"
 
+  
   publish: ({ s3 }) ->
+  
+    publish = ({ domain, publish }) ->
+      publish.glob ?= "**/*.*"
+      publish.root ?= "."
+      publish.cache ?= "must-revalidate"
+      do M.start [
+        M.glob publish.glob, root: publish.root
+        M.read
+        File.hash
+        File.changed Fn.flow [
+          File.publish
+            template: publish.template
+            bucket: domain
+            cache: publish.cache
+          File.stamp
+          W.notify
+        ]
+      ]
     
-    Promise.all await do ->
-
+    Promise.all do ->
       for bucket in s3 when bucket.publish?
-
-        { publish, domain } = bucket
-
-        console.log "Publishing to bucket [ #{domain} ]"
-            
-        publish.encoding ?= "bytes"
-
-        Diff.diff
-          source: Diff.FS.glob publish
-          target: Diff.S3.glob { 
-            domain
-            glob: bucket.glob ? "**/*"
-          }
-          patch: Fn.pipe [
-            Fn.tee ({ action, key }) ->
-              console.log "... #{ action } [ #{ key } ]"
-            Diff.S3.patch { domain }
-          ]
-
+        publish bucket
+    
   watch: ({ s3 }) ->
 
-    watch = ( bucket ) ->
+    watch = ({ domain, publish }) ->
+      publish.glob ?= "**/*.*"
+      publish.root ?= "."
+      publish.cache ?= "must-revalidate"
       do M.start [
-        W.glob bucket.publish
+        W.glob glob: publish.glob, root: publish.root
         W.match type: "file", name: [ "add", "change" ], [
           M.read
           File.hash
           File.changed Fn.flow [
-            Item.publish bucket
+            File.publish
+              template: publish.template
+              bucket: domain
+              cache: publish.cache
             File.stamp
-            Module.data
             W.notify
           ]
         ]
+
         W.match type: "file", name: "rm", [
+          File.hash
+          File.rm
+            template: publish.template
+            bucket: domain
           File.evict
-          Item.rm bucket
+          W.notify
         ]
       ]
 
     Promise.all do ->
       for bucket in s3 when bucket.publish?
         watch bucket
+
 
   ls: ({ s3 }) ->
     for bucket in s3
