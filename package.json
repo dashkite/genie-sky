@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/dashkite/sky-presets#readme",
   "devDependencies": {
-    "@dashkite/genie": "^0.8.1",
+    "@dashkite/genie": "link:../genie",
     "@dashkite/genie-clean": "link:../genie-clean",
     "@dashkite/genie-coffee": "link:../genie-coffee",
     "@dashkite/genie-media": "link:../genie-media",
