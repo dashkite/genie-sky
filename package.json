@@ -68,7 +68,7 @@
     "@dashkite/name": "link:../name",
     "@dashkite/polaris": "link:../polaris",
     "@dashkite/runes": "link:../runes",
-    "@dashkite/scout": "link:../sky-api-description",
+    "@dashkite/scout": "link:../scout",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/sky-local-storage": "link:../sky-local-storage",
     "@dashkite/template": "^0.0.1",
