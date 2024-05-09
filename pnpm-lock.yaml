@@ -60,8 +60,8 @@ dependencies:
     specifier: link:../runes
     version: link:../runes
   '@dashkite/scout':
-    specifier: link:../sky-api-description
-    version: link:../sky-api-description
+    specifier: link:../scout
+    version: link:../scout
   '@dashkite/sky-alb':
     specifier: ^0.0.3
     version: 0.0.3
