@@ -8,6 +8,7 @@ export default ( Genie, options ) ->
   Genie.define "sky:s3:undeploy", run "undeploy", options
   Genie.define "sky:s3:publish", run "publish", options
   Genie.define "sky:s3:watch", run "watch", options
+  Genie.define "sky:s3:empty", run "empty", options
   Genie.define "sky:s3:ls", run "ls", options
 
   Genie.on "deploy", "sky:s3:deploy"

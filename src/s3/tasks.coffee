@@ -138,6 +138,11 @@ Tasks =
         await deleteBucket domain
         console.log "Deleted bucket #{ domain }"
 
+  empty: ({ s3 }, name ) ->
+    bucket = s3.find ( bucket ) -> bucket.name == name
+    if bucket?
+      emptyBucket bucket.domain
+
   # TODO deprecated, use Genie Publish instead
   publish: ({ s3 }) ->
   
