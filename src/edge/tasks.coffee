@@ -34,12 +34,11 @@ getCertificateAliases = ( aliases ) ->
 getDNSEntries = ( aliases ) ->
   result = {}
   for alias in aliases
-    root = getRootDomain alias
-    result[ root ] ?=
-      tld: root
-      zone: await getHostedZoneID root
-      aliases: []
-    result[ root ].aliases.push alias
+    tld = getRootDomain alias
+    zone = await getHostedZoneID tld
+    [ ..., id ] = zone.split "/"
+    result[ tld ] ?= { tld, zone, id, aliases: []}
+    result[ tld ].aliases.push alias
   Object.values result
 
 

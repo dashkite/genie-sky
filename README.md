@@ -1,7 +1,4 @@
-# Graphite
+# Genie Sky
 
-_Graph Database For DynamoDB_
+_Genie Tasks For Managing Sky Infrastructure_
 
-## API
-
-Coming soon!

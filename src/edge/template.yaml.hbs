@@ -6,6 +6,13 @@ Resources:
     Type: "AWS::CertificateManager::Certificate"
     Properties: 
       DomainName: {{{ certificate.verification }}}
+      {{#if dns}}
+      DomainValidationOptions:
+        {{#each dns}}
+          - DomainName: '*.{{{ tld }}}'
+            HostedZoneId: {{{ id }}}
+        {{/each}}
+      {{/if}}
       ValidationMethod: DNS
       {{#if certificate.aliases}}
       SubjectAlternativeNames:
