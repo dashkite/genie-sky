@@ -166,7 +166,7 @@ Builders =
     [
       Effect: "Allow"
       Action: [ "dynamodb:*" ]
-      Resource: [ arn, "#{ arn }/*" ]
+      Resource: [ arn, "#{ arn }-*" ]
     ]
 
   sqs: ({ name }) ->
