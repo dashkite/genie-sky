@@ -40,9 +40,9 @@ Resources:
           Compress: true
           CachePolicyId: {{{ cache }}}
           {{!-- api-origin-request-policy --}}
-          OriginRequestPolicyId: 5cb4eb03-742c-41ae-876b-7f01b1466976
+          OriginRequestPolicyId: {{{ request }}}
           {{!-- Managed-CORS-with-preflight-and-SecurityHeadersPolicy --}}
-          ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63
+          ResponseHeadersPolicyId: {{{ response }}}
           ViewerProtocolPolicy: redirect-to-https
           {{#if handlers }}
           LambdaFunctionAssociations:

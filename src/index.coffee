@@ -50,8 +50,13 @@ export default ( genie ) ->
 
     generic Preset.install, Type.isFunction, ( install ) ->
       install genie, options
+
+    automatic = [ "clean" ]
+
+    if options.edge? || options.s3?
+      automatic.push "cloudfront"
     
     Promise.all [
-      Preset.install [ "clean" ]
+      Preset.install automatic
       Preset.install ( Object.keys options )
     ]

@@ -11,6 +11,7 @@ import * as DRN from "@dashkite/drn-sky"
 import { getLatestLambdaARN } from "@dashkite/dolores/lambda"
 import { getHostedZoneID } from "@dashkite/dolores/route53"
 import { deployStack, deleteStack } from "@dashkite/dolores/stack"
+import * as CF from "@dashkite/dolores/cloudfront"
 
 mode = process.env.mode? "development"
 
@@ -58,19 +59,29 @@ getOrigins = ({ origin, origins }) ->
 hasOAC = ( origins ) ->
   ( origins.find ({ s3 }) -> s3?.private )?
 
-getCache = ( preset ) ->
-  preset ?= if mode == "production" then "static" else "disabled"
-  switch preset
-    when "disabled"
-      "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
-    when "static"
-      "8fe497a6-f90b-4207-8fb9-eb4214a4f31f"
-    when "static-s3"
-      "022c7607-ce65-4003-b8ca-95ba4bddf787"
-    when "dynamic"
-      "54919481-e976-4e15-b112-eda3b6c7ede9"
-    else
-      "a53da372-fd09-496e-bd4a-4e04a9028770"
+getCachePolicy = ( preset ) ->
+  preset ?= if mode == "production"
+    "Managed-CachingOptimized"
+  else 
+    "Managed-CachingDisabled"
+  if ( policy = await CF.getCachePolicy preset )?
+    policy.id
+  else
+    throw new Error "Caching policy [ #{ preset } ] not found"
+
+getRequestPolicy = ( preset ) ->
+  preset ?= "Managed-AllViewer"
+  if ( policy = await CF.getRequestPolicy preset )?
+    policy.id
+  else
+    throw new Error "Request policy [ #{ preset } ] not found"
+
+getResponsePolicy = ( preset ) ->
+  preset ?= "Managed-CORS-with-preflight-and-SecurityHeadersPolicy"
+  if ( policy = await CF.getResponsePolicy preset )?
+    policy.id
+  else
+    throw new Error "Response policy [ #{ preset } ] not found"
 
 getHandlers = ({ lambda }) ->
   if lambda?
@@ -99,16 +110,18 @@ Tasks =
       aliases: edge.aliases
       dns: await getDNSEntries edge.aliases
       # TODO should be per origin
-      cache: getCache edge.cache
+      cache: await getCachePolicy edge.cache
+      request: await getRequestPolicy edge.request
+      response: await getResponsePolicy edge.response
       certificate:
         verification: edge.certificate.verification
         aliases: await getCertificateAliases edge.aliases
       origins: origins
       handlers: await getHandlers { lambda }
-    deployStack "edge-#{ edge.name }", template      
+    deployStack edge.name, template      
     
   undeploy: ({ lambda, edge }) ->
-    deleteStack "edge-#{ edge.name }"
+    deleteStack edge.name
 
 
 export default Tasks

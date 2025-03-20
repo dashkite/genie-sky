@@ -147,10 +147,11 @@ Tasks =
   publish: ({ s3 }) ->
   
     publish = ({ domain, publish }) ->
+
       publish.glob ?= "**/*.*"
       publish.root ?= "."
       publish.cache ?= "must-revalidate"
-      do M.start [
+      await do M.start [
         M.glob publish.glob, root: publish.root
         M.read
         File.hash
@@ -163,7 +164,7 @@ Tasks =
           W.notify
         ]
       ]
-    
+
     Promise.all do ->
       for bucket in s3 when bucket.publish?
         publish bucket
