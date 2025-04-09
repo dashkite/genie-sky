@@ -36,10 +36,13 @@ getDNSEntries = ( aliases ) ->
   result = {}
   for alias in aliases
     tld = getRootDomain alias
-    zone = await getHostedZoneID tld
-    [ ..., id ] = zone.split "/"
-    result[ tld ] ?= { tld, zone, id, aliases: []}
-    result[ tld ].aliases.push alias
+    if ( zone = await getHostedZoneID tld )?
+      [ ..., id ] = zone.split "/"
+      result[ tld ] ?= { tld, zone, id, aliases: []}
+      result[ tld ].aliases.push alias
+    else
+      console.warn "genie-sky: unable to find hosted zone
+        for tld [ #{ tld } ] (for alias [ #{ alias } ])"
   Object.values result
 
 
