@@ -44,6 +44,4 @@ export default ( genie, options ) ->
 
     genie.define "sky:queue:send", guard (name, message) ->
       queue = queues.find (queue) -> queue.name = name
-      # TODO support path-based messages as well
-      #      where we'd read queue.messages[ name ].path
       pushMessage queue.name, queue.messages[ message ].content

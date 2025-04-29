@@ -80,7 +80,6 @@ Lambda =
       }
 
     if lambda.url?.open == true
-      # TODO handle case where there's already a policy
       configuration.permissions = [
         StatementId: "public-access"
         FunctionName: lambda.name
@@ -101,7 +100,6 @@ Lambda =
 
       configuration = Lambda.configure lambda
 
-      # TODO get lambda from configuration
       await Lambda.publish lambda.name, data, {
         handler: "#{ basename lambda.path }.handler"
         configuration...
@@ -126,7 +124,6 @@ Handlers =
     Pred.negate Value.eq  "index.coffee"
   ]
 
-  # TODO use dynamic imports for this
   generateIndex: ({ generate }) ->
     imports = ""
     handlers = "handlers =\n"
@@ -161,7 +158,6 @@ Handlers =
   verify: ({ generate, verify }) ->
 
     handlers = ( require Path.resolve generate?.path ? verify?.path ).default
-    # TODO make this configurable?
     api = YAML.load await FS.readFile "./src/api.yaml", "utf8"
     errors = []
 

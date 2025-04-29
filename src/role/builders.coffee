@@ -45,8 +45,6 @@ Builders =
         "arn:aws:logs:*:*:log-group:/aws/lambda/#{ region }.#{ name }:*" 
       ]
     ]
-  # TODO re-implement wildcard secret support
-  #      maybe via DRN subtype?
   secret: ({ name }) ->
     [
       Effect: "Allow"
@@ -72,8 +70,6 @@ Builders =
 
   kms: ->
 
-    # TODO allow for use of keys
-    # see also: https://github.com/pandastrike/sky-mixin-kms/blob/master/src/policy.coffee#L4-L26
 
     [
 

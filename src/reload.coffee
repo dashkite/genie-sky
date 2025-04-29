@@ -13,7 +13,6 @@ inject = ({ html, events, module }) ->
   if ( $ "script[name='env']").length == 0
     $ "head"
       .append do ->
-        # TODO put this in a module
         $ "<script name='env' type='module'>"
           .text coffee """
             import Reload from "@dashkite/reload"

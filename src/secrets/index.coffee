@@ -20,13 +20,10 @@ export default ( Genie, options ) ->
   # if it doesn't exist already - useful for rotation
   Genie.define "sky:secret:put", run "put", options
 
-  # TODO maybe remove this later?
   Genie.define "sky:secret:get", run "get", options
 
   Genie.define "sky:secret:delete", run "delete", options
 
-  # TODO temporary key rotation task to update key in WAF
-  # See: https://github.com/dashkite/sky-alb/issues/1
 
 
 

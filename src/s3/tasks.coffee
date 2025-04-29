@@ -143,7 +143,6 @@ Tasks =
     if bucket?
       emptyBucket bucket.domain
 
-  # TODO deprecated, use Genie Publish instead
   publish: ({ s3 }) ->
   
     publish = ({ domain, publish }) ->

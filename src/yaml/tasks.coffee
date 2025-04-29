@@ -24,7 +24,6 @@ defaults =
 
 drn = ({ input }) -> resolve input
 
-# TODO should masonry-yaml just produce an object?
 yaml = ({ input }) -> YAML.load input
 
 json = ({ input }) -> JSON.stringify input

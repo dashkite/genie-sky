@@ -112,7 +112,6 @@ Tasks =
       oac: oac
       aliases: edge.aliases
       dns: await getDNSEntries edge.aliases
-      # TODO should be per origin
       cache: await getCachePolicy edge.cache
       request: await getRequestPolicy edge.request
       response: await getResponsePolicy edge.response

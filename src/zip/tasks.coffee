@@ -58,9 +58,6 @@ getModule = ( source ) ->
       join items[0..( i + 1 )]
   else
     local = true
-    # TODO this should actually just check all the paths
-    # ex: given `../../fubar/foo/build/node/src/index.js`
-    # we should check `..`, `../..`, `../../fubar` and so on.
     await choose [
       join items[0..1]
       items[0]
