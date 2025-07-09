@@ -171,6 +171,9 @@ importers:
       '@dashkite/genie-media':
         specifier: link:../genie-media
         version: link:../genie-media
+      '@dashkite/genie-release':
+        specifier: link:../genie-release
+        version: link:../genie-release
       '@dashkite/genie-yaml':
         specifier: link:../genie-yaml
         version: link:../genie-yaml
