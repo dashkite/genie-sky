@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.6
         version: 0.0.6
       '@dashkite/diff':
-        specifier: link:../diff
-        version: link:../diff
+        specifier: 0.1.0
+        version: 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
       '@dashkite/dolores':
         specifier: 0.1.0
         version: 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
@@ -39,8 +39,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@dashkite/masonry-module':
-        specifier: link:../masonry-module
-        version: link:../masonry-module
+        specifier: 0.1.0
+        version: 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
       '@dashkite/masonry-targets':
         specifier: 0.2.0
         version: 0.2.0
@@ -1169,6 +1169,9 @@ packages:
   '@dashkite/base64@1.0.1':
     resolution: {integrity: sha512-7O3HajSgWaie/kme1bcdXQnVsMXn4A5m9YOaxWnEZ8z9LCrnJ8BGnpTgFJUqSC4mv0Z/0NBcwTmeGCoEc9VYoA==}
 
+  '@dashkite/diff@0.1.0':
+    resolution: {integrity: sha512-p/YMxf72g0k/kvcOGpMbEuoCW2esSUbmsHPLRBc+Kpq5zPwa8c8STbRXAHBpEsxwwia6cgQ/Dynwv90BIMMTAA==}
+
   '@dashkite/dolores@0.0.7':
     resolution: {integrity: sha512-DeKIGed2DYUR+V6zI/DkySJ2OG6HsBGv/on0i4FaOZSNsTFJwmct7zjHBlftEUfvAecA4S57w/dDBQxgmdB8IA==}
 
@@ -1212,6 +1215,9 @@ packages:
 
   '@dashkite/masonry-hooks@0.1.0':
     resolution: {integrity: sha512-DeRzJH5TDMMK2glUwvNjCqzsKlTrBnJ4pZfYbSIbDvstBDy/6QpHlmEHsg1LL50Olx4fEtuwpjUQ69CT6EgNoQ==}
+
+  '@dashkite/masonry-module@0.1.0':
+    resolution: {integrity: sha512-Wg6NIPzLKDkB+UOZJCo7qeMGfYHajTXYOiPE701I1/ydwD96h/DvFqaGz0f2HUyRzE5JfSfoQ0EJJDZay9+OSQ==}
 
   '@dashkite/masonry-targets@0.1.0':
     resolution: {integrity: sha512-nb1N+oBZLw04AFUV49ZFLBAb/NQ0fJseO6ACrEfgXkHra2I1oxwHxLIKtMqWcedQa3QP2pqA/eeBmtGiTQGM0Q==}
@@ -6415,6 +6421,17 @@ snapshots:
 
   '@dashkite/base64@1.0.1': {}
 
+  '@dashkite/diff@0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)':
+    dependencies:
+      '@dashkite/dolores': 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
+      '@dashkite/joy': 0.3.16
+      fast-glob: 3.3.3
+      micromatch: 4.0.8
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-provider-node'
+      - aws-crt
+      - encoding
+
   '@dashkite/dolores@0.0.7':
     dependencies:
       '@aws-sdk/client-acm': 3.758.0
@@ -6534,6 +6551,17 @@ snapshots:
       '@dashkite/masonry': 0.14.0
     transitivePeerDependencies:
       - supports-color
+
+  '@dashkite/masonry-module@0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)':
+    dependencies:
+      '@dashkite/dolores': 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
+      '@dashkite/joy': 0.3.16
+      '@dashkite/kaiko': 0.3.3
+      '@dashkite/zephyr': 0.3.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-provider-node'
+      - aws-crt
+      - encoding
 
   '@dashkite/masonry-targets@0.1.0':
     dependencies:
