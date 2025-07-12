@@ -172,8 +172,8 @@ importers:
         specifier: link:../genie-media
         version: link:../genie-media
       '@dashkite/genie-release':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.3
+        version: 0.2.3
       '@dashkite/genie-yaml':
         specifier: link:../genie-yaml
         version: link:../genie-yaml
@@ -378,8 +378,8 @@ packages:
   '@dashkite/dolores@0.0.7':
     resolution: {integrity: sha512-DeKIGed2DYUR+V6zI/DkySJ2OG6HsBGv/on0i4FaOZSNsTFJwmct7zjHBlftEUfvAecA4S57w/dDBQxgmdB8IA==}
 
-  '@dashkite/genie-release@0.2.2':
-    resolution: {integrity: sha512-4ylNzhFZbqQe1wghFwv3byh2ooBIv0uK/DlXQXvKbGOwVdAYVqCHy0pIQH2eWjc43tclwAVIq/CMKLZDsctlvA==}
+  '@dashkite/genie-release@0.2.3':
+    resolution: {integrity: sha512-uZOoG31RXa19nT4dxPw4Vrmy+HGP7PYzzpTL1qlq9LhTNsTXInzp9lWUMZq/4KBiQqexFjPNVuB7+GApmuAhvA==}
 
   '@dashkite/genie@0.8.4':
     resolution: {integrity: sha512-f4c84JoTaIoEvSwwre9lOD4V1/AHMp9prIeiJrD4/hRWiGcO+HYqjzjK7mNA2kfq68K/I3y9F5QYhlaG8QpCYA==}
@@ -3132,7 +3132,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@dashkite/genie-release@0.2.2':
+  '@dashkite/genie-release@0.2.3':
     dependencies:
       '@dashkite/zephyr': 0.2.0
       zx: 8.6.1
