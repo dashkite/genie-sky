@@ -175,8 +175,8 @@ importers:
         specifier: ^0.2.4
         version: 0.2.4
       '@dashkite/genie-yaml':
-        specifier: link:../genie-yaml
-        version: link:../genie-yaml
+        specifier: 0.1.0
+        version: 0.1.0
 
 packages:
 
@@ -1187,6 +1187,9 @@ packages:
   '@dashkite/genie-release@0.2.4':
     resolution: {integrity: sha512-+tc5Qk+8H62hC6uZ6GY1Q1jWglVhcVxkAmXNcWUT8qL/3VTIBQKJBUqdOAqsik98vwuGugIDJAjj+TVsHKA8ow==}
 
+  '@dashkite/genie-yaml@0.1.0':
+    resolution: {integrity: sha512-NDvqIDiDslWWhe1DIxCm9CGl+1nc0x/EligQHZv3Izdg/rV21M/KUaSyChPf2z6h96eDLfJa9kinZhrxlzO3fA==}
+
   '@dashkite/genie@0.8.4':
     resolution: {integrity: sha512-f4c84JoTaIoEvSwwre9lOD4V1/AHMp9prIeiJrD4/hRWiGcO+HYqjzjK7mNA2kfq68K/I3y9F5QYhlaG8QpCYA==}
     engines: {node: '>=20.0.0'}
@@ -1206,6 +1209,9 @@ packages:
 
   '@dashkite/masonry-export@0.1.0':
     resolution: {integrity: sha512-K5ILSl4b+8SatTJTO4AJO+QuBR+coXk9gkeAZRtIx7qhuhdJbB1dCq+pqscYGJ81He1lzHP4DiQtEAf8wBHykA==}
+
+  '@dashkite/masonry-hooks@0.1.0':
+    resolution: {integrity: sha512-DeRzJH5TDMMK2glUwvNjCqzsKlTrBnJ4pZfYbSIbDvstBDy/6QpHlmEHsg1LL50Olx4fEtuwpjUQ69CT6EgNoQ==}
 
   '@dashkite/masonry-targets@0.1.0':
     resolution: {integrity: sha512-nb1N+oBZLw04AFUV49ZFLBAb/NQ0fJseO6ACrEfgXkHra2I1oxwHxLIKtMqWcedQa3QP2pqA/eeBmtGiTQGM0Q==}
@@ -6481,6 +6487,16 @@ snapshots:
       '@dashkite/zephyr': 0.2.0
       zx: 8.6.1
 
+  '@dashkite/genie-yaml@0.1.0':
+    dependencies:
+      '@dashkite/masonry': 0.14.0
+      '@dashkite/masonry-export': 0.1.0
+      '@dashkite/masonry-hooks': 0.1.0
+      '@dashkite/masonry-targets': 0.2.0
+      '@dashkite/masonry-yaml': 0.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   '@dashkite/genie@0.8.4':
     dependencies:
       '@dashkite/joy': 0.3.16
@@ -6512,6 +6528,12 @@ snapshots:
       - '@swc/helpers'
 
   '@dashkite/masonry-export@0.1.0': {}
+
+  '@dashkite/masonry-hooks@0.1.0':
+    dependencies:
+      '@dashkite/masonry': 0.14.0
+    transitivePeerDependencies:
+      - supports-color
 
   '@dashkite/masonry-targets@0.1.0':
     dependencies:
