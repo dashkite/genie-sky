@@ -47,7 +47,7 @@
     "@dashkite/genie": "^0.8.4",
     "@dashkite/genie-clean": "0.2.0",
     "@dashkite/genie-coffee": "0.2.0",
-    "@dashkite/genie-media": "link:../genie-media",
+    "@dashkite/genie-media": "0.1.0",
     "@dashkite/genie-release": "^0.2.3",
     "@dashkite/genie-yaml": "link:../genie-yaml"
   },

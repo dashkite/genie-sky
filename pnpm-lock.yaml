@@ -169,8 +169,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       '@dashkite/genie-media':
-        specifier: link:../genie-media
-        version: link:../genie-media
+        specifier: 0.1.0
+        version: 0.1.0
       '@dashkite/genie-release':
         specifier: ^0.2.3
         version: 0.2.3
@@ -930,6 +930,9 @@ packages:
 
   '@dashkite/genie-coffee@0.2.0':
     resolution: {integrity: sha512-mZBmTYbCkjHUSNGDg6aeGn5aOCJwYJlfh3+NjsycE+q4WBzZHa8tWwODlNQdnRxUT9j3yhvW7aTVWf2xI14DGw==}
+
+  '@dashkite/genie-media@0.1.0':
+    resolution: {integrity: sha512-hHP+MO0rgh5KlRU89roklzqKfIq7jlSPAIFE45+9obQbHbODIKKCWMnzn5ToB104PbqgJpx33aJCXc6O+AT6nA==}
 
   '@dashkite/genie-release@0.2.3':
     resolution: {integrity: sha512-uZOoG31RXa19nT4dxPw4Vrmy+HGP7PYzzpTL1qlq9LhTNsTXInzp9lWUMZq/4KBiQqexFjPNVuB7+GApmuAhvA==}
@@ -4773,6 +4776,12 @@ snapshots:
       execa: 5.1.1
     transitivePeerDependencies:
       - '@swc/helpers'
+      - supports-color
+
+  '@dashkite/genie-media@0.1.0':
+    dependencies:
+      '@dashkite/masonry': 0.14.0
+    transitivePeerDependencies:
       - supports-color
 
   '@dashkite/genie-release@0.2.3':
