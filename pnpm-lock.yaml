@@ -42,8 +42,8 @@ importers:
         specifier: link:../masonry-module
         version: link:../masonry-module
       '@dashkite/masonry-targets':
-        specifier: link:../masonry-targets
-        version: link:../masonry-targets
+        specifier: 0.2.0
+        version: 0.2.0
       '@dashkite/masonry-watch':
         specifier: link:../masonry-watch
         version: link:../masonry-watch
@@ -75,8 +75,8 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
       '@dashkite/zephyr':
-        specifier: link:../zephyr
-        version: link:../zephyr
+        specifier: 0.3.0
+        version: 0.3.0
       ajv:
         specifier: ^8.11.0
         version: 8.17.1
@@ -395,6 +395,9 @@ packages:
   '@dashkite/katana@0.4.8':
     resolution: {integrity: sha512-KOfMS5aRZItxPeMv0OXbOTCj5BZhN9jM190jae8HB7WgGB5uM5jEzRWmyh3yVbxTaL83o7csktRzUkxkr/Op1A==}
 
+  '@dashkite/masonry-targets@0.2.0':
+    resolution: {integrity: sha512-+5VoeUdSqHUMNyxH7ippTq6VLEGiDd7yOh/4FiTmszetBZhMZUA2Pw7mvt7c8pF1dOQKahcFdqJw89IcVLiGxQ==}
+
   '@dashkite/sky-alb@0.0.3':
     resolution: {integrity: sha512-iUxnx7TJLF25O4vzxvDHU5DPtQBqr/3WcGrj/+kk44r0wHhpEXaTdxBCTZafdX8Aap8rQE5S/zkX/0Z783y2kw==}
 
@@ -409,6 +412,9 @@ packages:
 
   '@dashkite/zephyr@0.2.0':
     resolution: {integrity: sha512-l3Fm9nyOIp1yBnv4IzGOKVgo1/UucU5WLvsqAfcP2jEVlE4AgpPkODssyloxTyC3N+bhcz1DXqC/7KokI1eVjA==}
+
+  '@dashkite/zephyr@0.3.0':
+    resolution: {integrity: sha512-IcR7Ab6hPE56XZpDoCZpVQtBHBWrDffFQ97f8sQGsqAAww7w/RdchwFFQQQlp9Ke/BansVSEY14rvvzEnLFJeA==}
 
   '@esbuild/android-arm@0.15.18':
     resolution: {integrity: sha512-5GT+kcs2WVGjVs7+boataCkO5Fg0y4kCjzkB5bAip7H4jfnOS3dA6KPiww9W1OEKTKeAcUVhdZGvgI65OXmUnw==}
@@ -3160,6 +3166,11 @@ snapshots:
     dependencies:
       '@dashkite/joy': 0.3.16
 
+  '@dashkite/masonry-targets@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+      fast-glob: 3.3.3
+
   '@dashkite/sky-alb@0.0.3':
     dependencies:
       '@dashkite/dolores': 0.0.7
@@ -3181,6 +3192,11 @@ snapshots:
   '@dashkite/utf8@1.0.1': {}
 
   '@dashkite/zephyr@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+      js-yaml: 4.1.0
+
+  '@dashkite/zephyr@0.3.0':
     dependencies:
       '@dashkite/joy': 0.3.16
       js-yaml: 4.1.0
