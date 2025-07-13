@@ -69,7 +69,6 @@
     "@dashkite/messages": "link:../messages",
     "@dashkite/polaris": "link:../polaris",
     "@dashkite/runes": "link:../runes",
-    "@dashkite/scout": "link:../scout",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/sky-local-storage": "0.1.0",
     "@dashkite/template": "^0.0.1",

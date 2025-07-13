@@ -59,9 +59,6 @@ importers:
       '@dashkite/runes':
         specifier: link:../runes
         version: link:../runes
-      '@dashkite/scout':
-        specifier: link:../scout
-        version: link:../scout
       '@dashkite/sky-alb':
         specifier: ^0.0.3
         version: 0.0.3
