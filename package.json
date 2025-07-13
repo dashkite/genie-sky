@@ -67,7 +67,6 @@
     "@dashkite/masonry-watch": "link:../masonry-watch",
     "@dashkite/masonry-yaml": "0.1.0",
     "@dashkite/messages": "link:../messages",
-    "@dashkite/name": "link:../name",
     "@dashkite/polaris": "link:../polaris",
     "@dashkite/runes": "link:../runes",
     "@dashkite/scout": "link:../scout",
