@@ -55,7 +55,7 @@
     "@dashkite/bake": "^0.0.6",
     "@dashkite/diff": "0.1.0",
     "@dashkite/dolores": "0.1.0",
-    "@dashkite/drn-sky": "link:../drn-sky",
+    "@dashkite/drn-sky": "0.2.0",
     "@dashkite/enchant": "link:../enchant",
     "@dashkite/graphene-core": "link:../graphene-core",
     "@dashkite/joy": "^0.3.16",
