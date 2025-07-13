@@ -45,8 +45,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       '@dashkite/masonry-watch':
-        specifier: link:../masonry-watch
-        version: link:../masonry-watch
+        specifier: 0.2.0
+        version: 0.2.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
       '@dashkite/masonry-yaml':
         specifier: 0.1.0
         version: 0.1.0
@@ -1230,6 +1230,9 @@ packages:
 
   '@dashkite/masonry-targets@0.2.0':
     resolution: {integrity: sha512-+5VoeUdSqHUMNyxH7ippTq6VLEGiDd7yOh/4FiTmszetBZhMZUA2Pw7mvt7c8pF1dOQKahcFdqJw89IcVLiGxQ==}
+
+  '@dashkite/masonry-watch@0.2.0':
+    resolution: {integrity: sha512-TBOkHvxYtjAg6Hg5JZDWOHlmhHc90FGBCIpaLpPPxSh/Yd2p0hVLilFee2Ez5jswndtEPKDsyZ9zQF15fGWOmw==}
 
   '@dashkite/masonry-yaml@0.1.0':
     resolution: {integrity: sha512-BQkz+DfHmw5niDvPcJ9xcDfUqfUVUCL2Pvk3mhqt91IW8rV2mXLy58o7piWf/Zc7BvhEjTKR59LbacdDLraZcA==}
@@ -6616,6 +6619,16 @@ snapshots:
     dependencies:
       '@dashkite/joy': 0.3.16
       fast-glob: 3.3.3
+
+  '@dashkite/masonry-watch@0.2.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)':
+    dependencies:
+      '@dashkite/dolores': 0.1.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
+      '@dashkite/joy': 0.3.16
+      chokidar: 3.6.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-provider-node'
+      - aws-crt
+      - encoding
 
   '@dashkite/masonry-yaml@0.1.0':
     dependencies:
