@@ -67,7 +67,7 @@
     "@dashkite/masonry-watch": "0.2.0",
     "@dashkite/masonry-yaml": "0.1.0",
     "@dashkite/messages": "link:../messages",
-    "@dashkite/polaris": "link:../polaris",
+    "@dashkite/polaris": "0.3.0",
     "@dashkite/runes": "link:../runes",
     "@dashkite/sky-alb": "^0.0.3",
     "@dashkite/sky-local-storage": "0.1.0",
