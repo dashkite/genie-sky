@@ -24,8 +24,8 @@ importers:
         specifier: link:../enchant
         version: link:../enchant
       '@dashkite/graphene-core':
-        specifier: link:../graphene-core
-        version: link:../graphene-core
+        specifier: 0.2.0
+        version: 0.2.0
       '@dashkite/joy':
         specifier: ^0.3.16
         version: 0.3.16
@@ -51,8 +51,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@dashkite/messages':
-        specifier: link:../messages
-        version: link:../messages
+        specifier: 0.3.0
+        version: 0.3.0
       '@dashkite/polaris':
         specifier: 0.3.0
         version: 0.3.0
@@ -1178,6 +1178,12 @@ packages:
   '@dashkite/drn@0.4.0':
     resolution: {integrity: sha512-Y8/3n9hLi4ChPMnWXI8OFYhNmFJ7k77C8jaTnqXMNMlXZNa+25RU0vjc//jmEUGSP44amoLUf7EwF1M+kSkuyw==}
 
+  '@dashkite/format-text@0.3.0':
+    resolution: {integrity: sha512-Rf85hV8YOJHbqiWTeIBa74Nz4JqXwdAlwYgit85ViTbtKVLjK1mCX2Utqg5mI2cmZD7SrOqkWBTnk/bGFU15IA==}
+
+  '@dashkite/generic@0.3.0':
+    resolution: {integrity: sha512-A4eHFbIZwrrZmY0//KMiYKHaBUPxUA0PA2QhNZCWC+i11WtPSk6IDuPRkafbFYkmvpj80Gmr4Qznn3ASJIQP1A==}
+
   '@dashkite/genie-clean@0.2.0':
     resolution: {integrity: sha512-1L6Rzoiu7yRixhI6uPTCNSo3wHx/y2RgVlnUDAdO3I4TBCeU1h0Kiytr32ZCK7i3BCatObAdWJt0+9Nc3ZSUIw==}
 
@@ -1198,11 +1204,17 @@ packages:
     engines: {node: '>=20.0.0'}
     hasBin: true
 
+  '@dashkite/graphene-core@0.2.0':
+    resolution: {integrity: sha512-kFncN8CYK+c4oKzagGwXO3dsapqi5nX+jeVFCMRaPtHohBg3+BetAcpZnHUhESXIWF83uOvRcOPSw2JWueo7DA==}
+
   '@dashkite/joy@0.3.16':
     resolution: {integrity: sha512-dsU0us4j1Pb+zceoBvLbnZ2PbmULkJUtM2vtWLxKmoc1DE4w9SVTiPTe6JWvF0A0vk90ldv+Lc9qEA5x3O+DtQ==}
 
   '@dashkite/joy@0.4.0':
     resolution: {integrity: sha512-pBeuzpzuUzb3I/HNykRQXN3nh8t2JgtmEwScCtQuSU/q3/LODdu4Xd522m7oHVwFXNPZ2CUwJk/MNg+etaX3rQ==}
+
+  '@dashkite/joy@0.5.0':
+    resolution: {integrity: sha512-kaDNKKS6v5r3vukOkh54aarrhiTHwbcKZZW8eDav5FhT6u8RRrmSaFeAbwLzGntdPScaEhqg/PLrvtPHOy9OlQ==}
 
   '@dashkite/kaiko@0.3.3':
     resolution: {integrity: sha512-XnAvVr9y2MsDqMLr4A24vkLF7Iuq3E8RjHEEpqhe29P5NevVX9jXKcXUStNMp9MSJbjHd2pqUNiM5Vvdja9ggg==}
@@ -1246,6 +1258,9 @@ packages:
   '@dashkite/media-type@0.1.1':
     resolution: {integrity: sha512-IaB3fvmxFhN5JNf+m//2sEXgh3tOpLOKkwD7Fam8BS62r9doED8QAb80OfSj71r6b4+xmcNHlFkBzqNNKjtIdw==}
 
+  '@dashkite/messages@0.3.0':
+    resolution: {integrity: sha512-XJdHj/KvRTQ1moKl3vXdCu63fUercfhU/bNUhY4SPzqGAR+gzpLfQzfmKd6hUxFm9zC48HgE1L9QgIBCtK18kw==}
+
   '@dashkite/parse@0.4.3':
     resolution: {integrity: sha512-bE0kBjaGYjUnCzWJelQnx8vsfJ9YP07aRTVFZoY7TZWvMmnihoCSugL4IVWAOA2O0EAZXjT8FcjA4bNJ/BQwwg==}
 
@@ -1255,8 +1270,14 @@ packages:
   '@dashkite/scan@0.2.0':
     resolution: {integrity: sha512-Ihzyw90G+RAB7ietzrEZHDivqwsr4HdCm9LSUGKLFERN26RNvXmLp8CEE1OCkucH6ipfmDSF/ga8OVxxp0gGAw==}
 
+  '@dashkite/scout@0.2.0':
+    resolution: {integrity: sha512-7L1YLjr/alcq1lvPTll+7Sc0Ek4H5gBIyUWpuGuIWqRDvHECgBrOhUDfFizjIFRAGFRVItdlpLHz6BOFKGC0KQ==}
+
   '@dashkite/sky-alb@0.0.3':
     resolution: {integrity: sha512-iUxnx7TJLF25O4vzxvDHU5DPtQBqr/3WcGrj/+kk44r0wHhpEXaTdxBCTZafdX8Aap8rQE5S/zkX/0Z783y2kw==}
+
+  '@dashkite/sky-dispatcher@0.1.0':
+    resolution: {integrity: sha512-z6rq67eKwbJQKNCeM02BCl5oO2TpZmiE2UPukej8Lvk5ib2uix4L4y06FpJreIerpsI223ytP9HwvH9/onOmtw==}
 
   '@dashkite/sky-local-storage@0.1.0':
     resolution: {integrity: sha512-nkhAyAWQDsmem7YgEw7DC9BBXU+LyO+oR/J962FcVoUm9SYA1gk7QU0SbNVQZiGsNZG/T/iIjMHUH1bdidASRA==}
@@ -1269,6 +1290,9 @@ packages:
 
   '@dashkite/url-codex@0.1.1':
     resolution: {integrity: sha512-+uZ+JZEZdRAAHj8s+K/C8lNgc5C/Egae2ret7e1t0JtNeE7dCwRsLkKPtIG6gelX3+ebV0dD54khiLgs2L3JlA==}
+
+  '@dashkite/url-codex@0.2.0':
+    resolution: {integrity: sha512-12m6YzdBEP3Rb0QGTMv1cTw4KLO37VW3HDHuUQV7QJQOGRzvS5+iQqXLkhfDJBqRC4oc1t9+iQ/6PEUtYXXArw==}
 
   '@dashkite/url-router@0.1.0':
     resolution: {integrity: sha512-VigD1eoQrAUskxbz3BLQ/4RBBpsbwc5BzAuVBkRDzgdVQ/N32VucH6QOxRTK1jgSszHjoKDhvkkIzwlfYMl48g==}
@@ -6531,6 +6555,14 @@ snapshots:
       execa: 5.1.1
       js-yaml: 4.1.0
 
+  '@dashkite/format-text@0.3.0':
+    dependencies:
+      '@dashkite/joy': 0.5.0
+
+  '@dashkite/generic@0.3.0':
+    dependencies:
+      '@dashkite/joy': 0.5.0
+
   '@dashkite/genie-clean@0.2.0':
     dependencies:
       '@dashkite/masonry': 0.13.0
@@ -6584,9 +6616,21 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
+  '@dashkite/graphene-core@0.2.0':
+    dependencies:
+      '@dashkite/bake': 0.0.6
+      '@dashkite/joy': 0.3.16
+      '@dashkite/polaris': 0.3.0
+      '@dashkite/sky-dispatcher': 0.1.0
+      handlebars: 4.7.8
+      js-yaml: 4.1.0
+      panda-confidential: 3.1.2
+
   '@dashkite/joy@0.3.16': {}
 
   '@dashkite/joy@0.4.0': {}
+
+  '@dashkite/joy@0.5.0': {}
 
   '@dashkite/kaiko@0.3.3': {}
 
@@ -6673,6 +6717,12 @@ snapshots:
       '@dashkite/joy': 0.3.16
       '@dashkite/parse': 0.4.3
 
+  '@dashkite/messages@0.3.0':
+    dependencies:
+      '@dashkite/format-text': 0.3.0
+      '@dashkite/generic': 0.3.0
+      '@dashkite/joy': 0.5.0
+
   '@dashkite/parse@0.4.3':
     dependencies:
       '@dashkite/joy': 0.3.16
@@ -6687,6 +6737,11 @@ snapshots:
     dependencies:
       '@dashkite/lru-cache': 0.1.0
 
+  '@dashkite/scout@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+      '@dashkite/url-codex': 0.2.0
+
   '@dashkite/sky-alb@0.0.3':
     dependencies:
       '@dashkite/dolores': 0.0.7
@@ -6696,6 +6751,11 @@ snapshots:
       handlebars: 4.7.8
     transitivePeerDependencies:
       - aws-crt
+
+  '@dashkite/sky-dispatcher@0.1.0':
+    dependencies:
+      '@dashkite/kaiko': 0.3.3
+      '@dashkite/scout': 0.2.0
 
   '@dashkite/sky-local-storage@0.1.0':
     dependencies:
@@ -6712,6 +6772,11 @@ snapshots:
   '@dashkite/url-codex@0.1.1':
     dependencies:
       '@dashkite/joy': 0.3.16
+      '@dashkite/parse': 0.4.3
+
+  '@dashkite/url-codex@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.5.0
       '@dashkite/parse': 0.4.3
 
   '@dashkite/url-router@0.1.0':
