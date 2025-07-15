@@ -20,9 +20,6 @@ importers:
       '@dashkite/drn-sky':
         specifier: 0.4.0
         version: 0.4.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
-      '@dashkite/enchant':
-        specifier: link:../enchant
-        version: link:../enchant
       '@dashkite/graphene-core':
         specifier: 0.4.0
         version: 0.4.0
@@ -56,9 +53,6 @@ importers:
       '@dashkite/polaris':
         specifier: 0.6.0
         version: 0.6.0
-      '@dashkite/runes':
-        specifier: link:../runes
-        version: link:../runes
       '@dashkite/sky-alb':
         specifier: ^0.0.4
         version: 0.0.4
