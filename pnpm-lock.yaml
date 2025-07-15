@@ -160,8 +160,8 @@ importers:
         specifier: 0.8.0
         version: 0.8.0
       '@dashkite/genie-release':
-        specifier: ^0.2.11
-        version: 0.2.11
+        specifier: ^0.2.12
+        version: 0.2.12
       '@dashkite/genie-yaml':
         specifier: 0.7.0
         version: 0.7.0
@@ -1190,8 +1190,8 @@ packages:
   '@dashkite/genie-media@0.8.0':
     resolution: {integrity: sha512-bNeOnjFyhGlduzs/PiIoZ+Q6r7JE3uF7bQ8TbpeZ/Sk2ab6Et7w3QxBrl5UbVJ7PP2isw9CKDZfe33x1DM2+QA==}
 
-  '@dashkite/genie-release@0.2.11':
-    resolution: {integrity: sha512-7xkcSSaSh17FLyibgRpNp6IWyeEvsd6cimVPAp7NtOCYVQG4LWonjlh6W/OCxF/4lGrijdZ/q/MDGM2LNBIEFg==}
+  '@dashkite/genie-release@0.2.12':
+    resolution: {integrity: sha512-pO0uXG1ntZT+inD63YobSW84MyeHNiEuwpiDsDR5LvwVfhXlwQtZEQCVpimfHKAf14SeZ5RL8YQKgeRy1V/+Lw==}
 
   '@dashkite/genie-yaml@0.7.0':
     resolution: {integrity: sha512-XpliyPq/hF9BXMxBbD2wKCsNEI4ViLIzfRam2dS7lsoX4LR2fM5xPrZ/0RFdh3Tar1pugnEdbSZTDGfn3LPDwA==}
@@ -6663,7 +6663,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@dashkite/genie-release@0.2.11':
+  '@dashkite/genie-release@0.2.12':
     dependencies:
       '@dashkite/zephyr': 0.2.0
       zx: 8.7.1
