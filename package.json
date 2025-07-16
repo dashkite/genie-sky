@@ -49,7 +49,7 @@
     "@dashkite/genie-clean": "0.9.0",
     "@dashkite/genie-coffee": "0.9.0",
     "@dashkite/genie-media": "0.8.0",
-    "@dashkite/genie-release": "^0.2.12",
+    "@dashkite/genie-release": "^0.2.14",
     "@dashkite/genie-yaml": "0.7.0"
   },
   "dependencies": {
