@@ -48,11 +48,11 @@ importers:
         specifier: 0.8.0
         version: 0.8.0
       '@dashkite/messages':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.9.2
+        version: 0.9.2
       '@dashkite/polaris':
-        specifier: 0.6.0
-        version: 0.6.0
+        specifier: 0.10.2
+        version: 0.10.2
       '@dashkite/sky-alb':
         specifier: ^0.0.4
         version: 0.0.4
@@ -1175,11 +1175,11 @@ packages:
   '@dashkite/drn@0.4.0':
     resolution: {integrity: sha512-Y8/3n9hLi4ChPMnWXI8OFYhNmFJ7k77C8jaTnqXMNMlXZNa+25RU0vjc//jmEUGSP44amoLUf7EwF1M+kSkuyw==}
 
-  '@dashkite/format-text@0.3.0':
-    resolution: {integrity: sha512-Rf85hV8YOJHbqiWTeIBa74Nz4JqXwdAlwYgit85ViTbtKVLjK1mCX2Utqg5mI2cmZD7SrOqkWBTnk/bGFU15IA==}
+  '@dashkite/format-text@0.5.0':
+    resolution: {integrity: sha512-v2Ri1PmnsXeAamAp2k8EMtYkweyKigIqLWYdmWu9wtpsGLhavQcxQ1BCHkUQrFjLDFq8QcHKRBWS3E449SW/Lw==}
 
-  '@dashkite/generic@0.3.0':
-    resolution: {integrity: sha512-A4eHFbIZwrrZmY0//KMiYKHaBUPxUA0PA2QhNZCWC+i11WtPSk6IDuPRkafbFYkmvpj80Gmr4Qznn3ASJIQP1A==}
+  '@dashkite/generic@0.5.0':
+    resolution: {integrity: sha512-XGLML0mHLgRKVprGgIUJS7EM7x0kMZGcQsvhGcZNfd1jl+zrWESgExxzU0O/KGbD7YOXJEhJ4aYoO0ZPBmqELg==}
 
   '@dashkite/genie-clean@0.9.0':
     resolution: {integrity: sha512-cR5IaFycabxIOH0XrExG5DCrm91milsdPqt104+AcIFEtpthwQ55lgOkS660tC8l7SxnwZzMZbZxHP3oK0iT0A==}
@@ -1270,20 +1270,23 @@ packages:
   '@dashkite/media-type@0.1.1':
     resolution: {integrity: sha512-IaB3fvmxFhN5JNf+m//2sEXgh3tOpLOKkwD7Fam8BS62r9doED8QAb80OfSj71r6b4+xmcNHlFkBzqNNKjtIdw==}
 
-  '@dashkite/messages@0.5.0':
-    resolution: {integrity: sha512-2vV9HcNDw6RCkD1heFqvFiK45j4WCFbNwTgYdTFZZZoI4peTn8lwrqfQEa7Oj5x2q12924DSq3jhBg4ugdBPQQ==}
+  '@dashkite/messages@0.9.2':
+    resolution: {integrity: sha512-FUxlPe2dYU8UH5MbdXoQscBsINVQSUFcbzhmRSni60K6nmXdL/A0IFU6s8oc61C6Zmhyl0OQKbMxy6nP+uGWbA==}
 
   '@dashkite/parse@0.4.3':
     resolution: {integrity: sha512-bE0kBjaGYjUnCzWJelQnx8vsfJ9YP07aRTVFZoY7TZWvMmnihoCSugL4IVWAOA2O0EAZXjT8FcjA4bNJ/BQwwg==}
 
+  '@dashkite/polaris@0.10.2':
+    resolution: {integrity: sha512-MNDi2Xza4aZME7QYLdPGJBM79bxNxlkkU7mVLtHiKWEB5XrhE3IA+hpGWpODI1t37hPI3OKS5wGZar/38fmqhQ==}
+
   '@dashkite/polaris@0.3.0':
     resolution: {integrity: sha512-DnUVo1tlTSTFGz7y0TadJJvY8Ly4HoNeD4+ZVDKWWLLbBLi48le2KyuURZ53KKViom1IuWEFWUl5gNtcZ/2Duw==}
 
-  '@dashkite/polaris@0.6.0':
-    resolution: {integrity: sha512-JYX0vWBTkSCZVl2os33M41/r23frej2g45nUozQQoGgvWSQTZdzPwPPFXShLyUdKfczHcsHGEZJ/xM315xJX5A==}
-
   '@dashkite/scan@0.2.0':
     resolution: {integrity: sha512-Ihzyw90G+RAB7ietzrEZHDivqwsr4HdCm9LSUGKLFERN26RNvXmLp8CEE1OCkucH6ipfmDSF/ga8OVxxp0gGAw==}
+
+  '@dashkite/scan@0.4.0':
+    resolution: {integrity: sha512-fC7D9+SCy34D5qi25ZAH8tzJgqPc9aBBhqrRCQ3RoD6cDrrfvlROxLzKsLfs+zv05yHPtuc/9ZONyyAW3/JTvg==}
 
   '@dashkite/scout@0.2.0':
     resolution: {integrity: sha512-7L1YLjr/alcq1lvPTll+7Sc0Ek4H5gBIyUWpuGuIWqRDvHECgBrOhUDfFizjIFRAGFRVItdlpLHz6BOFKGC0KQ==}
@@ -2219,7 +2222,6 @@ packages:
 
   bun@1.2.19:
     resolution: {integrity: sha512-P70KUfH9cvgcl8Hjvamr98NinEatV23yX6qaY7z1+3rBPdds0oVX0u6FfrYnWc8F3ayFQ4do6/6xBLWY4itJkQ==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -6709,11 +6711,11 @@ snapshots:
       execa: 5.1.1
       js-yaml: 4.1.0
 
-  '@dashkite/format-text@0.3.0':
+  '@dashkite/format-text@0.5.0':
     dependencies:
       '@dashkite/joy': 0.5.0
 
-  '@dashkite/generic@0.3.0':
+  '@dashkite/generic@0.5.0':
     dependencies:
       '@dashkite/joy': 0.5.0
 
@@ -6896,15 +6898,21 @@ snapshots:
       '@dashkite/joy': 0.3.16
       '@dashkite/parse': 0.4.3
 
-  '@dashkite/messages@0.5.0':
+  '@dashkite/messages@0.9.2':
     dependencies:
-      '@dashkite/format-text': 0.3.0
-      '@dashkite/generic': 0.3.0
-      '@dashkite/joy': 0.5.0
+      '@dashkite/format-text': 0.5.0
+      '@dashkite/generic': 0.5.0
+      '@dashkite/joy': 0.7.0
 
   '@dashkite/parse@0.4.3':
     dependencies:
       '@dashkite/joy': 0.3.16
+
+  '@dashkite/polaris@0.10.2':
+    dependencies:
+      '@dashkite/joy': 0.7.0
+      '@dashkite/scan': 0.4.0
+      jsonpath-plus: 7.2.0
 
   '@dashkite/polaris@0.3.0':
     dependencies:
@@ -6912,13 +6920,11 @@ snapshots:
       '@dashkite/scan': 0.2.0
       jsonpath-plus: 7.2.0
 
-  '@dashkite/polaris@0.6.0':
-    dependencies:
-      '@dashkite/joy': 0.3.16
-      '@dashkite/scan': 0.2.0
-      jsonpath-plus: 7.2.0
-
   '@dashkite/scan@0.2.0':
+    dependencies:
+      '@dashkite/lru-cache': 0.1.0
+
+  '@dashkite/scan@0.4.0':
     dependencies:
       '@dashkite/lru-cache': 0.1.0
 
