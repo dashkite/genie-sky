@@ -18,8 +18,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
       '@dashkite/drn-sky':
-        specifier: ^0.8.7
-        version: 0.8.7(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
+        specifier: ^0.8.8
+        version: 0.8.8(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
       '@dashkite/graphene-core':
         specifier: ^0.4.0
         version: 0.4.0
@@ -48,11 +48,11 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
       '@dashkite/messages':
-        specifier: ^0.9.10
-        version: 0.9.10
+        specifier: 0.9.12
+        version: 0.9.12
       '@dashkite/polaris':
-        specifier: ^0.10.10
-        version: 0.10.10
+        specifier: 0.10.12
+        version: 0.10.12
       '@dashkite/sky-alb':
         specifier: ^0.0.4
         version: 0.0.4
@@ -148,8 +148,8 @@ importers:
         version: 0.6.0
     devDependencies:
       '@dashkite/genie':
-        specifier: ^0.20.8
-        version: 0.20.8
+        specifier: ^0.20.9
+        version: 0.20.9
       '@dashkite/genie-clean':
         specifier: ^0.9.0
         version: 0.9.0
@@ -1169,11 +1169,11 @@ packages:
   '@dashkite/dolores@0.8.0':
     resolution: {integrity: sha512-ga+AxqsQcUjW3D5J6mCQqTU7GqJsmnlT9OfqYrmPA3lGJSjk0GqJRQb3RIjoqjjXVszeK8vAW3RdJPx0W7OhNw==}
 
-  '@dashkite/drn-sky@0.8.7':
-    resolution: {integrity: sha512-Nxt9Kb3nk7tROFeDieXe3m04FnxRrvdyjWhzeyVHzZFC7tRIKJ1yXD1+JX8dqm4s33wvYKn2cDdYsNR0xjOm3w==}
+  '@dashkite/drn-sky@0.8.8':
+    resolution: {integrity: sha512-RQbhOILWuctPvE8dgTMIqveHKnJhuHQbKMYxvLVd1MV/Kn1WPO5VQOHosF+F5hkdSV64uG9rnNsBN1HsXQTbhA==}
 
-  '@dashkite/drn@0.12.8':
-    resolution: {integrity: sha512-tQqvyT+4z3bzlL8Z9zZSYySmtbCz2iinDuCxI9oElrsWZNvRrvYIePkzrRYCBwu/XSq06jsigVV2yz3V04p0yQ==}
+  '@dashkite/drn@0.12.9':
+    resolution: {integrity: sha512-GgOwkmo3DF5UNKTy1QBWMsdll+6z6w506/6j9Bo5ZSCb1v9Z8tr6nQ9CS+51N4X0jn8q6E6MvFaSsLHPyzEnLw==}
 
   '@dashkite/format-text@0.5.0':
     resolution: {integrity: sha512-v2Ri1PmnsXeAamAp2k8EMtYkweyKigIqLWYdmWu9wtpsGLhavQcxQ1BCHkUQrFjLDFq8QcHKRBWS3E449SW/Lw==}
@@ -1196,8 +1196,8 @@ packages:
   '@dashkite/genie-yaml@0.7.0':
     resolution: {integrity: sha512-XpliyPq/hF9BXMxBbD2wKCsNEI4ViLIzfRam2dS7lsoX4LR2fM5xPrZ/0RFdh3Tar1pugnEdbSZTDGfn3LPDwA==}
 
-  '@dashkite/genie@0.20.8':
-    resolution: {integrity: sha512-zpKtzW1hIjAOQvCr+92FlKhbHZTqLYyiumLAl8R+tX4BkmBcarhEccaGBsq0it023afAYzChLrg6r4Cduunanw==}
+  '@dashkite/genie@0.20.9':
+    resolution: {integrity: sha512-5EVuUP0q/xS35R/tV6EmFLwVct2ao3JSR11Ff3r5nvWUK+kP4WqvX+sLk6dgHEkc1cOZwMX03FwDN93UUqtMKQ==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -1270,14 +1270,14 @@ packages:
   '@dashkite/media-type@0.1.1':
     resolution: {integrity: sha512-IaB3fvmxFhN5JNf+m//2sEXgh3tOpLOKkwD7Fam8BS62r9doED8QAb80OfSj71r6b4+xmcNHlFkBzqNNKjtIdw==}
 
-  '@dashkite/messages@0.9.10':
-    resolution: {integrity: sha512-3IAObCpOwNX3Mc4Jr+mndmtOOQL5TTNVsnQcVEpf+bO7ShKhJgNAzmAih+T2YKRtqRrmN1vXZCFIDqJnD2u8Lw==}
+  '@dashkite/messages@0.9.12':
+    resolution: {integrity: sha512-sThSZdzlgkCv3b03feBnzj4v65e9hlnFN7obBNrJyfWrJeNjz88FxrCX0dzr0PDhHjNOaAVBFLpLyOJUmf/K0g==}
 
   '@dashkite/parse@0.4.3':
     resolution: {integrity: sha512-bE0kBjaGYjUnCzWJelQnx8vsfJ9YP07aRTVFZoY7TZWvMmnihoCSugL4IVWAOA2O0EAZXjT8FcjA4bNJ/BQwwg==}
 
-  '@dashkite/polaris@0.10.10':
-    resolution: {integrity: sha512-zIVSvsgiY2UGOfclJhpC2lzK68+fFvnAYcy4C1qHOR+++5k0OT8a1ZOsnFQMbLxSIOnPGB5qgcfVKILvC0cFug==}
+  '@dashkite/polaris@0.10.12':
+    resolution: {integrity: sha512-jGYRi2Zeg7URNuKiGpO4cKzv/RPwRfVhdTYsUfxJ3TYZQKpRv1hBKDu4Z8Qe9tc4MRSmbDc/gcFJ0i7qVPvoEA==}
 
   '@dashkite/polaris@0.3.0':
     resolution: {integrity: sha512-DnUVo1tlTSTFGz7y0TadJJvY8Ly4HoNeD4+ZVDKWWLLbBLi48le2KyuURZ53KKViom1IuWEFWUl5gNtcZ/2Duw==}
@@ -1932,8 +1932,8 @@ packages:
     resolution: {integrity: sha512-zmPitbQ8+6zNutpwgcQuLcsEpn/Cj54Kbn7L5pX0Os5kdWplB7xPgEh/g+SWOB/qmows2gpuCaPyduq8ZZRnxA==}
     deprecated: This is a stub types definition. minimatch provides its own type definitions, so you do not need this installed.
 
-  '@types/node@24.1.0':
-    resolution: {integrity: sha512-ut5FthK5moxFKH2T1CUOC6ctR67rQRvvHdFLCD2Ql6KXmMuCrjsSsRI9UsLCm9M18BMwClv4pn327UvB7eeO1w==}
+  '@types/node@24.2.0':
+    resolution: {integrity: sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==}
 
   '@types/uuid@9.0.8':
     resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
@@ -2248,8 +2248,8 @@ packages:
   convert-source-map@1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
 
-  core-js-compat@3.44.0:
-    resolution: {integrity: sha512-JepmAj2zfl6ogy34qfWtcE7nHKAJnKsQFRn++scjVS2bZFllwptzw61BZcZFYBPpUznLfAvh0LGhxKppk04ClA==}
+  core-js-compat@3.45.0:
+    resolution: {integrity: sha512-gRoVMBawZg0OnxaVv3zpqLLxaHmsubEGyTnqdpI/CEBvX4JadI1dMSHxagThprYRtSVbuQxvi6iUatdPxohHpA==}
 
   core-js@2.6.12:
     resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
@@ -2330,8 +2330,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.194:
-    resolution: {integrity: sha512-SdnWJwSUot04UR51I2oPD8kuP2VI37/CADR1OHsFOUzZIvfWJBO6q11k5P/uKNyTT3cdOsnyjkrZ+DDShqYqJA==}
+  electron-to-chromium@1.5.195:
+    resolution: {integrity: sha512-URclP0iIaDUzqcAyV1v2PgduJ9N0IdXmWsnPzPfelvBmjmZzEy6xJcjb1cXj+TbYqXgtLrjHEoaSIdTYhw4ezg==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -3625,8 +3625,8 @@ packages:
   undici-types@5.28.4:
     resolution: {integrity: sha512-3OeMF5Lyowe8VW0skf5qaIE7Or3yS9LS7fvMUI0gg4YxpIBVg0L8BxCmROw2CcYhSkpR68Epz7CGc8MPj94Uww==}
 
-  undici-types@7.8.0:
-    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+  undici-types@7.10.0:
+    resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
@@ -6464,7 +6464,7 @@ snapshots:
       babel-plugin-polyfill-corejs2: 0.4.14(@babel/core@7.22.15)
       babel-plugin-polyfill-corejs3: 0.8.7(@babel/core@7.22.15)
       babel-plugin-polyfill-regenerator: 0.5.5(@babel/core@7.22.15)
-      core-js-compat: 3.44.0
+      core-js-compat: 3.45.0
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -6601,11 +6601,11 @@ snapshots:
       - aws-crt
       - encoding
 
-  '@dashkite/drn-sky@0.8.7(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)':
+  '@dashkite/drn-sky@0.8.8(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)':
     dependencies:
       '@dashkite/bake': 0.0.6
       '@dashkite/dolores': 0.8.0(@aws-sdk/credential-provider-node@3.529.0)(encoding@0.1.13)
-      '@dashkite/drn': 0.12.8
+      '@dashkite/drn': 0.12.9
       '@dashkite/joy': 0.7.0
       '@dashkite/sky-local-storage': 0.8.0
       '@dashkite/xrl': 0.4.0
@@ -6617,7 +6617,7 @@ snapshots:
       - aws-crt
       - encoding
 
-  '@dashkite/drn@0.12.8':
+  '@dashkite/drn@0.12.9':
     dependencies:
       '@dashkite/bake': 0.0.6
       '@dashkite/joy': 0.7.0
@@ -6674,7 +6674,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@dashkite/genie@0.20.8':
+  '@dashkite/genie@0.20.9':
     dependencies:
       '@dashkite/joy': 0.7.0
       '@dashkite/kaiko': 0.3.3
@@ -6814,7 +6814,7 @@ snapshots:
       '@dashkite/joy': 0.3.16
       '@dashkite/parse': 0.4.3
 
-  '@dashkite/messages@0.9.10':
+  '@dashkite/messages@0.9.12':
     dependencies:
       '@dashkite/format-text': 0.5.0
       '@dashkite/generic': 0.5.0
@@ -6824,7 +6824,7 @@ snapshots:
     dependencies:
       '@dashkite/joy': 0.3.16
 
-  '@dashkite/polaris@0.10.10':
+  '@dashkite/polaris@0.10.12':
     dependencies:
       '@dashkite/joy': 0.7.0
       '@dashkite/scan': 0.4.0
@@ -7734,7 +7734,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 6.0.0
-      '@types/node': 24.1.0
+      '@types/node': 24.2.0
 
   '@types/json-schema@7.0.15': {}
 
@@ -7742,9 +7742,9 @@ snapshots:
     dependencies:
       minimatch: 10.0.3
 
-  '@types/node@24.1.0':
+  '@types/node@24.2.0':
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.10.0
 
   '@types/uuid@9.0.8': {}
 
@@ -7930,7 +7930,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.22.15
       '@babel/helper-define-polyfill-provider': 0.4.4(@babel/core@7.22.15)
-      core-js-compat: 3.44.0
+      core-js-compat: 3.45.0
     transitivePeerDependencies:
       - supports-color
 
@@ -7985,7 +7985,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001731
-      electron-to-chromium: 1.5.194
+      electron-to-chromium: 1.5.195
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -8102,7 +8102,7 @@ snapshots:
 
   convert-source-map@1.9.0: {}
 
-  core-js-compat@3.44.0:
+  core-js-compat@3.45.0:
     dependencies:
       browserslist: 4.25.1
 
@@ -8172,7 +8172,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.194: {}
+  electron-to-chromium@1.5.195: {}
 
   emoji-regex@8.0.0: {}
 
@@ -8663,7 +8663,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.2.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -9434,7 +9434,7 @@ snapshots:
 
   undici-types@5.28.4: {}
 
-  undici-types@7.8.0: {}
+  undici-types@7.10.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
