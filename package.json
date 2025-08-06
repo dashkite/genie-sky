@@ -56,7 +56,7 @@
     "@dashkite/bake": "^0.0.6",
     "@dashkite/diff": "^0.7.0",
     "@dashkite/dolores": "^0.8.0",
-    "@dashkite/drn-sky": "^0.8.9",
+    "@dashkite/drn-sky": "^0.8.10",
     "@dashkite/graphene-core": "^0.4.0",
     "@dashkite/joy": "^0.7.0",
     "@dashkite/katana": "^0.4.8",
