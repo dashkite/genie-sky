@@ -147,6 +147,8 @@ Tasks =
   
     publish = ({ domain, publish }) ->
 
+      console.log "publishing to domain #{ domain }"
+
       publish.glob ?= "**/*.*"
       publish.root ?= "."
       publish.cache ?= "must-revalidate"
