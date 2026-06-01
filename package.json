@@ -1,6 +1,6 @@
 {
   "name": "@dashkite/genie-sky",
-  "version": "0.6.32",
+  "version": "0.6.33",
   "description": "Genie presets for Sky APIs",
   "exports": {
     ".": {
