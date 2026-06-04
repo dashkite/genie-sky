@@ -58,7 +58,7 @@
     "@dashkite/dolores": "0.8.0",
     "@dashkite/drn-sky": "link:../drn-sky",
     "@dashkite/graphene-core": "0.4.0",
-    "@dashkite/joy": "link:../joy",
+    "@dashkite/joy": "^0.12.40",
     "@dashkite/katana": "0.4.8",
     "@dashkite/masonry": "0.21.0",
     "@dashkite/masonry-export": "0.7.0",
@@ -68,6 +68,7 @@
     "@dashkite/masonry-yaml": "0.8.0",
     "@dashkite/messages": "0.9.12",
     "@dashkite/polaris": "0.10.12",
+    "@dashkite/reload": "0.10.24",
     "@dashkite/sky-alb": "0.0.4",
     "@dashkite/sky-local-storage": "0.8.0",
     "@dashkite/template": "0.0.1",
@@ -98,7 +99,6 @@
     "stylus-loader": "6.2.0",
     "terminal-kit": "3.1.2",
     "webpack": "5.107.2",
-    "yaml-loader": "0.6.0",
-    "@dashkite/reload": "0.10.24"
+    "yaml-loader": "0.6.0"
   }
 }
