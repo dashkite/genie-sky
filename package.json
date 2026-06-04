@@ -63,7 +63,7 @@
     "@dashkite/masonry": "0.21.0",
     "@dashkite/masonry-export": "0.7.0",
     "@dashkite/masonry-module": "0.7.0",
-    "@dashkite/masonry-targets": "link:../masonry-targets",
+    "@dashkite/masonry-targets": "^0.13.23",
     "@dashkite/masonry-watch": "0.4.0",
     "@dashkite/masonry-yaml": "0.8.0",
     "@dashkite/messages": "0.9.12",
