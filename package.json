@@ -48,7 +48,7 @@
     "@dashkite/genie": "0.20.25",
     "@dashkite/genie-clean": "0.9.0",
     "@dashkite/genie-coffee": "0.9.0",
-    "@dashkite/genie-media": "0.8.0",
+    "@dashkite/genie-media": "link:../genie-media",
     "@dashkite/genie-release": "0.5.15",
     "@dashkite/genie-yaml": "0.7.0"
   },
@@ -56,14 +56,14 @@
     "@dashkite/bake": "0.0.6",
     "@dashkite/diff": "0.7.0",
     "@dashkite/dolores": "0.8.0",
-    "@dashkite/drn-sky": "0.8.30",
+    "@dashkite/drn-sky": "link:../drn-sky",
     "@dashkite/graphene-core": "0.4.0",
-    "@dashkite/joy": "0.7.0",
+    "@dashkite/joy": "link:../joy",
     "@dashkite/katana": "0.4.8",
     "@dashkite/masonry": "0.21.0",
     "@dashkite/masonry-export": "0.7.0",
     "@dashkite/masonry-module": "0.7.0",
-    "@dashkite/masonry-targets": "0.9.0",
+    "@dashkite/masonry-targets": "link:../masonry-targets",
     "@dashkite/masonry-watch": "0.4.0",
     "@dashkite/masonry-yaml": "0.8.0",
     "@dashkite/messages": "0.9.12",
@@ -98,6 +98,7 @@
     "stylus-loader": "6.2.0",
     "terminal-kit": "3.1.2",
     "webpack": "5.107.2",
-    "yaml-loader": "0.6.0"
+    "yaml-loader": "0.6.0",
+    "@dashkite/reload": "0.10.24"
   }
 }
