@@ -62,6 +62,7 @@
     "@dashkite/katana": "0.4.9",
     "@dashkite/masonry": "0.21.0",
     "@dashkite/masonry-export": "0.7.0",
+    "@dashkite/masonry-lambda": "link:../masonry-lambda",
     "@dashkite/masonry-module": "0.7.0",
     "@dashkite/masonry-targets": "^0.13.23",
     "@dashkite/masonry-watch": "0.4.0",
